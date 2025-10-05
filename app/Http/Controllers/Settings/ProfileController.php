@@ -13,6 +13,9 @@ use Inertia\Response;
 
 class ProfileController extends Controller
 {
+    public function index(){
+        return Inertia::render('settings/profile');
+    }
     /**
      * Show the user's profile settings page.
      */

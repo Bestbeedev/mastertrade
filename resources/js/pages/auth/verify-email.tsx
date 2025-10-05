@@ -7,6 +7,7 @@ import { LoaderCircle } from 'lucide-react';
 import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
 import AuthLayout from '@/layouts/auth-layout';
+import { route } from 'ziggy-js';
 
 export default function VerifyEmail({ status }: { status?: string }) {
     return (
@@ -37,7 +38,7 @@ export default function VerifyEmail({ status }: { status?: string }) {
                         </Button>
 
                         <TextLink
-                            href={logout()}
+                            href={route('logout')}
                             className="mx-auto block text-sm"
                         >
                             Log out
