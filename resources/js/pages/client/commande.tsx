@@ -87,7 +87,7 @@ export default function Commande() {
 
             {/* En-tête */}
             <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-                <div className="container px-4 sm:px-6 lg:px-8 py-6">
+                <div className="w-full px-4 sm:px-6 lg:px-8 py-6">
                     <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                         <div>
                             <h1 className="text-3xl font-bold tracking-tight">Mes Commandes</h1>
@@ -125,7 +125,7 @@ export default function Commande() {
             </div>
 
             {/* Contenu principal */}
-            <div className="container px-4 sm:px-6 lg:px-8 py-8">
+            <div className="w-full px-4 sm:px-6 lg:px-8 py-8">
                 {/* Statistiques */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                     {stats.map((stat, index) => (

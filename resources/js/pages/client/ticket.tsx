@@ -112,7 +112,7 @@ export default function Ticket() {
 
             {/* En-tête */}
             <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-                <div className="container px-4 sm:px-6 lg:px-8 py-6">
+                <div className="w-full px-4 sm:px-6 lg:px-8 py-6">
                     <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                         <div>
                             <h1 className="text-3xl font-bold tracking-tight">Tickets et Support</h1>
@@ -132,7 +132,7 @@ export default function Ticket() {
             </div>
 
             {/* Contenu principal */}
-            <div className="container px-4 sm:px-6 lg:px-8 py-8">
+            <div className="w-full px-4 sm:px-6 lg:px-8 py-8">
                 <div className="flex flex-col lg:flex-row gap-8">
                     {/* Sidebar avec filtres */}
                     <div className="lg:w-64 flex-shrink-0">

@@ -121,7 +121,7 @@ export default function Catalogue() {
 
             {/* En-tête amélioré */}
             <div className="border-b bg-gradient-to-r from-background to-background/80">
-                <div className="container px-4 sm:px-6 lg:px-8 py-8">
+                <div className="w-full px-4 sm:px-6 lg:px-8 py-8">
                     <div className="text-center max-w-3xl mx-auto">
                         <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-br from-foreground to-foreground/60 bg-clip-text text-transparent">
                             Notre Catalogue
@@ -168,7 +168,7 @@ export default function Catalogue() {
             </div>
 
             {/* Contenu principal */}
-            <div className="container px-4 sm:px-6 lg:px-8 py-8">
+            <div className="w-full px-4 sm:px-6 lg:px-8 py-8">
                 <div className="flex flex-col lg:flex-row gap-8">
                     {/* Sidebar des filtres amélioré */}
                     <div className="lg:w-80 flex-shrink-0">

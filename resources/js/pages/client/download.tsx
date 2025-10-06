@@ -86,7 +86,7 @@ export default function Download() {
 
             {/* En-tête */}
             <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-                <div className="container px-4 sm:px-6 lg:px-8 py-6">
+                <div className="w-full px-4 sm:px-6 lg:px-8 py-6">
                     <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                         <div>
                             <h1 className="text-3xl font-bold tracking-tight">Téléchargements</h1>
@@ -109,7 +109,7 @@ export default function Download() {
             </div>
 
             {/* Contenu principal */}
-            <div className="container px-4 sm:px-6 lg:px-8 py-8">
+            <div className="w-full px-4 sm:px-6 lg:px-8 py-8">
                 <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="space-y-6">
                     <TabsList className="grid w-full grid-cols-3">
                         <TabsTrigger value="software" className="flex items-center gap-2">

@@ -39,6 +39,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 //Routes pour les formations
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('courses',[CourseController::class, 'index'])->name('courses');
+    Route::get('all-courses',[CourseController::class, 'allcourses'])->name('all-courses');
 });
 
 //Routes pour les licenses

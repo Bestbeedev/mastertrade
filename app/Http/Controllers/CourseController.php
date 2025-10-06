@@ -17,6 +17,11 @@ class CourseController extends Controller
         return Inertia::render('client/formation');
     }
 
+    public function allcourses()
+    {
+        return Inertia::render('client/partials/formations');
+    }
+
     /**
      * Show the form for creating a new resource.
      */

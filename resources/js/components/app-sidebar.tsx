@@ -1,6 +1,6 @@
 import * as React from "react"
 import {
-    IconDashboard,
+
     IconPackage,
     IconLicense,
     IconShoppingCart,
@@ -10,7 +10,6 @@ import {
     IconHeadset,
     IconSettings,
     IconHelp,
-    IconSearch,
     IconUser,
     IconProps,
 } from "@tabler/icons-react"
@@ -32,6 +31,7 @@ import {
 } from "@/components/ui/sidebar"
 import { usePage } from "@inertiajs/react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { LayoutDashboard } from "lucide-react";
 
 const data = {
     user: {
@@ -43,7 +43,7 @@ const data = {
         {
             title: "Tableau de bord",
             url: "/dashboard",
-            icon: IconDashboard,
+            icon: LayoutDashboard,
             isActive: true,
         },
         {

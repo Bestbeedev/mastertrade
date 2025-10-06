@@ -111,7 +111,7 @@ export default function License() {
 
             {/* En-tête */}
             <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-                <div className="container px-4 sm:px-6 lg:px-8 py-6">
+                <div className="w-full px-4 sm:px-6 lg:px-8 py-6">
                     <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                         <div>
                             <h1 className="text-3xl font-bold tracking-tight">Gestion des Licenses</h1>
@@ -128,7 +128,7 @@ export default function License() {
             </div>
 
             {/* Contenu principal */}
-            <div className="container px-4 sm:px-6 lg:px-8 py-8">
+            <div className="w-full px-4 sm:px-6 lg:px-8 py-8">
                 {/* Alertes */}
                 <div className="mb-8">
                     <Card className="bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800">

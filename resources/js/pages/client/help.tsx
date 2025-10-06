@@ -93,7 +93,7 @@ export default function Help() {
 
             {/* En-tête avec recherche */}
             <div className="bg-gradient-to-br from-primary/10 to-primary/5 border-b">
-                <div className="container px-4 sm:px-6 lg:px-8 py-12 text-center">
+                <div className="w-full px-4 sm:px-6 lg:px-8 py-12 text-center">
                     <h1 className="text-4xl font-bold tracking-tight mb-4">Comment pouvons-nous vous aider ?</h1>
                     <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
                         Trouvez des réponses à vos questions dans notre base de connaissances complète
@@ -113,7 +113,7 @@ export default function Help() {
             </div>
 
             {/* Contenu principal */}
-            <div className="container px-4 sm:px-6 lg:px-8 py-12">
+            <div className="w-full px-4 sm:px-6 lg:px-8 py-12">
                 {/* Catégories d'aide */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
                     {helpCategories.map((category, index) => (

@@ -8,6 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { router } from "@inertiajs/react";
+import { route } from "ziggy-js";
 
 export default function Formation() {
     const breadcrumbs: BreadcrumbItem[] = [
@@ -90,8 +92,8 @@ export default function Formation() {
             <Head title="Formation" />
 
             {/* En-tête */}
-            <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-                <div className="container px-4 sm:px-6 lg:px-8 py-6">
+            <div className="border-b flex flex-1 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+                <div className="w-full px-4 sm:px-6 lg:px-8 py-6">
                     <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                         <div>
                             <h1 className="text-3xl font-bold tracking-tight">Centre de Formation</h1>
@@ -120,7 +122,7 @@ export default function Formation() {
             </div>
 
             {/* Contenu principal */}
-            <div className="container px-4 sm:px-6 lg:px-8 py-8">
+            <div className=" w-full px-4 sm:px-6 lg:px-8 py-8">
                 {/* Statistiques */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                     {stats.map((stat, index) => (
@@ -142,11 +144,12 @@ export default function Formation() {
                 </div>
 
                 {/* Navigation par catégories */}
-                <div className="flex flex-wrap gap-2 mb-8">
-                    {categories.map(category => (
-                        <Button
-                            key={category.id}
-                            variant={activeCategory === category.id ? "default" : "outline"}
+                <div className="flex flex-wrap justify-between gap-2 mb-8">
+                    <div className="flex flex-wrap gap-2">
+                        {categories.map(category => (
+                            <Button
+                                key={category.id}
+                                variant={activeCategory === category.id ? "default" : "outline"}
                             onClick={() => setActiveCategory(category.id)}
                             className="relative"
                         >
@@ -159,6 +162,11 @@ export default function Formation() {
                             </Badge>
                         </Button>
                     ))}
+                    </div>
+                    <Button variant="destructive" onClick={() => router.get(route('all-courses'))} className="flex items-center gap-2">
+                        <Filter className="h-4 w-4" />
+                        Voir toutes les formations
+                    </Button>
                 </div>
 
                 {/* Liste des cours */}
