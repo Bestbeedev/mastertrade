@@ -193,7 +193,7 @@ function SidebarHeaderContent() {
 
     return (
         <a
-            href="/dashboard"
+            href="/"
             className="flex items-center gap-3 px-3 py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 rounded-lg transition-colors"
         >
             <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
@@ -246,3 +246,8 @@ export function AppSidebar({ user, ...props }: { user: User; } & React.Component
         </TooltipProvider>
     );
 }
+
+
+
+
+

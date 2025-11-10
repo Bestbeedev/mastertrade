@@ -1,20 +1,18 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Client;
 
-use Inertia\Inertia;
-use App\Models\License;
-use Inertia\Controller;
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
-class LicenseController extends Controller
+class BillingController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        return Inertia::render('client/license');
+        //
     }
 
     /**
@@ -22,7 +20,7 @@ class LicenseController extends Controller
      */
     public function create()
     {
-
+        //
     }
 
     /**
@@ -30,13 +28,13 @@ class LicenseController extends Controller
      */
     public function store(Request $request)
     {
-        
+        //
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(License $license)
+    public function show(string $id)
     {
         //
     }
@@ -44,7 +42,7 @@ class LicenseController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(License $license)
+    public function edit(string $id)
     {
         //
     }
@@ -52,7 +50,7 @@ class LicenseController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, License $license)
+    public function update(Request $request, string $id)
     {
         //
     }
@@ -60,7 +58,7 @@ class LicenseController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(License $license)
+    public function destroy(string $id)
     {
         //
     }

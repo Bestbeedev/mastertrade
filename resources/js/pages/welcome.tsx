@@ -1,17 +1,53 @@
 import { Head, Link, usePage } from "@inertiajs/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
 import {route} from "ziggy-js";
 import { Download, ShieldCheck, CreditCard, BookOpen, BarChart3, Settings, Users, Star, Check, ArrowRight, Play, Zap, Lock, Globe, Cpu, Building, TrendingUp, Package, ArrowLeft, GraduationCap, ChevronLeft, ChevronRight, Bell, Menu, X, MessageCircle, AlertTriangle } from "lucide-react";
+import {Button} from '@/components/ui/button'
+interface software {
+    name: string,
+    icon: JSX.Element,
+    category: string,
+    description: string,
+    features: string[],
+    version: string,
+    size: string,
+    rating: number,
+    reviews: number,
+    requirements: string,
+    lastUpdate: string,
+    changelog: string[],
+}
 
 export default function Welcome() {
     const [currentSlide, setCurrentSlide] = useState(0);
     const [visibleCards, setVisibleCards] = useState(3);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const { props } = usePage();
+    const [selectedSoftware, setSelectedSoftware] = useState<software | null>(null);
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
     const user = props.auth?.user || null;
+
+
+    const handleDetailsClick = (software: any) => {
+        setSelectedSoftware(software);
+        setIsDialogOpen(true);
+    };
+
+    const handleDownload = (software: any) => {
+        // Logique de téléchargement
+        console.log(`Téléchargement de ${software.name}`);
+        // Ici vous pouvez ajouter la logique de téléchargement réelle
+    };
     // Logiciels data
-    const softwareData = [
+    const softwareData:software[] = [
         {
             name: "Ecosoft",
             icon: <GraduationCap className="w-8 h-8 text-white" />,
@@ -24,7 +60,16 @@ export default function Welcome() {
                 "Communication parents-école"
             ],
             version: "v1.8.3",
-            size: "720 MB"
+            size: "720 MB",
+            rating: 4.8,
+            reviews: 124,
+            requirements: "Windows 10/11, 4GB RAM, 2GB espace libre",
+            lastUpdate: "15 Jan 2024",
+            changelog: [
+                "Nouveau module de communication",
+                "Amélioration des performances",
+                "Correction de bugs mineurs"
+            ]
         },
         {
             name: "MasterTrade",
@@ -33,7 +78,16 @@ export default function Welcome() {
             description: "Logiciel de gestion commerciale intégrée pour optimiser vos ventes et relations clients",
             features: ["CRM avancé", "Devis et facturation", "Suivi des commandes", "Analytics commercial"],
             version: "v3.2.1",
-            size: "1.1 GB"
+            size: "1.1 GB",
+            rating: 4.9,
+            reviews: 256,
+            requirements: "Windows 10/11, 8GB RAM, 5GB espace libre",
+            lastUpdate: "20 Jan 2024",
+            changelog: [
+                "Nouveau tableau de bord analytics",
+                "Intégration API améliorée",
+                "Rapports personnalisables"
+            ]
         },
         {
             name: "MasterStock",
@@ -42,7 +96,16 @@ export default function Welcome() {
             description: "Solution de gestion d'inventaire et d'optimisation des stocks en temps réel",
             features: ["Contrôle des inventaires", "Alertes de réapprovisionnement", "Traçabilité des produits", "Rapports stock/valeur"],
             version: "v2.0.3",
-            size: "750 MB"
+            size: "750 MB",
+            rating: 4.7,
+            reviews: 89,
+            requirements: "Windows 10/11, 4GB RAM, 2GB espace libre",
+            lastUpdate: "10 Jan 2024",
+            changelog: [
+                "Scanner code-barres amélioré",
+                "Nouvelles alertes intelligentes",
+                "Interface utilisateur optimisée"
+            ]
         },
         {
             name: "MasterAdogbe",
@@ -51,7 +114,16 @@ export default function Welcome() {
             description: "Solution complète de gestion numérique des tontines et systèmes d'épargne collective",
             features: ["Gestion des cotisations", "Calcul automatique des tours", "Alertes de rappel", "Rapports financiers détaillés"],
             version: "v1.5.2",
-            size: "680 MB"
+            size: "680 MB",
+            rating: 4.6,
+            reviews: 167,
+            requirements: "Windows 10/11, 2GB RAM, 1GB espace libre",
+            lastUpdate: "5 Jan 2024",
+            changelog: [
+                "Calcul des intérêts amélioré",
+                "Nouveaux modèles de rapports",
+                "Synchronisation cloud"
+            ]
         },
         {
             name: "MasterImmo",
@@ -60,7 +132,16 @@ export default function Welcome() {
             description: "Plateforme de gestion immobilière complète pour propriétaires et agents immobiliers",
             features: ["Gestion des baux et loyers", "Suivi des charges", "Maintenance prédictive", "État des lieux numérique"],
             version: "v2.1.0",
-            size: "890 MB"
+            size: "890 MB",
+            rating: 4.8,
+            reviews: 203,
+            requirements: "Windows 10/11, 4GB RAM, 3GB espace libre",
+            lastUpdate: "18 Jan 2024",
+            changelog: [
+                "Nouveau module de maintenance",
+                "Gestion des documents numériques",
+                "Calculs automatiques des charges"
+            ]
         },
     ];
 
@@ -579,13 +660,141 @@ export default function Welcome() {
                                                         </div>
 
                                                         <div className="flex gap-3">
-                                                            <button className={`flex-1 py-3 bg-neutral-800 text-white rounded-xl font-semibold hover:shadow-lg transition-all group-hover:scale-105 text-center`}>
+                                                            <button onClick={() => handleDownload(i)} className={`flex-1 py-3 bg-neutral-800 text-white rounded-xl font-semibold hover:shadow-lg transition-all group-hover:scale-105 text-center`}>
                                                                 Télécharger
                                                             </button>
-                                                            <button className="px-4 py-3 border border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-colors">
+
+                                                            <button onClick={() => handleDetailsClick(i)} className="px-4 py-3 border border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-colors">
                                                                 Détails
                                                             </button>
+
                                                         </div>
+                                                        {/* Dialog pour les détails du logiciel */}
+                                                        {/* Dialog pour les détails du logiciel */}
+                                                        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                                                            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                                                                {selectedSoftware ? (
+                                                                    <>
+                                                                        <DialogHeader>
+                                                                            <div className="flex items-center gap-4 mb-4">
+                                                                                <div className={`p-3 rounded-xl bg-gradient-to-r ${getGradient(selectedSoftware.name)}`}>
+                                                                                    {selectedSoftware.icon}
+                                                                                </div>
+                                                                                <div>
+                                                                                    <DialogTitle className="text-2xl font-bold">
+                                                                                        {selectedSoftware.name}
+                                                                                    </DialogTitle>
+                                                                                    <DialogDescription className="text-lg">
+                                                                                        {selectedSoftware.description}
+                                                                                    </DialogDescription>
+                                                                                </div>
+                                                                            </div>
+                                                                        </DialogHeader>
+
+                                                                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                                                                            {/* Colonne principale */}
+                                                                            <div className="lg:col-span-2 space-y-6">
+                                                                                {/* Caractéristiques */}
+                                                                                <div>
+                                                                                    <h3 className="text-lg font-semibold mb-3">Caractéristiques principales</h3>
+                                                                                    <div className="grid gap-3">
+                                                                                        {selectedSoftware.features.map((feature, index) => (
+                                                                                            <div key={index} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                                                                                                <Check className="w-5 h-5 text-green-500 flex-shrink-0" />
+                                                                                                <span className="text-gray-700">{feature}</span>
+                                                                                            </div>
+                                                                                        ))}
+                                                                                    </div>
+                                                                                </div>
+
+                                                                                {/* Notes de version */}
+                                                                                <div>
+                                                                                    <h3 className="text-lg font-semibold mb-3">Nouveautés de la version {selectedSoftware.version}</h3>
+                                                                                    <div className="space-y-2">
+                                                                                        {selectedSoftware.changelog.map((change, index) => (
+                                                                                            <div key={index} className="flex items-center gap-3 text-sm text-gray-600">
+                                                                                                <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"></div>
+                                                                                                {change}
+                                                                                            </div>
+                                                                                        ))}
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+
+                                                                            {/* Colonne latérale */}
+                                                                            <div className="space-y-6">
+                                                                                {/* Informations techniques */}
+                                                                                <div className="bg-gray-50 rounded-lg p-4">
+                                                                                    <h3 className="font-semibold mb-3">Informations techniques</h3>
+                                                                                    <div className="space-y-3">
+                                                                                        <div className="flex justify-between">
+                                                                                            <span className="text-gray-600">Version:</span>
+                                                                                            <span className="font-medium">{selectedSoftware.version}</span>
+                                                                                        </div>
+                                                                                        <div className="flex justify-between">
+                                                                                            <span className="text-gray-600">Taille:</span>
+                                                                                            <span className="font-medium">{selectedSoftware.size}</span>
+                                                                                        </div>
+                                                                                        <div className="flex justify-between">
+                                                                                            <span className="text-gray-600">Dernière mise à jour:</span>
+                                                                                            <span className="font-medium">{selectedSoftware.lastUpdate}</span>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+
+                                                                                {/* Configuration requise */}
+                                                                                <div className="bg-gray-50 rounded-lg p-4">
+                                                                                    <h3 className="font-semibold mb-3">Configuration requise</h3>
+                                                                                    <p className="text-sm text-gray-600">{selectedSoftware.requirements}</p>
+                                                                                </div>
+
+                                                                                {/* Avis */}
+                                                                                <div className="bg-gray-50 rounded-lg p-4">
+                                                                                    <h3 className="font-semibold mb-3">Avis utilisateurs</h3>
+                                                                                    <div className="flex items-center gap-2 mb-2">
+                                                                                        <div className="flex items-center gap-1">
+                                                                                            <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                                                                                            <span className="font-semibold">{selectedSoftware.rating}</span>
+                                                                                        </div>
+                                                                                        <span className="text-gray-600">({selectedSoftware.reviews} avis)</span>
+                                                                                    </div>
+                                                                                    <div className="flex items-center gap-4 text-sm text-gray-600">
+                                                                                        <div className="flex items-center gap-1">
+                                                                                            <Users className="w-4 h-4" />
+                                                                                            <span>+10K téléchargements</span>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+
+                                                                        {/* Bouton de téléchargement */}
+                                                                        <div className="flex gap-3 pt-6 border-t">
+                                                                            <Button
+                                                                                onClick={() => handleDownload(selectedSoftware)}
+                                                                                className="flex-1 h-12 text-lg"
+                                                                                size="lg"
+                                                                            >
+                                                                                <Download className="w-5 h-5 mr-2" />
+                                                                                Télécharger {selectedSoftware.name}
+                                                                            </Button>
+                                                                            <Button
+                                                                                variant="outline"
+                                                                                onClick={() => setIsDialogOpen(false)}
+                                                                                className="h-12"
+                                                                            >
+                                                                                Fermer
+                                                                            </Button>
+                                                                        </div>
+                                                                    </>
+                                                                ) : (
+                                                                    // Fallback si selectedSoftware est null (ne devrait pas arriver normalement)
+                                                                    <div className="text-center py-8">
+                                                                        <p className="text-gray-500">Chargement des détails...</p>
+                                                                    </div>
+                                                                )}
+                                                            </DialogContent>
+                                                        </Dialog>
                                                     </div>
 
 
