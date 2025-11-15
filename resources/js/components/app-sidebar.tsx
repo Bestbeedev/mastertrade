@@ -184,7 +184,7 @@ function SidebarHeaderContent() {
                     </a>
                 </TooltipTrigger>
                 <TooltipContent side="right">
-                    <div className="text-sm font-medium">MasterTrade</div>
+                    <div className="text-sm font-medium">MASTERTRADE</div>
                     <div className="text-xs text-muted-foreground">Espace Client</div>
                 </TooltipContent>
             </Tooltip>
@@ -200,7 +200,7 @@ function SidebarHeaderContent() {
                 <IconUser className="!size-4 text-gray-900" />
             </div>
             <div className="flex flex-col items-start">
-                <span className="text-base font-bold text-gray-100">MasterTrade</span>
+                <span className="text-base font-bold text-gray-100">MASTERTRADE</span>
                 <span className="text-xs text-gray-200">Espace Client</span>
             </div>
         </a>
@@ -213,6 +213,24 @@ export function AppSidebar({ user, ...props }: { user: User; } & React.Component
         email: user.email,
         avatar: "/avatars/user.jpg",
     };
+    const isAdmin = !!(usePage().props as any)?.auth?.isAdmin;
+    const adminItems = [
+        {
+            title: "Administration",
+            url: "/admin",
+            icon: IconSettings,
+        },
+        {
+            title: "Gérer les formations",
+            url: "/admin/courses",
+            icon: IconSchool,
+        },
+        {
+            title: "Gérer les produits",
+            url: "/admin/products",
+            icon: IconPackage,
+        },
+    ];
 
     return (
         <TooltipProvider>
@@ -231,6 +249,7 @@ export function AppSidebar({ user, ...props }: { user: User; } & React.Component
                     {/* Navigation principale */}
                     <div className="flex-1 ">
                         <NavMain items={data.navMain} />
+                        {isAdmin && <NavMain items={adminItems} />}
                         {/* Accès rapide */}
                         <NavQuickAccess items={data.quickAccess} />
                     {/* Navigation secondaire */}
@@ -246,8 +265,3 @@ export function AppSidebar({ user, ...props }: { user: User; } & React.Component
         </TooltipProvider>
     );
 }
-
-
-
-
-

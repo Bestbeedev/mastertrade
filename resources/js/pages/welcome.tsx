@@ -1,6 +1,8 @@
 import { Head, Link, usePage } from "@inertiajs/react";
+import { router } from "@inertiajs/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
+import type React from "react";
 import {
     Dialog,
     DialogContent,
@@ -11,9 +13,10 @@ import {
 import {route} from "ziggy-js";
 import { Download, ShieldCheck, CreditCard, BookOpen, BarChart3, Settings, Users, Star, Check, ArrowRight, Play, Zap, Lock, Globe, Cpu, Building, TrendingUp, Package, ArrowLeft, GraduationCap, ChevronLeft, ChevronRight, Bell, Menu, X, MessageCircle, AlertTriangle } from "lucide-react";
 import {Button} from '@/components/ui/button'
+import { toast } from "sonner";
 interface software {
     name: string,
-    icon: JSX.Element,
+    icon: React.ReactNode,
     category: string,
     description: string,
     features: string[],
@@ -30,21 +33,43 @@ export default function Welcome() {
     const [currentSlide, setCurrentSlide] = useState(0);
     const [visibleCards, setVisibleCards] = useState(3);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-    const { props } = usePage();
+    const page = usePage<any>();
     const [selectedSoftware, setSelectedSoftware] = useState<software | null>(null);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
-    const user = props.auth?.user || null;
+    const user = page.props?.auth?.user || null;
 
+    const gradientsMap: Record<string, string> = {
+        MasterAdogbe: "from-green-500 to-emerald-600",
+        MasterImmo: "from-blue-500 to-cyan-600",
+        MasterTrade: "from-purple-500 to-pink-600",
+        MasterStock: "from-orange-500 to-red-600",
+        Ecosoft: "from-indigo-500 to-blue-600",
+    };
+    const colorsMap: Record<string, string> = {
+        MasterAdogbe: "text-green-600 bg-green-50 border-green-200",
+        MasterImmo: "text-blue-600 bg-blue-50 border-blue-200",
+        MasterTrade: "text-purple-600 bg-purple-50 border-purple-200",
+        MasterStock: "text-orange-600 bg-orange-50 border-orange-200",
+        Ecosoft: "text-indigo-600 bg-indigo-50 border-indigo-200",
+    };
+    const getGradient = (softwareName: string) => gradientsMap[softwareName] || "from-blue-500 to-purple-600";
+    const getCategoryColor = (softwareName: string) => colorsMap[softwareName] || "text-blue-600 bg-blue-50 border-blue-200";
 
-    const handleDetailsClick = (software: any) => {
-        setSelectedSoftware(software);
+    const handleDetailsClick = (soft: software) => {
+        setSelectedSoftware(soft);
         setIsDialogOpen(true);
     };
 
-    const handleDownload = (software: any) => {
-        // Logique de téléchargement
-        console.log(`Téléchargement de ${software.name}`);
-        // Ici vous pouvez ajouter la logique de téléchargement réelle
+    const handleDownload = (soft: software) => {
+        if (!user) {
+            router.visit('/login');
+            return;
+        }
+        toast.success(`Téléchargement de ${soft.name} démarré`);
+        setIsDialogOpen(false);
+        setTimeout(() => {
+            router.get(route('dashboard'))
+        }, 800);
     };
     // Logiciels data
     const softwareData:software[] = [
@@ -557,7 +582,7 @@ export default function Welcome() {
                                 <ChevronLeft className="w-6 h-6 text-gray-700" />
                             </button>
 
-                            {/* Container des cartes */}
+                            {/* Cartes */}
                             <div className="overflow-hidden px-2">
                                 <AnimatePresence mode="wait">
                                     <motion.div
@@ -574,32 +599,8 @@ export default function Welcome() {
                                             }`}
                                     >
                                         {getVisibleSoftware().map((soft, i) => {
-                                            // Déterminer le dégradé selon le logiciel
-                                            const getGradient = (softwareName: string) => {
-                                                const gradients: { [key: string]: string } = {
-                                                    "MasterAdogbe": "from-green-500 to-emerald-600",
-                                                    "MasterImmo": "from-blue-500 to-cyan-600",
-                                                    "MasterTrade": "from-purple-500 to-pink-600",
-                                                    "MasterStock": "from-orange-500 to-red-600",
-                                                    "Ecosoft": "from-indigo-500 to-blue-600"
-                                                };
-                                                return gradients[softwareName] || "from-blue-500 to-purple-600";
-                                            };
-
-                                            const getCategoryColor = (softwareName: string) => {
-                                                const colors: { [key: string]: string } = {
-                                                    "MasterAdogbe": "text-green-600 bg-green-50 border-green-200",
-                                                    "MasterImmo": "text-blue-600 bg-blue-50 border-blue-200",
-                                                    "MasterTrade": "text-purple-600 bg-purple-50 border-purple-200",
-                                                    "MasterStock": "text-orange-600 bg-orange-50 border-orange-200",
-                                                    "Ecosoft": "text-indigo-600 bg-indigo-50 border-indigo-200"
-                                                };
-                                                return colors[softwareName] || "text-blue-600 bg-blue-50 border-blue-200";
-                                            };
-
                                             const gradient = getGradient(soft.name);
                                             const categoryStyle = getCategoryColor(soft.name);
-
                                             return (
                                                 <motion.div
                                                     key={`${soft.name}-${currentSlide}-${i}`}
@@ -609,12 +610,9 @@ export default function Welcome() {
                                                     whileHover={{ scale: 1.02, y: -5 }}
                                                     className="group relative bg-white rounded-2xl shadow-lg hover:shadow-2xl border border-gray-100 transition-all cursor-pointer overflow-hidden"
                                                 >
-                                                    {/* Header avec dégradé */}
+                                                    {/* Header */}
                                                     <div className={`relative h-32 bg-gradient-to-r ${gradient} p-6`}>
-                                                        {/* Effet de brillance */}
                                                         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-
-                                                        {/* Contenu du header */}
                                                         <div className="relative z-10 h-full flex flex-col justify-between">
                                                             <div className="flex justify-between items-start">
                                                                 <div>
@@ -626,30 +624,20 @@ export default function Welcome() {
                                                                     </h4>
                                                                 </div>
                                                                 <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform border border-white/30">
-                                                                    <div className="text-white">
-                                                                        {soft.icon}
-                                                                    </div>
+                                                                    <div className="text-white">{soft.icon}</div>
                                                                 </div>
                                                             </div>
-
-                                                            {/* Version et taille */}
                                                             <div className="flex items-center gap-4 text-white/80 text-sm">
                                                                 <span>Version {soft.version}</span>
                                                                 <span>•</span>
                                                                 <span>{soft.size}</span>
                                                             </div>
                                                         </div>
-
-                                                        {/* Élément décoratif */}
-                                                        <div className="absolute -bottom-6 -right-6 w-20 h-20 bg-white/10 rounded-full blur-xl"></div>
                                                     </div>
 
-                                                    {/* Corps de la carte */}
+                                                    {/* Corps */}
                                                     <div className="p-6">
-                                                        <p className="text-gray-600 mb-6 leading-relaxed">
-                                                            {soft.description}
-                                                        </p>
-
+                                                        <p className="text-gray-600 mb-6 leading-relaxed">{soft.description}</p>
                                                         <div className="space-y-3 mb-6">
                                                             {soft.features.map((feature, j) => (
                                                                 <div key={j} className="flex items-center gap-3 text-gray-700">
@@ -658,152 +646,96 @@ export default function Welcome() {
                                                                 </div>
                                                             ))}
                                                         </div>
-
                                                         <div className="flex gap-3">
-                                                            <button onClick={() => handleDownload(i)} className={`flex-1 py-3 bg-neutral-800 text-white rounded-xl font-semibold hover:shadow-lg transition-all group-hover:scale-105 text-center`}>
-                                                                Télécharger
-                                                            </button>
-
-                                                            <button onClick={() => handleDetailsClick(i)} className="px-4 py-3 border border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-colors">
-                                                                Détails
-                                                            </button>
-
+                                                            <button onClick={() => handleDownload(soft)} className="flex-1 py-3 bg-neutral-800 text-white rounded-xl font-semibold hover:shadow-lg transition-all group-hover:scale-105 text-center">Télécharger</button>
+                                                            <button onClick={() => handleDetailsClick(soft)} className="px-4 py-3 border border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-colors">Détails</button>
                                                         </div>
-                                                        {/* Dialog pour les détails du logiciel */}
-                                                        {/* Dialog pour les détails du logiciel */}
-                                                        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                                                            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-                                                                {selectedSoftware ? (
-                                                                    <>
-                                                                        <DialogHeader>
-                                                                            <div className="flex items-center gap-4 mb-4">
-                                                                                <div className={`p-3 rounded-xl bg-gradient-to-r ${getGradient(selectedSoftware.name)}`}>
-                                                                                    {selectedSoftware.icon}
-                                                                                </div>
-                                                                                <div>
-                                                                                    <DialogTitle className="text-2xl font-bold">
-                                                                                        {selectedSoftware.name}
-                                                                                    </DialogTitle>
-                                                                                    <DialogDescription className="text-lg">
-                                                                                        {selectedSoftware.description}
-                                                                                    </DialogDescription>
-                                                                                </div>
-                                                                            </div>
-                                                                        </DialogHeader>
-
-                                                                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                                                                            {/* Colonne principale */}
-                                                                            <div className="lg:col-span-2 space-y-6">
-                                                                                {/* Caractéristiques */}
-                                                                                <div>
-                                                                                    <h3 className="text-lg font-semibold mb-3">Caractéristiques principales</h3>
-                                                                                    <div className="grid gap-3">
-                                                                                        {selectedSoftware.features.map((feature, index) => (
-                                                                                            <div key={index} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                                                                                                <Check className="w-5 h-5 text-green-500 flex-shrink-0" />
-                                                                                                <span className="text-gray-700">{feature}</span>
-                                                                                            </div>
-                                                                                        ))}
-                                                                                    </div>
-                                                                                </div>
-
-                                                                                {/* Notes de version */}
-                                                                                <div>
-                                                                                    <h3 className="text-lg font-semibold mb-3">Nouveautés de la version {selectedSoftware.version}</h3>
-                                                                                    <div className="space-y-2">
-                                                                                        {selectedSoftware.changelog.map((change, index) => (
-                                                                                            <div key={index} className="flex items-center gap-3 text-sm text-gray-600">
-                                                                                                <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"></div>
-                                                                                                {change}
-                                                                                            </div>
-                                                                                        ))}
-                                                                                    </div>
-                                                                                </div>
-                                                                            </div>
-
-                                                                            {/* Colonne latérale */}
-                                                                            <div className="space-y-6">
-                                                                                {/* Informations techniques */}
-                                                                                <div className="bg-gray-50 rounded-lg p-4">
-                                                                                    <h3 className="font-semibold mb-3">Informations techniques</h3>
-                                                                                    <div className="space-y-3">
-                                                                                        <div className="flex justify-between">
-                                                                                            <span className="text-gray-600">Version:</span>
-                                                                                            <span className="font-medium">{selectedSoftware.version}</span>
-                                                                                        </div>
-                                                                                        <div className="flex justify-between">
-                                                                                            <span className="text-gray-600">Taille:</span>
-                                                                                            <span className="font-medium">{selectedSoftware.size}</span>
-                                                                                        </div>
-                                                                                        <div className="flex justify-between">
-                                                                                            <span className="text-gray-600">Dernière mise à jour:</span>
-                                                                                            <span className="font-medium">{selectedSoftware.lastUpdate}</span>
-                                                                                        </div>
-                                                                                    </div>
-                                                                                </div>
-
-                                                                                {/* Configuration requise */}
-                                                                                <div className="bg-gray-50 rounded-lg p-4">
-                                                                                    <h3 className="font-semibold mb-3">Configuration requise</h3>
-                                                                                    <p className="text-sm text-gray-600">{selectedSoftware.requirements}</p>
-                                                                                </div>
-
-                                                                                {/* Avis */}
-                                                                                <div className="bg-gray-50 rounded-lg p-4">
-                                                                                    <h3 className="font-semibold mb-3">Avis utilisateurs</h3>
-                                                                                    <div className="flex items-center gap-2 mb-2">
-                                                                                        <div className="flex items-center gap-1">
-                                                                                            <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                                                                                            <span className="font-semibold">{selectedSoftware.rating}</span>
-                                                                                        </div>
-                                                                                        <span className="text-gray-600">({selectedSoftware.reviews} avis)</span>
-                                                                                    </div>
-                                                                                    <div className="flex items-center gap-4 text-sm text-gray-600">
-                                                                                        <div className="flex items-center gap-1">
-                                                                                            <Users className="w-4 h-4" />
-                                                                                            <span>+10K téléchargements</span>
-                                                                                        </div>
-                                                                                    </div>
-                                                                                </div>
-                                                                            </div>
-                                                                        </div>
-
-                                                                        {/* Bouton de téléchargement */}
-                                                                        <div className="flex gap-3 pt-6 border-t">
-                                                                            <Button
-                                                                                onClick={() => handleDownload(selectedSoftware)}
-                                                                                className="flex-1 h-12 text-lg"
-                                                                                size="lg"
-                                                                            >
-                                                                                <Download className="w-5 h-5 mr-2" />
-                                                                                Télécharger {selectedSoftware.name}
-                                                                            </Button>
-                                                                            <Button
-                                                                                variant="outline"
-                                                                                onClick={() => setIsDialogOpen(false)}
-                                                                                className="h-12"
-                                                                            >
-                                                                                Fermer
-                                                                            </Button>
-                                                                        </div>
-                                                                    </>
-                                                                ) : (
-                                                                    // Fallback si selectedSoftware est null (ne devrait pas arriver normalement)
-                                                                    <div className="text-center py-8">
-                                                                        <p className="text-gray-500">Chargement des détails...</p>
-                                                                    </div>
-                                                                )}
-                                                            </DialogContent>
-                                                        </Dialog>
                                                     </div>
-
-
                                                 </motion.div>
                                             );
                                         })}
                                     </motion.div>
                                 </AnimatePresence>
                             </div>
+
+                            {/* Dialog global Détails */}
+                            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                                <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                                    {selectedSoftware ? (
+                                        <>
+                                            <DialogHeader>
+                                                <div className="flex items-center gap-4 mb-4">
+                                                    <div className={`p-3 rounded-xl bg-gradient-to-r ${getGradient(selectedSoftware.name)}`}>
+                                                        {selectedSoftware.icon}
+                                                    </div>
+                                                    <div>
+                                                        <DialogTitle className="text-2xl font-bold">{selectedSoftware.name}</DialogTitle>
+                                                        <DialogDescription className="text-lg">{selectedSoftware.description}</DialogDescription>
+                                                    </div>
+                                                </div>
+                                            </DialogHeader>
+
+                                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                                                <div className="lg:col-span-2 space-y-6">
+                                                    <div>
+                                                        <h3 className="text-lg font-semibold mb-3">Caractéristiques principales</h3>
+                                                        <div className="grid gap-3">
+                                                            {selectedSoftware.features.map((feature, index) => (
+                                                                <div key={index} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                                                                    <Check className="w-5 h-5 text-green-500 flex-shrink-0" />
+                                                                    <span className="text-gray-700">{feature}</span>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        <h3 className="text-lg font-semibold mb-3">Nouveautés de la version {selectedSoftware.version}</h3>
+                                                        <div className="space-y-2">
+                                                            {selectedSoftware.changelog.map((change, index) => (
+                                                                <div key={index} className="flex items-center gap-3 text-sm text-gray-600">
+                                                                    <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"></div>
+                                                                    {change}
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className="space-y-6">
+                                                    <div className="bg-gray-50 rounded-lg p-4">
+                                                        <h3 className="font-semibold mb-3">Informations techniques</h3>
+                                                        <div className="space-y-3">
+                                                            <div className="flex justify-between"><span className="text-gray-600">Version:</span><span className="font-medium">{selectedSoftware.version}</span></div>
+                                                            <div className="flex justify-between"><span className="text-gray-600">Taille:</span><span className="font-medium">{selectedSoftware.size}</span></div>
+                                                            <div className="flex justify-between"><span className="text-gray-600">Dernière mise à jour:</span><span className="font-medium">{selectedSoftware.lastUpdate}</span></div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="bg-gray-50 rounded-lg p-4">
+                                                        <h3 className="font-semibold mb-3">Configuration requise</h3>
+                                                        <p className="text-sm text-gray-600">{selectedSoftware.requirements}</p>
+                                                    </div>
+                                                    <div className="bg-gray-50 rounded-lg p-4">
+                                                        <h3 className="font-semibold mb-3">Avis utilisateurs</h3>
+                                                        <div className="flex items-center gap-2 mb-2">
+                                                            <div className="flex items-center gap-1"><Star className="w-4 h-4 fill-yellow-400 text-yellow-400" /><span className="font-semibold">{selectedSoftware.rating}</span></div>
+                                                            <span className="text-gray-600">({selectedSoftware.reviews} avis)</span>
+                                                        </div>
+                                                        <div className="flex items-center gap-4 text-sm text-gray-600">
+                                                            <div className="flex items-center gap-1"><Users className="w-4 h-4" /><span>+10K téléchargements</span></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex gap-3 pt-6 border-t">
+                                                <Button onClick={() => handleDownload(selectedSoftware)} className="flex-1 h-12 text-lg" size="lg"><Download className="w-5 h-5 mr-2" />Télécharger {selectedSoftware.name}</Button>
+                                                <Button variant="outline" onClick={() => setIsDialogOpen(false)} className="h-12">Fermer</Button>
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <div className="text-center py-8"><p className="text-gray-500">Chargement des détails...</p></div>
+                                    )}
+                                </DialogContent>
+                            </Dialog>
 
                             {/* Flèche droite */}
                             <button

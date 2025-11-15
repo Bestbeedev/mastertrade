@@ -10,8 +10,10 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { router } from "@inertiajs/react";
 import { route } from "ziggy-js";
+import { useIsAdmin } from "@/hooks/use-is-admin";
 
 export default function Formation() {
+    const isAdmin = useIsAdmin();
     const breadcrumbs: BreadcrumbItem[] = [
         {
             title: 'Formation',
@@ -116,6 +118,11 @@ export default function Formation() {
                                 <Filter className="h-4 w-4" />
                                 Filtres
                             </Button>
+                            {isAdmin && (
+                                <Button asChild size="sm">
+                                    <Link href={route('admin.courses')}>Ajouter une formation</Link>
+                                </Button>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -222,7 +229,7 @@ export default function Formation() {
                             </CardContent>
                             <CardFooter>
                                 <Button asChild className="w-full">
-                                    <Link href={`/client/formation/${course.id}`}>
+                                    <Link href={route('courses.show', course.id)}>
                                         <PlayCircle className="h-4 w-4 mr-2" />
                                         {course.progress > 0 ? 'Continuer' : 'Commencer'}
                                     </Link>

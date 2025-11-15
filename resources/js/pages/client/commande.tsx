@@ -1,6 +1,7 @@
 import AppLayout from "@/layouts/app-layout";
 import { BreadcrumbItem } from "@/types";
 import { Head, Link } from "@inertiajs/react";
+import { route } from "ziggy-js";
 import { Search, Download, Eye, Calendar, Package, ArrowUpDown } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -20,7 +21,19 @@ export default function Commande() {
     const [statusFilter, setStatusFilter] = useState('all');
     const [searchTerm, setSearchTerm] = useState('');
 
-    const orders = [
+    type OrderStatus = 'completed' | 'pending' | 'processing' | 'cancelled';
+    type OrderItem = {
+        id: string;
+        product: string;
+        date: string;
+        amount: string;
+        status: OrderStatus;
+        statusText: string;
+        items: number;
+        licenseKey: string;
+    };
+
+    const orders: OrderItem[] = [
         {
             id: 'CMD-2024-001',
             product: "Application de Gestion Professionnelle",
@@ -48,7 +61,7 @@ export default function Commande() {
         pending: { variant: "secondary" as const, text: "En traitement" },
         processing: { variant: "outline" as const, text: "En cours" },
         cancelled: { variant: "destructive" as const, text: "Annulée" }
-    };
+    } as const;
 
     const stats = [
         {
@@ -199,14 +212,14 @@ export default function Commande() {
                                                 <div className="text-xl font-bold text-foreground">
                                                     {order.amount}
                                                 </div>
-                                                <Badge variant={statusConfig[order.status].variant}>
+                                                <Badge variant={statusConfig[order.status as keyof typeof statusConfig].variant}>
                                                     {order.statusText}
                                                 </Badge>
                                             </div>
 
                                             <div className="flex items-center gap-2">
                                                 <Button asChild variant="outline" size="sm">
-                                                    <Link href={`/client/commande/${order.id}`}>
+                                                    <Link href={route('orders.show', order.id)}>
                                                         <Eye className="h-4 w-4 mr-2" />
                                                         Détails
                                                     </Link>
@@ -237,7 +250,7 @@ export default function Commande() {
                                     }
                                 </p>
                                 <Button asChild>
-                                    <Link href="/client/catalogue">
+                                    <Link href={route('catalogs')}>
                                         Explorer le catalogue
                                     </Link>
                                 </Button>

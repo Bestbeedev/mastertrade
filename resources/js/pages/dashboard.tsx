@@ -5,6 +5,7 @@ import { SectionCards } from "@/components/section-cards"
 import { SiteHeader } from "@/components/site-header"
 import { Badge } from "@/components/ui/badge"
 import { Link } from "@inertiajs/react"
+import { route } from "ziggy-js"
 import {
     IconBell,
     IconDownload,
@@ -32,6 +33,7 @@ import { useAuthStore } from "@/stores/auth";
 import { useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { useIsAdmin } from "@/hooks/use-is-admin"
 
 export default function Page() {
     const { user_data } = usePage().props;
@@ -43,6 +45,7 @@ export default function Page() {
     }, [user_data, login])
 
     const { user, isAuthenticated, logout } = useAuthStore()
+    const isAdmin = useIsAdmin()
 
     if (!isAuthenticated) {
         return <p>Veuillez vous connecter.</p>
@@ -78,6 +81,16 @@ export default function Page() {
                                         <span className="text-foreground">Dashboard</span>
                                     </div>
                                 </div>
+                                {isAdmin && (
+                                    <div className="mt-4 flex items-center justify-end gap-2">
+                                        <Button asChild size="sm">
+                                            <Link href={route('admin.courses')}>Ajouter une formation</Link>
+                                        </Button>
+                                        <Button asChild size="sm" variant="outline">
+                                            <Link href={route('admin.products')}>Ajouter un produit</Link>
+                                        </Button>
+                                    </div>
+                                )}
                             </div>
 
                             {/* Statistiques principales */}

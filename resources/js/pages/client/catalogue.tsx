@@ -1,6 +1,7 @@
 import AppLayout from "@/layouts/app-layout";
 import { BreadcrumbItem } from "@/types";
 import { Head, Link } from "@inertiajs/react";
+import { route } from "ziggy-js";
 import {
     Search,
     Filter,
@@ -28,12 +29,14 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { useIsAdmin } from "@/hooks/use-is-admin";
 
 export default function Catalogue() {
+    const isAdmin = useIsAdmin();
     const breadcrumbs: BreadcrumbItem[] = [
         {
             title: 'Catalogue',
-            href: '/client/catalogue',
+            href: route('catalogs'),
         },
     ];
 
@@ -164,6 +167,14 @@ export default function Catalogue() {
                             </div>
                         </div>
                     </div>
+
+                    {isAdmin && (
+                        <div className="mt-4 flex justify-end">
+                            <Button asChild size="sm">
+                                <Link href={route('admin.products')}>Ajouter un produit</Link>
+                            </Button>
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -394,7 +405,7 @@ export default function Catalogue() {
 
                                         <CardFooter>
                                             <Button asChild className="w-full h-12 text-base" size="lg">
-                                                <Link href={`/client/catalogue/${product.id}`}>
+                                                <Link href={route('catalogs.show', product.id)}>
                                                     <Plus className="h-5 w-5 mr-2" />
                                                     Voir les détails
                                                 </Link>
@@ -461,7 +472,7 @@ export default function Catalogue() {
                                                     </div>
 
                                                     <Button asChild size="lg">
-                                                        <Link href={`/client/catalogue/${product.id}`}>
+                                                        <Link href={route('catalogs.show', product.id)}>
                                                             Voir les détails
                                                         </Link>
                                                     </Button>

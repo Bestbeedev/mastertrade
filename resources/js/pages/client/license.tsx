@@ -1,14 +1,26 @@
 import AppLayout from "@/layouts/app-layout";
 import { BreadcrumbItem } from "@/types";
-import { Head } from "@inertiajs/react";
+import { Head, Link } from "@inertiajs/react";
 import { Key, Calendar, Download, Copy, AlertCircle, Users, RefreshCw } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { route } from "ziggy-js";
 
-export default function License() {
+type LicenseItem = {
+    id: number;
+    product?: { name?: string; version?: string };
+    key: string;
+    type?: string;
+    seats: number;
+    usedSeats: number;
+    expires: string | null;
+    status: string;
+};
+
+export default function License({ licenses: initialLicenses }: { licenses?: LicenseItem[] }) {
     const breadcrumbs: BreadcrumbItem[] = [
         {
             title: 'Licenses',
@@ -18,58 +30,55 @@ export default function License() {
 
     const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
-    const licenses = [
+    const fallback: LicenseItem[] = [
         {
             id: 1,
-            product: "Application de Gestion Professionnelle",
+            product: { name: "Application de Gestion Professionnelle", version: "2.1.0" },
             key: "ABCD-EFGH-IJKL-MNOP-1234",
             type: "Commercial",
             seats: 5,
             usedSeats: 3,
             expires: "2024-12-31",
             status: "active",
-            version: "2.1.0",
-            support: "Premium"
         },
         {
             id: 2,
-            product: "Outil de Productivité Avancée",
+            product: { name: "Outil de Productivité Avancée", version: "1.5.2" },
             key: "WXYZ-1234-5678-90AB-CDEF",
             type: "Standard",
             seats: 1,
             usedSeats: 1,
             expires: "2024-06-30",
             status: "active",
-            version: "1.5.2",
-            support: "Standard"
         },
     ];
+    const licenses: LicenseItem[] = (initialLicenses && initialLicenses.length ? initialLicenses : fallback);
 
     const stats = [
         {
             title: "Licences actives",
-            value: "3",
+            value: `${licenses.filter(l => l.status === 'active').length}`,
             description: "En cours de validité",
             icon: Key,
             trend: "up"
         },
         {
             title: "Expirent bientôt",
-            value: "1",
+            value: `${licenses.filter(l => l.expires && (new Date(l.expires).getTime() - Date.now())/86400000 <= 30 && (new Date(l.expires).getTime() - Date.now()) > 0).length}`,
             description: "Dans 30 jours",
             icon: Calendar,
             trend: "neutral"
         },
         {
             title: "Utilisateurs totaux",
-            value: "8",
-            description: "Sur 12 sièges",
+            value: `${licenses.reduce((acc, l) => acc + l.usedSeats, 0)}`,
+            description: `Sur ${licenses.reduce((acc, l) => acc + l.seats, 0)} sièges`,
             icon: Users,
             trend: "up"
         },
         {
             title: "Produits",
-            value: "2",
+            value: `${new Set(licenses.map(l => l.product?.name)).size}`,
             description: "Sous licence",
             icon: "📦",
             trend: "stable"
@@ -179,6 +188,7 @@ export default function License() {
                         const supportConfig = getSupportConfig(license.support as Support);
                         const usagePercentage = (license.usedSeats / license.seats) * 100;
 
+                        const daysLeft = license.expires ? Math.ceil((new Date(license.expires).getTime() - Date.now()) / 86400000) : null;
                         return (
                             <Card key={license.id} className="hover:shadow-lg transition-all">
                                 <CardContent className="p-6">
@@ -192,13 +202,13 @@ export default function License() {
                                                 <div className="flex flex-wrap items-start justify-between gap-3">
                                                     <div>
                                                         <h3 className="font-semibold text-xl mb-2">
-                                                            {license.product}
+                                                            {license.product?.name ?? 'Produit'}
                                                         </h3>
                                                         <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-                                                            <span>Version: {license.version}</span>
+                                                            <span>Version: {license.product?.version ?? '—'}</span>
                                                             <span>Type: {license.type}</span>
-                                                            <Badge variant='default' className={supportConfig.class}>
-                                                                Support {license.support}
+                                                            <Badge variant='default' className={""}>
+                                                                Support
                                                             </Badge>
                                                         </div>
                                                     </div>
@@ -207,7 +217,7 @@ export default function License() {
                                                             {statusConfig.text}
                                                         </Badge>
                                                         <p className="text-sm text-muted-foreground mt-1">
-                                                            Expire le: {license.expires}
+                                                            Expire le: {license.expires}{daysLeft !== null ? ` (${daysLeft} jours)` : ''}
                                                         </p>
                                                     </div>
                                                 </div>
@@ -248,9 +258,11 @@ export default function License() {
 
                                         {/* Actions */}
                                         <div className="flex flex-col gap-2 lg:w-48">
-                                            <Button className="w-full">
-                                                <Download className="h-4 w-4 mr-2" />
-                                                Certificat
+                                            <Button asChild className="w-full">
+                                                <Link href={route('licenses.certificate', { license: license.id })}>
+                                                    <Download className="h-4 w-4 mr-2" />
+                                                    Certificat
+                                                </Link>
                                             </Button>
                                             <Button variant="outline" className="w-full">
                                                 Renouveler

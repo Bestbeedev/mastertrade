@@ -4,8 +4,23 @@ import { createInertiaApp } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createRoot } from 'react-dom/client';
 import { initializeTheme } from './hooks/use-appearance';
+import { ThemeProvider } from 'next-themes';
+import { Toaster } from './components/ui/sonner';
+import SplashScreen from './components/splash-screen';
+import { useSplashScreen } from './hooks/use-splash';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+
+function InertiaRoot({ App, props }: any) {
+    const { visible, hide } = useSplashScreen();
+    return (
+        <>
+            <App {...props} />
+            <Toaster richColors position="top-right" />
+            <SplashScreen visible={visible} onHide={hide} />
+        </>
+    );
+}
 
 createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),
@@ -17,7 +32,11 @@ createInertiaApp({
     setup({ el, App, props }) {
         const root = createRoot(el);
 
-        root.render(<App {...props} />);
+        root.render(
+            <ThemeProvider attribute="class" defaultTheme="system">
+                <InertiaRoot App={App} props={props} />
+            </ThemeProvider>
+        );
     },
     progress: {
         color: '#4B5563',
