@@ -43,7 +43,71 @@ class CourseController extends Controller
      */
     public function show(Course $course)
     {
-        //
+        return Inertia::render('client/course', [
+            'course' => $course,
+        ]);
+    }
+
+    /**
+     * Display course content page.
+     */
+    public function content(Course $course)
+    {
+        return Inertia::render('client/course', [
+            'course' => $course,
+        ]);
+    }
+
+    /**
+     * Enroll current user to course (stub).
+     */
+    public function enroll(Request $request, Course $course)
+    {
+        return back()->with('status', 'Enrolled');
+    }
+
+    /**
+     * Mark lesson as completed (stub).
+     */
+    public function completeLesson(Request $request, Course $course)
+    {
+        return response()->json(['ok' => true]);
+    }
+
+    /**
+     * Generate certificate (stub).
+     */
+    public function certificate(Course $course)
+    {
+        return response()->json(['certificate_url' => '#']);
+    }
+
+    /**
+     * List user's courses (stub page).
+     */
+    public function myCourses()
+    {
+        return Inertia::render('client/formation');
+    }
+
+    /**
+     * Course progress page (stub page).
+     */
+    public function progress()
+    {
+        return Inertia::render('client/formation');
+    }
+
+    /**
+     * Course progress data (stub API).
+     */
+    public function progressData()
+    {
+        return response()->json([
+            'completed' => 5,
+            'total' => 10,
+            'percent' => 50,
+        ]);
     }
 
     /**

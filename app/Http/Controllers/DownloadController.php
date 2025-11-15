@@ -40,6 +40,33 @@ class DownloadController extends Controller
         //
     }
 
+    public function software()
+    {
+        return Inertia::render('client/download');
+    }
+
+    public function documents()
+    {
+        return Inertia::render('client/download');
+    }
+
+    public function updates()
+    {
+        return Inertia::render('client/download');
+    }
+
+    public function download(Download $download)
+    {
+        return response()->json(['ok' => true, 'download_id' => $download->id]);
+    }
+
+    public function recent()
+    {
+        return response()->json([
+            ['id' => 1, 'name' => 'MasterAdogbe v2.1', 'downloaded_at' => now()->toISOString()],
+        ]);
+    }
+
     /**
      * Show the form for editing the specified resource.
      */

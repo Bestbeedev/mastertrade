@@ -13,10 +13,18 @@ class DashboardController extends Controller
      */
     public function index()
     {
-        //Passe le user connecté à la vue Inertia
-        $authUser = auth()->user()->only(['id', 'name', 'email', 'role_id', 'country', 'phone']);
+        $user = auth()->user()->loadMissing('role');
+        $authUser = [
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'role_id' => $user->role_id,
+            'country' => $user->country,
+            'phone' => $user->phone,
+            'role' => $user->role ? ['id' => $user->role->id, 'name' => $user->role->name] : null,
+        ];
         return Inertia::render('dashboard', [
-            'user_data' => $authUser, // <--- user connecté
+            'user_data' => $authUser,
         ]);
     }
 

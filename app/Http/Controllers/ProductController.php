@@ -12,7 +12,8 @@ class ProductController extends Controller
      */
     public function index()
     {
-        //
+        $products = Product::query()->select(['id', 'name', 'sku', 'version', 'category', 'description'])->limit(20)->get();
+        return response()->json($products);
     }
 
     /**
@@ -36,7 +37,7 @@ class ProductController extends Controller
      */
     public function show(Product $product)
     {
-        //
+        return response()->json($product);
     }
 
     /**

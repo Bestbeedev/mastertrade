@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Client;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use App\Models\Product;
 
 class CatalogueController extends Controller
 {
@@ -35,9 +36,11 @@ class CatalogueController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Product $product)
     {
-        //
+        return Inertia::render('client/product', [
+            'product' => $product,
+        ]);
     }
 
     /**

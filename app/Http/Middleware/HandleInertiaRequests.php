@@ -38,12 +38,21 @@ class HandleInertiaRequests extends Middleware
     {
         [$message, $author] = str(Inspiring::quotes()->random())->explode('-');
 
+        $user = $request->user();
+        if ($user) {
+            $user->loadMissing('role');
+        }
+
+        $roleName = $user && $user->role ? strtolower((string) $user->role->name) : '';
+        $isAdmin = in_array($roleName, ['admin', 'administrator', 'superadmin']);
+
         return [
             ...parent::share($request),
             'name' => config('app.name'),
             'quote' => ['message' => trim($message), 'author' => trim($author)],
             'auth' => [
-                'user' => $request->user(),
+                'user' => $user,
+                'isAdmin' => $isAdmin,
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];
