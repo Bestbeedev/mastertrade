@@ -13,6 +13,8 @@ use App\Http\Controllers\Client\SearchController;
 use App\Http\Controllers\Client\BillingController;
 use App\Http\Controllers\Client\CatalogueController;
 use App\Http\Controllers\Client\DashboardController;
+use App\Http\Controllers\ProductController;
+use App\Http\Controllers\PaymentController;
 
 Route::get('/', function () {
     return Inertia::render('welcome');
@@ -70,6 +72,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('licenses/{license}/renew', [LicenseController::class, 'renew'])->name('licenses.renew');
     Route::post('licenses/{license}/extend', [LicenseController::class, 'extend'])->name('licenses.extend');
     Route::get('licenses/{license}/certificate', [LicenseController::class, 'certificate'])->name('licenses.certificate');
+    Route::get('licenses/activate', [LicenseController::class, 'activationStart'])->name('licenses.activation.start');
+    Route::post('licenses/checkout', [LicenseController::class, 'activationCheckout'])->name('licenses.activation.checkout');
+    Route::get('licenses/activate/complete/{license}', [LicenseController::class, 'activationComplete'])->name('licenses.activation.complete');
 });
 
 // Routes pour les commandes
@@ -130,6 +135,33 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Notifications en temps réel
     Route::get('api/notifications/unread-count', [NotificationController::class, 'unreadCount'])->name('api.notifications.unread-count');
+
+    // Paiements
+    Route::post('api/payments/initiate', [PaymentController::class, 'initiate'])->name('api.payments.initiate');
+    Route::post('api/payments/webhook', [PaymentController::class, 'webhook'])->name('api.payments.webhook');
+
+
+    // Produits (API minimale)
+    Route::get('api/products', [ProductController::class, 'index'])->name('api.products');
+    Route::get('api/products/{product}', [ProductController::class, 'show'])->name('api.products.show');
+});
+
+// Validation de licence (publique pour l'app WinDev; ajoutez throttle/cors si besoin)
+Route::post('api/license/validate', [LicenseController::class, 'validateKey'])->name('api.license.validate');
+
+// Routes Admin (Inertia pages)
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('admin', function () {
+        return Inertia::render('admin/index');
+    })->name('admin');
+
+    Route::get('admin/courses', function () {
+        return Inertia::render('admin/courses');
+    })->name('admin.courses');
+
+    Route::get('admin/products', function () {
+        return Inertia::render('admin/products');
+    })->name('admin.products');
 });
 
 require __DIR__ . '/settings.php';
