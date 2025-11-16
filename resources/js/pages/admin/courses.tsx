@@ -10,11 +10,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 import { route } from "ziggy-js";
 import { toast } from "sonner";
-import { BookOpen, Plus, Trash2 } from "lucide-react";
+import { BookOpen, Plus, Trash2, Info } from "lucide-react";
 import Dropzone from "@/components/ui/dropzone";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export default function AdminCourses({ courses = [], products = [] as { id: string; name: string }[] }: { courses?: any[]; products?: { id: string; name: string }[] }) {
     const [activeTab, setActiveTab] = React.useState("list");
+    const [selectedCourse, setSelectedCourse] = React.useState<any | null>(null);
 
     const form = useForm({
         title: "",
@@ -115,18 +117,61 @@ export default function AdminCourses({ courses = [], products = [] as { id: stri
                         <Card>
                             <CardHeader>
                                 <CardTitle>Formations existantes</CardTitle>
-                                <CardDescription>Liste des formations disponibles</CardDescription>
+                                <CardDescription>Couverture, modules, inscrits et métadonnées</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-3">
                                 {courses?.length ? (
                                     <div className="divide-y rounded-md border">
                                         {courses.map((c: any) => (
-                                            <div key={c.id} className="flex items-center justify-between p-3">
-                                                <div className="text-sm">
-                                                    <div className="font-medium">{c.title}</div>
-                                                    <div className="text-muted-foreground">{c.product?.name ? `Produit: ${c.product?.name}` : "Sans produit"}</div>
+                                            <div key={c.id} className="flex items-center justify-between p-3 gap-4">
+                                                <div className="flex items-center gap-4 flex-1">
+                                                    {c.cover_image ? (
+                                                        <img
+                                                            src={`/storage/${c.cover_image}`}
+                                                            alt={c.title}
+                                                            className="h-16 w-24 rounded-md object-cover flex-shrink-0"
+                                                        />
+                                                    ) : (
+                                                        <div className="h-16 w-24 rounded-md bg-muted flex items-center justify-center text-xs text-muted-foreground flex-shrink-0">
+                                                            Pas de cover
+                                                        </div>
+                                                    )}
+                                                    <div className="space-y-1 min-w-0">
+                                                        <div className="flex items-center gap-2">
+                                                            <div className="font-medium truncate">{c.title}</div>
+                                                            {c.is_paid && (
+                                                                <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                                                    Payante{c.price ? ` • ${(Number(c.price) || 0).toFixed(2)} €` : ""}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        <div className="text-xs text-muted-foreground flex flex-wrap gap-3">
+                                                            <span>{c.product?.name ? `Produit : ${c.product.name}` : "Sans produit lié"}</span>
+                                                            <span>Modules : {c.modules_count ?? 0}</span>
+                                                            <span>Leçons : {c.lessons_count ?? 0}</span>
+                                                            <span>Inscrits : {c.enrollments_count ?? 0}</span>
+                                                            <span>
+                                                                Créée le {c.created_at ? new Date(c.created_at).toLocaleDateString('fr-FR') : "—"}
+                                                            </span>
+                                                            {c.duration_seconds ? (
+                                                                <span>
+                                                                    Durée ~ {Math.round((c.duration_seconds / 60) || 0)} min
+                                                                </span>
+                                                            ) : null}
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                                <div className="flex items-center gap-2">
+                                                <div className="flex items-center gap-2 flex-shrink-0">
+                                                    <Button
+                                                        type="button"
+                                                        variant="outline"
+                                                        size="sm"
+                                                        className="gap-1"
+                                                        onClick={() => setSelectedCourse(c)}
+                                                    >
+                                                        <Info className="h-4 w-4" />
+                                                        Détails
+                                                    </Button>
                                                     <Button asChild variant="outline" size="sm">
                                                         <Link href={route('admin.courses.edit', c.id)}>Éditer</Link>
                                                     </Button>
@@ -311,6 +356,56 @@ export default function AdminCourses({ courses = [], products = [] as { id: stri
                         </form>
                     </TabsContent>
                 </Tabs>
+                <Dialog open={!!selectedCourse} onOpenChange={(open) => { if (!open) setSelectedCourse(null); }}>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Détails de la formation</DialogTitle>
+                            <DialogDescription>Vue détaillée de la formation sélectionnée.</DialogDescription>
+                        </DialogHeader>
+                        {selectedCourse && (
+                            <div className="space-y-4">
+                                <div className="flex gap-4">
+                                    {selectedCourse.cover_image ? (
+                                        <img
+                                            src={`/storage/${selectedCourse.cover_image}`}
+                                            alt={selectedCourse.title}
+                                            className="h-24 w-40 rounded-md object-cover flex-shrink-0"
+                                        />
+                                    ) : (
+                                        <div className="h-24 w-40 rounded-md bg-muted flex items-center justify-center text-xs text-muted-foreground flex-shrink-0">
+                                            Pas de cover
+                                        </div>
+                                    )}
+                                    <div className="space-y-1">
+                                        <h3 className="font-semibold text-base">{selectedCourse.title}</h3>
+                                        <p className="text-xs text-muted-foreground">
+                                            Créée le {selectedCourse.created_at ? new Date(selectedCourse.created_at).toLocaleDateString('fr-FR') : "—"}
+                                        </p>
+                                        <p className="text-xs text-muted-foreground">
+                                            {selectedCourse.product?.name ? `Produit lié : ${selectedCourse.product.name}` : "Aucun produit lié"}
+                                        </p>
+                                        <p className="text-xs text-muted-foreground">
+                                            Modules : {selectedCourse.modules_count ?? 0} • Leçons : {selectedCourse.lessons_count ?? 0} • Inscrits : {selectedCourse.enrollments_count ?? 0}
+                                        </p>
+                                        {selectedCourse.duration_seconds ? (
+                                            <p className="text-xs text-muted-foreground">
+                                                Durée estimée ~ {Math.round((selectedCourse.duration_seconds / 60) || 0)} minutes
+                                            </p>
+                                        ) : null}
+                                    </div>
+                                </div>
+                                {selectedCourse.description && (
+                                    <div className="space-y-1">
+                                        <h4 className="text-sm font-medium">Description</h4>
+                                        <p className="text-sm text-muted-foreground whitespace-pre-line">
+                                            {selectedCourse.description}
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </DialogContent>
+                </Dialog>
             </div>
         </AppLayout>
     );
