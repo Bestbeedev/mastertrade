@@ -13,7 +13,14 @@ class OrderController extends Controller
      */
     public function index()
     {
-        return Inertia::render('client/commande');
+        $orders = Order::with(['product:id,name'])
+            ->where('user_id', auth()->id())
+            ->latest()
+            ->get(['id','product_id','status','amount','created_at']);
+
+        return Inertia::render('client/commande', [
+            'orders' => $orders,
+        ]);
     }
 
     /**
@@ -64,5 +71,27 @@ class OrderController extends Controller
     public function destroy(Order $order)
     {
         //
+    }
+
+    /**
+     * Generate and download the invoice PDF for an order.
+     */
+    public function invoice(Order $order)
+    {
+        $order->load(['user:id,name,email', 'product:id,name,sku,version']);
+        $data = [
+            'order' => $order,
+            'user' => $order->user,
+            'product' => $order->product,
+            'issued_at' => now()->toDateString(),
+        ];
+
+        if (class_exists(\Barryvdh\DomPDF\Facade\Pdf::class)) {
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.invoice', $data)->setPaper('a4');
+            $filename = 'invoice-' . substr($order->id ?? 'order', 0, 8) . '.pdf';
+            return $pdf->download($filename);
+        }
+
+        return view('pdf.invoice', $data);
     }
 }

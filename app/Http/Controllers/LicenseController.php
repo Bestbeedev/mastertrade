@@ -106,7 +106,30 @@ class LicenseController extends Controller
 
     public function certificate(License $license)
     {
-        return response()->json(['certificate_url' => '#']);
+        $license->load(['product:id,name,version', 'user:id,name,email']);
+        $data = [
+            'license' => $license,
+            'product' => $license->product,
+            'user' => $license->user,
+            'issued_at' => Carbon::now()->toDateString(),
+            'verification_url' => route('licenses.show', ['license' => $license->id]),
+        ];
+
+        // If barryvdh/laravel-dompdf is installed, stream inline by default; download if requested
+        if (class_exists(\Barryvdh\DomPDF\Facade\Pdf::class)) {
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::setOptions([
+                'isRemoteEnabled' => true,
+                'defaultFont' => 'Inter',
+            ])->loadView('pdf.license_certificate', $data)->setPaper('a4');
+            $filename = 'license-certificate-' . ($license->id ?? 'certificate') . '.pdf';
+            if (request()->boolean('download')) {
+                return $pdf->download($filename);
+            }
+            return $pdf->stream($filename);
+        }
+
+        // Fallback: return HTML view (useful until PDF package is installed)
+        return view('pdf.license_certificate', $data);
     }
 
     /**
@@ -116,17 +139,19 @@ class LicenseController extends Controller
     {
         $key = (string) $request->input('key');
         $productId = $request->input('product_id');
-        $productSlug = $request->input('product');
+        $productParam = $request->input('product'); // can be sku or name
         $productSku = $request->input('sku');
         $deviceId = $request->input('device_id');
 
         $product = null;
         if ($productId) {
             $product = Product::find($productId);
-        } elseif ($productSlug) {
-            $product = Product::where('slug', $productSlug)->first();
         } elseif ($productSku) {
             $product = Product::where('sku', $productSku)->first();
+        } elseif ($productParam) {
+            $product = Product::where('sku', $productParam)
+                ->orWhere('name', $productParam)
+                ->first();
         }
 
         if (!$product || !$key) {
@@ -163,7 +188,7 @@ class LicenseController extends Controller
     public function activationStart(Request $request)
     {
         $productId = $request->input('product_id');
-        $productSlug = $request->input('product');
+        $productParam = $request->input('product'); // can be sku or name
         $productSku = $request->input('sku');
         $deviceId = $request->input('device_id');
         $machine = $request->input('machine');
@@ -171,10 +196,12 @@ class LicenseController extends Controller
         $product = null;
         if ($productId) {
             $product = Product::find($productId);
-        } elseif ($productSlug) {
-            $product = Product::where('slug', $productSlug)->first();
         } elseif ($productSku) {
             $product = Product::where('sku', $productSku)->first();
+        } elseif ($productParam) {
+            $product = Product::where('sku', $productParam)
+                ->orWhere('name', $productParam)
+                ->first();
         }
 
         if (!$product) {
@@ -221,10 +248,10 @@ class LicenseController extends Controller
     public function activationCheckout(Request $request)
     {
         $request->validate([
-            'product_id' => ['required', 'integer'],
+            'product_id' => ['required', 'string', 'exists:products,id'],
         ]);
         $user = $request->user();
-        $product = Product::find($request->integer('product_id'));
+        $product = Product::find($request->input('product_id'));
         if (!$product) {
             return back()->withErrors(['product_id' => 'Produit introuvable']);
         }
@@ -233,8 +260,8 @@ class LicenseController extends Controller
         $license->user_id = $user->id;
         $license->product_id = $product->id;
         $license->status = 'active';
-        $license->type = 'Standard';
-        $license->expiry_date = Carbon::now()->addYear();
+        $license->type = 'subscription';
+        $license->expiry_date = Carbon::now()->addYear()->toDateString();
         $license->max_activations = 3;
         $license->activations_count = 0;
         $license->key = $this->generateLicenseKey();

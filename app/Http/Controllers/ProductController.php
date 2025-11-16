@@ -29,7 +29,24 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'sku' => ['required', 'string', 'max:255', 'unique:products,sku'],
+            'version' => ['required', 'string', 'max:255'],
+            'checksum' => ['nullable', 'string', 'max:255'],
+            'size' => ['required', 'integer', 'min:0'],
+            'changelog' => ['nullable', 'string'],
+            'description' => ['required', 'string'],
+            'category' => ['required', 'string', 'max:255'],
+        ]);
+
+        if (empty($data['checksum'])) {
+            $data['checksum'] = hash('sha256', ($data['name'] ?? '') . '@' . ($data['version'] ?? ''));
+        }
+
+        Product::create($data);
+
+        return back()->with('status', 'Produit créé');
     }
 
     /**
@@ -61,6 +78,7 @@ class ProductController extends Controller
      */
     public function destroy(Product $product)
     {
-        //
+        $product->delete();
+        return back()->with('status', 'Produit supprimé');
     }
 }
