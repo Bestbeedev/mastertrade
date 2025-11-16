@@ -15,7 +15,6 @@ import {
 } from "@tabler/icons-react"
 import { User } from "@/types/model";
 
-import { NavDocuments } from "@/components/nav-documents"
 import { NavMain } from "@/components/nav-main"
 import { NavSecondary } from "@/components/nav-secondary"
 import { NavUser } from "@/components/nav-user"
@@ -81,8 +80,8 @@ const data = {
             badge: "3",
         },
         {
-            title: "Support / Tickets",
-            url: "supportsTickets",
+            title: "Support | Tickets",
+            url: "/supportsTickets",
             icon: IconHeadset,
         },
         {
@@ -106,65 +105,7 @@ const data = {
     ],
 }
 
-// Composant pour l'accès rapide avec tooltip en mode collapsed
-type QuickAccessItem = {
-    name: string
-    url: string
-    icon: React.ComponentType<IconProps>
-    version: string
-}
 
-function NavQuickAccess({ items }: { items: QuickAccessItem[] }) {
-    const { state } = useSidebar();
-
-    if (state === "collapsed") {
-        return (
-            <div className="mt-6 border-t border-b pt-6 pb-6">
-                <div className="space-y-2">
-                    {items.map((item, index) => (
-                        <Tooltip key={index} delayDuration={0}>
-                            <TooltipTrigger asChild>
-                                <a
-                                    href={item.url}
-                                    className="flex items-center justify-center px-3 py-2 text-sm dark:text-white text-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-400/20 transition-colors"
-                                >
-                                    <item.icon className="h-4 w-4 text-blue-600" />
-                                </a>
-                            </TooltipTrigger>
-                            <TooltipContent side="right" className="flex flex-col items-start">
-                                <div className="font-medium">{item.name}</div>
-                                <div className="text-xs text-muted-foreground">{item.version}</div>
-                            </TooltipContent>
-                        </Tooltip>
-                    ))}
-                </div>
-            </div>
-        );
-    }
-
-    return (
-        <div className="mt-6 border-t border-b pt-6 pb-6">
-            <h3 className="px-4 text-sm font-semibold dark:text-gray-50 text-gray-900 mb-3">
-                Accès rapide
-            </h3>
-            <div className="space-y-2">
-                {items.map((item, index) => (
-                    <a
-                        key={index}
-                        href={item.url}
-                        className="flex items-center gap-3 px-4 py-2 text-sm dark:text-white text-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-400/20 transition-colors"
-                    >
-                        <item.icon className="h-4 w-4 text-blue-600" />
-                        <div className="flex-1 min-w-0">
-                            <div className="font-medium truncate">{item.name}</div>
-                            <div className="text-xs text-gray-500 truncate">{item.version}</div>
-                        </div>
-                    </a>
-                ))}
-            </div>
-        </div>
-    );
-}
 
 // Composant pour le header du sidebar avec comportement responsive
 function SidebarHeaderContent() {
@@ -250,8 +191,7 @@ export function AppSidebar({ user, ...props }: { user: User; } & React.Component
                     <div className="flex-1 ">
                         <NavMain items={data.navMain} />
                         {isAdmin && <NavMain items={adminItems} />}
-                        {/* Accès rapide */}
-                        <NavQuickAccess items={data.quickAccess} />
+
                     {/* Navigation secondaire */}
                     <NavSecondary items={data.navSecondary} className="mt-auto" />
                     </div>

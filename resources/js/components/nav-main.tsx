@@ -1,4 +1,4 @@
-import { IconCirclePlusFilled, IconMail, type Icon } from "@tabler/icons-react"
+import type { ComponentType } from "react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -15,7 +15,7 @@ export function NavMain({
     items: {
         title: string
         url: string
-        icon?: Icon
+        icon?: ComponentType<any>
     }[]
 }) {
     return (

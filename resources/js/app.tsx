@@ -3,7 +3,6 @@ import '../css/app.css';
 import { createInertiaApp } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createRoot } from 'react-dom/client';
-import { initializeTheme } from './hooks/use-appearance';
 import { ThemeProvider } from 'next-themes';
 import { Toaster } from './components/ui/sonner';
 import SplashScreen from './components/splash-screen';
@@ -33,7 +32,7 @@ createInertiaApp({
         const root = createRoot(el);
 
         root.render(
-            <ThemeProvider attribute="class" defaultTheme="system">
+            <ThemeProvider attribute="class" defaultTheme="system" storageKey="appearance" disableTransitionOnChange>
                 <InertiaRoot App={App} props={props} />
             </ThemeProvider>
         );
@@ -43,5 +42,3 @@ createInertiaApp({
     },
 });
 
-// This will set light / dark mode on load...
-initializeTheme();
