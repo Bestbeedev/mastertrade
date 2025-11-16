@@ -15,6 +15,8 @@ use App\Http\Controllers\Client\CatalogueController;
 use App\Http\Controllers\Client\DashboardController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\Admin\UserAdminController;
+use App\Http\Controllers\Admin\LicenseAdminController;
 use App\Models\Product;
 use App\Models\Course;
 use App\Models\CourseEnrollment;
@@ -273,9 +275,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ]);
     })->name('admin');
 
+    // Admin Users Management
+    Route::get('admin/users', [UserAdminController::class, 'index'])->name('admin.users');
+    Route::post('admin/users', [UserAdminController::class, 'store'])->name('admin.users.store');
+    Route::patch('admin/users/{user}', [UserAdminController::class, 'update'])->name('admin.users.update');
+    Route::delete('admin/users/{user}', [UserAdminController::class, 'destroy'])->name('admin.users.destroy');
+
     Route::get('admin/courses', function () {
         $courses = Course::with('product:id,name')
-            ->select(['id', 'title', 'description', 'is_paid', 'product_id'])
+            ->withCount(['modules', 'lessons', 'enrollments'])
+            ->select(['id', 'title', 'description', 'is_paid', 'price', 'product_id', 'cover_image', 'duration_seconds', 'created_at'])
             ->latest()->get();
         $products = Product::select(['id', 'name'])->orderBy('name')->get();
         return Inertia::render('admin/courses', [
@@ -297,6 +306,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('admin.products');
     Route::post('admin/products', [ProductController::class, 'store'])->name('admin.products.store');
     Route::delete('admin/products/{product}', [ProductController::class, 'destroy'])->name('admin.products.destroy');
+
+    // Admin Licenses Management
+    Route::get('admin/licenses', [LicenseAdminController::class, 'index'])->name('admin.licenses');
+    Route::post('admin/licenses', [LicenseAdminController::class, 'store'])->name('admin.licenses.store');
+    Route::patch('admin/licenses/{license}', [LicenseAdminController::class, 'update'])->name('admin.licenses.update');
+    Route::delete('admin/licenses/{license}', [LicenseAdminController::class, 'destroy'])->name('admin.licenses.destroy');
 });
 
 require __DIR__ . '/settings.php';
