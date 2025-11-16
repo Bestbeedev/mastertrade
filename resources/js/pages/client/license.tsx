@@ -8,9 +8,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { route } from "ziggy-js";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 type LicenseItem = {
-    id: number;
+    id: string;
     product?: { name?: string; version?: string };
     key: string;
     type?: string;
@@ -32,7 +33,7 @@ export default function License({ licenses: initialLicenses }: { licenses?: Lice
 
     const fallback: LicenseItem[] = [
         {
-            id: 1,
+            id: "1",
             product: { name: "Application de Gestion Professionnelle", version: "2.1.0" },
             key: "ABCD-EFGH-IJKL-MNOP-1234",
             type: "Commercial",
@@ -42,7 +43,7 @@ export default function License({ licenses: initialLicenses }: { licenses?: Lice
             status: "active",
         },
         {
-            id: 2,
+            id: "2",
             product: { name: "Outil de Productivité Avancée", version: "1.5.2" },
             key: "WXYZ-1234-5678-90AB-CDEF",
             type: "Standard",
@@ -113,6 +114,9 @@ export default function License({ licenses: initialLicenses }: { licenses?: Lice
 
         return config[support];
     };
+
+    const [openPreview, setOpenPreview] = useState(false);
+    const [previewLicense, setPreviewLicense] = useState<LicenseItem | null>(null);
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -207,9 +211,7 @@ export default function License({ licenses: initialLicenses }: { licenses?: Lice
                                                         <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
                                                             <span>Version: {license.product?.version ?? '—'}</span>
                                                             <span>Type: {license.type}</span>
-                                                            <Badge variant='default' className={""}>
-                                                                Support
-                                                            </Badge>
+                                                            <Badge variant='default'>Support</Badge>
                                                         </div>
                                                     </div>
                                                     <div className="text-right">
@@ -235,9 +237,7 @@ export default function License({ licenses: initialLicenses }: { licenses?: Lice
 
                                                 {/* Clé de licence */}
                                                 <div>
-                                                    <label className="text-sm font-medium mb-2 block">
-                                                        Clé de licence
-                                                    </label>
+                                                    <label className="text-sm font-medium mb-2 block">Clé de licence</label>
                                                     <div className="flex items-center gap-2">
                                                         <code className="bg-muted px-3 py-2 rounded text-sm font-mono flex-1 border">
                                                             {license.key}
@@ -255,21 +255,13 @@ export default function License({ licenses: initialLicenses }: { licenses?: Lice
                                                 </div>
                                             </div>
                                         </div>
-
                                         {/* Actions */}
                                         <div className="flex flex-col gap-2 lg:w-48">
-                                            <Button asChild className="w-full">
-                                                <Link href={route('licenses.certificate', { license: license.id })}>
-                                                    <Download className="h-4 w-4 mr-2" />
-                                                    Certificat
-                                                </Link>
+                                            <Button className="w-full" onClick={() => { setPreviewLicense(license); setOpenPreview(true); }}>
+                                                <Download className="h-4 w-4 mr-2" /> Certificat
                                             </Button>
-                                            <Button variant="outline" className="w-full">
-                                                Renouveler
-                                            </Button>
-                                            <Button variant="ghost" className="w-full">
-                                                Gérer les sièges
-                                            </Button>
+                                            <Button variant="outline" className="w-full">Renouveler</Button>
+                                            <Button variant="ghost" className="w-full">Gérer les sièges</Button>
                                         </div>
                                     </div>
                                 </CardContent>
@@ -278,45 +270,57 @@ export default function License({ licenses: initialLicenses }: { licenses?: Lice
                     })}
                 </div>
 
-                {/* Actions rapides */}
+                {/* Sections complémentaires */}
                 <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <Card>
                         <CardHeader>
                             <CardTitle>Actions rapides</CardTitle>
-                            <CardDescription>
-                                Gestion simplifiée de vos licences
-                            </CardDescription>
+                            <CardDescription>Gestion simplifiée de vos licences</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-3">
-                            <Button variant="outline" className="w-full justify-start">
-                                Demander une extension de licence
-                            </Button>
-                            <Button variant="outline" className="w-full justify-start">
-                                Ajouter des sièges supplémentaires
-                            </Button>
-                            <Button variant="outline" className="w-full justify-start">
-                                Télécharger tous les certificats
-                            </Button>
+                            <Button variant="outline" className="w-full justify-start">Demander une extension de licence</Button>
+                            <Button variant="outline" className="w-full justify-start">Ajouter des sièges supplémentaires</Button>
+                            <Button variant="outline" className="w-full justify-start">Télécharger tous les certificats</Button>
                         </CardContent>
                     </Card>
 
                     <Card>
                         <CardHeader>
                             <CardTitle>Support licence</CardTitle>
-                            <CardDescription>
-                                Assistance dédiée aux questions de licence
-                            </CardDescription>
+                            <CardDescription>Assistance dédiée aux questions de licence</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <p className="text-sm text-muted-foreground mb-4">
-                                Pour toute question concernant vos licences, transferts ou modifications.
-                            </p>
-                            <Button variant="outline" className="w-full">
-                                Contacter le support licence
-                            </Button>
+                            <p className="text-sm text-muted-foreground mb-4">Pour toute question concernant vos licences, transferts ou modifications.</p>
+                            <Button variant="outline" className="w-full">Contacter le support licence</Button>
                         </CardContent>
                     </Card>
                 </div>
+
+                {/* Modal de prévisualisation du certificat */}
+                <Dialog open={openPreview} onOpenChange={setOpenPreview}>
+                    <DialogContent className="sm:max-w-4xl">
+                        <DialogHeader>
+                            <DialogTitle>Certificat de licence</DialogTitle>
+                        </DialogHeader>
+                        <div className="rounded-md border overflow-hidden" style={{ height: '70vh' }}>
+                            {previewLicense ? (
+                                <iframe
+                                    src={`${route('licenses.certificate', { license: previewLicense.id })}`}
+                                    className="w-full h-full"
+                                />
+                            ) : null}
+                        </div>
+                        <DialogFooter>
+                            {previewLicense ? (
+                                <Button asChild>
+                                    <a href={`${route('licenses.certificate', { license: previewLicense.id })}?download=1`} target="_blank" rel="noopener">
+                                        Télécharger le PDF
+                                    </a>
+                                </Button>
+                            ) : null}
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
             </div>
         </AppLayout>
     )

@@ -8,7 +8,7 @@ import { Key, CheckCircle2, Copy, ArrowLeft, Download } from "lucide-react";
 import { useState } from "react";
 import { route } from "ziggy-js";
 
-export default function LicenseActivate({ product, license, completed, device_id, machine }: { product: { id: number; name: string }; license: { id: number; key: string; status: string; expires_at: string }; completed?: boolean; device_id?: string; machine?: string }) {
+export default function LicenseActivate({ product, license, completed, device_id, machine }: { product: { id: string; name: string }; license: { id: string; key: string; status: string; expires_at: string }; completed?: boolean; device_id?: string; machine?: string }) {
   const breadcrumbs: BreadcrumbItem[] = [
     { title: "Licenses", href: route("licenses") },
     { title: "Activation", href: route("licenses.activation.start") },

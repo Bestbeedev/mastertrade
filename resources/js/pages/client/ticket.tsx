@@ -1,6 +1,7 @@
 import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, usePage, router } from '@inertiajs/react';
+import { route } from 'ziggy-js';
 import { Plus, Search, Filter, MessageCircle, Clock, CheckCircle, AlertCircle, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -18,10 +19,19 @@ export default function Ticket() {
         },
     ];
 
-    const [activeFilter, setActiveFilter] = useState('all');
-    const [searchTerm, setSearchTerm] = useState('');
+    const pageProps = usePage().props as any;
+    const initialStatus = pageProps.filters?.status ?? 'all';
+    const initialSearch = pageProps.filters?.search ?? '';
+    const initialSort = pageProps.filters?.sort ?? 'recent';
+    const [activeFilter, setActiveFilter] = useState<string>(initialStatus);
+    const [searchTerm, setSearchTerm] = useState<string>(initialSearch);
+    const [sortBy, setSortBy] = useState<string>(initialSort);
 
-    const tickets = [
+    const { tickets: ticketsProp = [], ticketsCounts = null } = usePage().props as any;
+    const paginated = Array.isArray(ticketsProp) ? null : (ticketsProp ?? null);
+    const realTickets = Array.isArray(ticketsProp) ? ticketsProp : (ticketsProp?.data ?? []);
+
+    const tickets = realTickets.length ? realTickets : [
         {
             id: 'TKT-2024-001',
             subject: "Problème d'installation du logiciel",
@@ -38,7 +48,7 @@ export default function Ticket() {
             id: 'TKT-2024-002',
             subject: "Question sur la facturation",
             description: "Comprendre les frais supplémentaires sur ma dernière facture de renouvellement",
-            status: "in_progress",
+            status: "pending",
             priority: "medium",
             date: "14 Jan 2024",
             lastUpdate: "Il y a 1 jour",
@@ -50,7 +60,7 @@ export default function Ticket() {
             id: 'TKT-2024-003',
             subject: "Fonctionnalité manquante",
             description: "La fonction d'export PDF ne fonctionne pas correctement dans le module rapports",
-            status: "resolved",
+            status: "closed",
             priority: "medium",
             date: "10 Jan 2024",
             lastUpdate: "Il y a 5 jours",
@@ -60,21 +70,49 @@ export default function Ticket() {
         },
     ];
 
+    const normalizeStatus = (s: string) => s === 'in_progress' ? 'pending' : (s === 'resolved' ? 'closed' : (['open', 'pending', 'closed'].includes(s) ? s : 'open'));
+
+    const computedCounts = ticketsCounts ?? tickets.reduce((acc: any, t: any) => {
+        const st = normalizeStatus((t.status ?? 'open') as string);
+        acc.all += 1; acc[st] += 1; return acc;
+    }, { all: 0, open: 0, pending: 0, closed: 0 });
+
     const filters = [
-        { id: 'all', label: 'Tous les tickets', count: 12 },
-        { id: 'open', label: 'Ouverts', count: 3 },
-        { id: 'in_progress', label: 'En cours', count: 2 },
-        { id: 'resolved', label: 'Résolus', count: 7 },
+        { id: 'all', label: 'Tous les tickets', count: computedCounts.all },
+        { id: 'open', label: 'Ouverts', count: computedCounts.open },
+        { id: 'pending', label: 'En cours', count: computedCounts.pending },
+        { id: 'closed', label: 'Fermés', count: computedCounts.closed },
     ];
 
-    type TicketStatus = "open" | "in_progress" | "resolved" | "closed";
+    // Helper pour déclencher navigation serveur
+    const goWithServer = (params: Record<string, any>) => {
+        router.get(route('supportsTickets'), { status: activeFilter, search: searchTerm, sort: sortBy, ...params }, {
+            preserveState: true,
+            replace: true,
+            preserveScroll: true,
+        });
+    };
+
+    // Filtrage côté client (par statut et recherche)
+    const term = searchTerm.trim().toLowerCase();
+    const filteredTickets = tickets.filter((ticket: any) => {
+        const rawStatus = (ticket.status ?? 'open') as string;
+        const statusKey = normalizeStatus(rawStatus);
+        const matchesFilter = activeFilter === 'all' || statusKey === activeFilter;
+        const hay = [ticket.subject, ticket.description, ticket.message, ticket.id]
+            .map((v: any) => (v ?? '').toString().toLowerCase())
+            .join(' ');
+        const matchesSearch = term === '' || hay.includes(term);
+        return matchesFilter && matchesSearch;
+    });
+
+    type TicketStatus = "open" | "pending" | "closed";
     type TicketPriority = "high" | "medium" | "low";
 
 
-    const statusConfig: Record<TicketStatus, { variant: "destructive" | "default" | "outline" | "secondary"; text: string; icon: any }> = {
+    const statusConfig: Record<TicketStatus, { variant: "destructive" | "default" | "secondary"; text: string; icon: any }> = {
         open: { variant: "destructive", text: "Ouvert", icon: AlertCircle },
-        in_progress: { variant: "default", text: "En cours", icon: Clock },
-        resolved: { variant: "outline", text: "Résolu", icon: CheckCircle },
+        pending: { variant: "default", text: "En cours", icon: Clock },
         closed: { variant: "secondary", text: "Fermé", icon: CheckCircle }
     };
 
@@ -122,7 +160,7 @@ export default function Ticket() {
                         </div>
 
                         <Button asChild>
-                            <Link href="/client/ticket/new">
+                            <Link href={route('supportsTickets.create')}>
                                 <Plus className="h-4 w-4 mr-2" />
                                 Nouveau ticket
                             </Link>
@@ -145,10 +183,17 @@ export default function Ticket() {
                                     {filters.map(filter => (
                                         <button
                                             key={filter.id}
-                                            onClick={() => setActiveFilter(filter.id)}
+                                            onClick={() => {
+                                                if (ticketsCounts) {
+                                                    setActiveFilter(filter.id);
+                                                    goWithServer({ status: filter.id });
+                                                } else {
+                                                    setActiveFilter(filter.id);
+                                                }
+                                            }}
                                             className={`w-full flex items-center justify-between p-3 rounded-lg text-left transition-colors ${activeFilter === filter.id
-                                                    ? 'bg-primary text-primary-foreground'
-                                                    : 'hover:bg-accent'
+                                                ? 'bg-primary text-primary-foreground'
+                                                : 'hover:bg-accent'
                                                 }`}
                                         >
                                             <span>{filter.label}</span>
@@ -197,12 +242,21 @@ export default function Ticket() {
                                     placeholder="Rechercher dans les tickets..."
                                     className="pl-10"
                                     value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    onChange={(e) => {
+                                        const v = e.target.value;
+                                        setSearchTerm(v);
+                                        if (ticketsCounts) {
+                                            goWithServer({ search: v });
+                                        }
+                                    }}
                                 />
                             </div>
 
                             <div className="flex items-center gap-2">
-                                <Select defaultValue="recent">
+                                <Select value={sortBy} onValueChange={(v) => {
+                                    setSortBy(v);
+                                    if (ticketsCounts) goWithServer({ sort: v });
+                                }}>
                                     <SelectTrigger className="w-32">
                                         <SelectValue placeholder="Trier" />
                                     </SelectTrigger>
@@ -249,16 +303,18 @@ export default function Ticket() {
                             </CardHeader>
                             <CardContent className="p-0">
                                 <div className="divide-y">
-                                    {tickets.map(ticket => {
-                                        const status = statusConfig[ticket.status as TicketStatus];
-                                        const priority = priorityConfig[ticket.priority as TicketPriority];
+                                    {filteredTickets.map((ticket: any) => {
+                                        const rawStatus = (ticket.status ?? 'open') as string;
+                                        const statusKey = normalizeStatus(rawStatus) as TicketStatus;
+                                        const status = statusConfig[statusKey];
+                                        const priorityKey = (ticket.priority ?? 'medium') as TicketPriority;
+                                        const priority = priorityConfig[priorityKey];
                                         const StatusIcon = status.icon;
-
 
                                         return (
                                             <Link
                                                 key={ticket.id}
-                                                href={`/client/ticket/${ticket.id}`}
+                                                href={route('supportsTickets.show', ticket.id)}
                                                 className="block p-6 hover:bg-accent/50 transition-colors group"
                                             >
                                                 <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
@@ -280,17 +336,17 @@ export default function Ticket() {
                                                             </div>
 
                                                             <p className="text-muted-foreground line-clamp-2">
-                                                                {ticket.description}
+                                                                {ticket.description ?? ticket.message}
                                                             </p>
 
                                                             <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
                                                                 <span>#{ticket.id}</span>
-                                                                <span>Créé le: {ticket.date}</span>
+                                                                <span>Créé le: {ticket.date ?? (ticket.created_at ? new Date(ticket.created_at).toLocaleDateString('fr-FR') : '')}</span>
                                                                 <span className="flex items-center gap-1">
                                                                     <MessageCircle className="h-3 w-3" />
-                                                                    {ticket.messages} messages
+                                                                    {(ticket.messages ?? 1)} messages
                                                                 </span>
-                                                                <Badge variant="outline">{ticket.category}</Badge>
+                                                                {ticket.category && <Badge variant="outline">{ticket.category}</Badge>}
                                                                 {ticket.agent && (
                                                                     <span>Assigné à: {ticket.agent}</span>
                                                                 )}
@@ -313,26 +369,42 @@ export default function Ticket() {
                                 </div>
 
                                 {/* Aucun ticket */}
-                                {tickets.length === 0 && (
+                                {filteredTickets.length === 0 && (
                                     <div className="p-12 text-center">
                                         <MessageCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                                         <h3 className="text-lg font-semibold mb-2">Aucun ticket trouvé</h3>
                                         <p className="text-muted-foreground mb-6">
                                             {searchTerm || activeFilter !== 'all'
                                                 ? "Aucun ticket ne correspond à vos critères de recherche."
-                                                : "Vous n'avez pas encore créé de ticket de support."
+                                                : "Vous n'avez pas encore créé de ticket."
                                             }
                                         </p>
                                         <Button asChild>
-                                            <Link href="/client/ticket/new">
-                                                <Plus className="h-4 w-4 mr-2" />
-                                                Créer votre premier ticket
+                                            <Link href={route('supportsTickets.create')}>
+                                                Créer un ticket
                                             </Link>
                                         </Button>
                                     </div>
                                 )}
                             </CardContent>
                         </Card>
+
+                        {/* Pagination */}
+                        {paginated?.links && (
+                            <div className="flex items-center justify-center gap-2 mt-4">
+                                {paginated.links.map((ln: any, idx: number) => (
+                                    <button
+                                        key={idx}
+                                        disabled={!ln.url}
+                                        onClick={() => {
+                                            if (ln.url) router.get(ln.url, {}, { preserveState: true, preserveScroll: true });
+                                        }}
+                                        className={`px-3 py-1 rounded border text-sm ${ln.active ? 'bg-primary text-primary-foreground' : 'hover:bg-accent'} ${!ln.url ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                        dangerouslySetInnerHTML={{ __html: ln.label }}
+                                    />
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

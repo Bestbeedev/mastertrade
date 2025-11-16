@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { ShoppingCart, ShieldCheck, ArrowLeft, CreditCard } from "lucide-react";
 import { route } from "ziggy-js";
 
-export default function LicenseCheckout({ product, device_id, machine }: { product: { id: number; name: string }; device_id?: string; machine?: string }) {
+export default function LicenseCheckout({ product, device_id, machine }: { product: { id: string; name: string }; device_id?: string; machine?: string }) {
   const breadcrumbs: BreadcrumbItem[] = [
     { title: "Licenses", href: route("licenses") },
     { title: "Activation", href: route("licenses.activation.start") },
