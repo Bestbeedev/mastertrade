@@ -19,7 +19,32 @@ class CourseController extends Controller
      */
     public function index()
     {
-        return Inertia::render('client/formation');
+        $courses = Course::withCount('lessons')
+            ->select(['id', 'title', 'description', 'is_paid', 'price', 'cover_image', 'duration_seconds', 'created_at'])
+            ->latest()->get();
+
+        $enrollments = CourseEnrollment::where('user_id', Auth::id())
+            ->get(['course_id', 'progress_percent'])
+            ->keyBy('course_id');
+
+        $courses = $courses->map(function ($c) use ($enrollments) {
+            $progress = optional($enrollments->get($c->id))->progress_percent ?? 0;
+            return [
+                'id' => $c->id,
+                'title' => $c->title,
+                'description' => $c->description,
+                'is_paid' => $c->is_paid,
+                'price' => $c->price,
+                'cover_image' => $c->cover_image,
+                'duration_seconds' => $c->duration_seconds,
+                'lessons_count' => $c->lessons_count,
+                'progress_percent' => (int) $progress,
+            ];
+        });
+
+        return Inertia::render('client/formation', [
+            'courses' => $courses,
+        ]);
     }
 
     public function allcourses()
@@ -137,8 +162,27 @@ class CourseController extends Controller
      */
     public function show(Course $course)
     {
+        $course->load([
+            'modules' => function ($q) {
+                $q->orderBy('position');
+            },
+            'modules.lessons' => function ($q) {
+                $q->orderBy('position');
+            },
+        ]);
+
+        $enrollment = CourseEnrollment::where('user_id', Auth::id())
+            ->where('course_id', $course->id)->first();
+        $completed = LessonProgress::where('user_id', Auth::id())
+            ->where('course_id', $course->id)
+            ->whereNotNull('completed_at')
+            ->pluck('lesson_id');
+
         return Inertia::render('client/course', [
             'course' => $course,
+            'is_enrolled' => (bool) $enrollment,
+            'progress_percent' => (int) ($enrollment->progress_percent ?? 0),
+            'completed_lessons' => $completed,
         ]);
     }
 
@@ -227,7 +271,25 @@ class CourseController extends Controller
      */
     public function progress()
     {
-        return Inertia::render('client/formation');
+        $userId = Auth::id();
+        $courses = Course::select(['id', 'title', 'cover_image', 'duration_seconds'])->get();
+        $payload = [];
+        foreach ($courses as $course) {
+            $total = Lesson::where('course_id', $course->id)->count();
+            $completed = LessonProgress::where('user_id', $userId)->where('course_id', $course->id)->whereNotNull('completed_at')->count();
+            $percent = $total > 0 ? (int) floor(($completed / $total) * 100) : 0;
+            $payload[] = [
+                'course_id' => $course->id,
+                'title' => $course->title,
+                'cover_image' => $course->cover_image,
+                'total' => $total,
+                'completed' => $completed,
+                'percent' => $percent,
+            ];
+        }
+        return Inertia::render('client/course-progress', [
+            'progress' => $payload,
+        ]);
     }
 
     /**

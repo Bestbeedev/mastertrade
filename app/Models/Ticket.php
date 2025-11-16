@@ -10,7 +10,7 @@ class Ticket extends Model
 {
 
     use HasFactory, UuidTrait;
-    protected $fillable = ['user_id', 'license_id', 'order_id', 'subject', 'message', 'status'];
+    protected $fillable = ['user_id', 'license_id', 'order_id', 'subject', 'message', 'status', 'priority', 'category'];
     public function user()
     {
         return $this->belongsTo(User::class);
@@ -22,5 +22,9 @@ class Ticket extends Model
     public function order()
     {
         return $this->belongsTo(Order::class);
+    }
+    public function messages()
+    {
+        return $this->hasMany(TicketMessage::class);
     }
 }
