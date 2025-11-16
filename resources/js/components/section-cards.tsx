@@ -18,6 +18,7 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card"
+import { usePage } from "@inertiajs/react"
 
 // Données dynamiques du client
 const clientStats = {
@@ -47,40 +48,42 @@ const products = {
 }
 
 export function SectionCards() {
+    const { dashboardStats } = usePage().props as any;
+    const source = dashboardStats ?? clientStats;
     // Calcul des métriques dérivées
     const stats = {
         licenses: {
-            total: clientStats.activeLicenses,
-            trend: clientStats.activeLicenses > 2 ? 'up' : 'stable',
+            total: source.activeLicenses,
+            trend: source.activeLicenses > 2 ? 'up' : 'stable',
             change: '+1 ce mois-ci',
-            description: `${clientStats.licenseStatus.active} actives, ${clientStats.licenseStatus.expired} expirées`
+            description: `${source.licenseStatus?.active ?? 0} actives, ${source.licenseStatus?.expired ?? 0} expirées`
         },
         downloads: {
-            total: clientStats.totalDownloads,
-            trend: clientStats.totalDownloads > 20 ? 'up' : 'stable',
+            total: source.totalDownloads,
+            trend: source.totalDownloads > 20 ? 'up' : 'stable',
             change: '+3 ce mois-ci',
             description: 'Dernier: MasterTrade v3.2.1'
         },
         courses: {
-            total: clientStats.activeCourses,
-            trend: clientStats.activeCourses > 0 ? 'up' : 'stable',
-            change: '1 en cours',
-            description: '67% de complétion moyenne'
+            total: source.activeCourses,
+            trend: source.activeCourses > 0 ? 'up' : 'stable',
+            change: source.activeCourses > 0 ? '1 en cours' : 'Aucune',
+            description: source.activeCourses > 0 ? '67% de complétion moyenne' : '—'
         },
         renewals: {
-            total: clientStats.pendingRenewals,
-            trend: clientStats.pendingRenewals > 0 ? 'down' : 'stable',
-            change: 'À traiter',
-            description: 'Expire dans 15 jours'
+            total: source.pendingRenewals,
+            trend: source.pendingRenewals > 0 ? 'down' : 'stable',
+            change: source.pendingRenewals > 0 ? 'À traiter' : 'À jour',
+            description: source.pendingRenewals > 0 ? 'Expire dans 15 jours' : '—'
         },
         support: {
-            total: clientStats.supportTickets,
-            trend: clientStats.supportTickets > 0 ? 'down' : 'stable',
-            change: '1 en attente',
-            description: 'Dernier réponse: 2h'
+            total: source.supportTickets,
+            trend: source.supportTickets > 0 ? 'down' : 'stable',
+            change: source.supportTickets > 0 ? '1 en attente' : '0 en attente',
+            description: source.supportTickets > 0 ? 'Dernier réponse: 2h' : '—'
         },
         orders: {
-            total: clientStats.totalOrders,
+            total: source.totalOrders,
             trend: 'up',
             change: '+2 cette année',
             description: 'Dernière commande: 10 Jan'

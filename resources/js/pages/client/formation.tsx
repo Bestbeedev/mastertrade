@@ -1,6 +1,6 @@
 import AppLayout from "@/layouts/app-layout";
 import { BreadcrumbItem } from "@/types";
-import { Head, Link } from "@inertiajs/react";
+import { Head, Link, usePage } from "@inertiajs/react";
 import { PlayCircle, Clock, BookOpen, CheckCircle, Search, Filter, Award } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -24,66 +24,36 @@ export default function Formation() {
     const [activeCategory, setActiveCategory] = useState('all');
     const [searchTerm, setSearchTerm] = useState('');
 
-    const courses = [
-        {
-            id: 1,
-            title: "Prise en main de l'Application de Gestion",
-            description: "Découvrez toutes les fonctionnalités principales de notre solution de gestion d'entreprise complète",
-            duration: "2h 30min",
-            progress: 75,
-            category: "débutant",
-            lessons: 12,
-            completed: 9,
-            image: "/images/course-management.jpg",
-            instructor: "Jean Dupont",
-            level: "Débutant",
-            rating: 4.8
-        },
-        {
-            id: 2,
-            title: "Techniques Avancées de Productivité",
-            description: "Maîtrisez les fonctionnalités avancées pour optimiser votre workflow et augmenter votre efficacité",
-            duration: "1h 45min",
-            progress: 30,
-            category: "avancé",
-            lessons: 8,
-            completed: 2,
-            image: "/images/course-productivity.jpg",
-            instructor: "Marie Martin",
-            level: "Avancé",
-            rating: 4.6
-        },
-    ];
+    const { courses: realCourses = [] } = usePage().props as any;
+    const courses = Array.isArray(realCourses) && realCourses.length ? realCourses : [];
 
     const categories = [
-        { id: 'all', name: 'Tous les cours', count: 8 },
-        { id: 'débutant', name: 'Débutant', count: 3 },
-        { id: 'intermédiaire', name: 'Intermédiaire', count: 3 },
-        { id: 'avancé', name: 'Avancé', count: 2 },
+        { id: 'all', name: 'Tous les cours', count: courses.length },
     ];
 
+    const avg = courses.length ? Math.round(courses.reduce((s: any, c: any) => s + (c.progress_percent || 0), 0) / courses.length) : 0;
     const stats = [
         {
             title: "Cours suivis",
-            value: "5",
+            value: String(courses.filter((c: any) => (c.progress_percent || 0) > 0).length),
             description: "+1 cette semaine",
             icon: BookOpen
         },
         {
             title: "Progression moyenne",
-            value: "68%",
+            value: `${avg}%`,
             description: "En amélioration",
             icon: Award
         },
         {
             title: "Temps total",
-            value: "8h 15min",
+            value: courses.reduce((s: any, c: any) => s + (c.duration_seconds || 0), 0) ? "~" + Math.round(courses.reduce((s: any, c: any) => s + (c.duration_seconds || 0), 0) / 3600) + "h" : "—",
             description: "Ce mois-ci",
             icon: Clock
         },
         {
             title: "Certificats",
-            value: "3",
+            value: "—",
             description: "Obtenus",
             icon: CheckCircle
         }
@@ -157,18 +127,18 @@ export default function Formation() {
                             <Button
                                 key={category.id}
                                 variant={activeCategory === category.id ? "default" : "outline"}
-                            onClick={() => setActiveCategory(category.id)}
-                            className="relative"
-                        >
-                            {category.name}
-                            <Badge
-                                variant="secondary"
-                                className="ml-2 bg-background text-foreground"
+                                onClick={() => setActiveCategory(category.id)}
+                                className="relative"
                             >
-                                {category.count}
-                            </Badge>
-                        </Button>
-                    ))}
+                                {category.name}
+                                <Badge
+                                    variant="secondary"
+                                    className="ml-2 bg-background text-foreground"
+                                >
+                                    {category.count}
+                                </Badge>
+                            </Button>
+                        ))}
                     </div>
                     <Button variant="destructive" onClick={() => router.get(route('all-courses'))} className="flex items-center gap-2">
                         <Filter className="h-4 w-4" />
@@ -178,65 +148,59 @@ export default function Formation() {
 
                 {/* Liste des cours */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {courses.map(course => (
-                        <Card key={course.id} className="group hover:shadow-lg transition-all">
-                            <CardHeader className="pb-4">
-                                <div className="relative">
-                                    <div className="aspect-video bg-gradient-to-br from-primary/20 to-primary/10 rounded-lg flex items-center justify-center mb-4">
-                                        <PlayCircle className="h-12 w-12 text-primary/60 group-hover:text-primary transition-colors" />
+                    {courses
+                        .filter((c: any) => c.title.toLowerCase().includes(searchTerm.toLowerCase()) || (c.description || '').toLowerCase().includes(searchTerm.toLowerCase()))
+                        .map((course: any) => (
+                            <Card key={course.id} className="group hover:shadow-lg transition-all">
+                                <CardHeader className="pb-4">
+                                    <div className="relative">
+                                        {course.cover_image ? (
+                                            <img src={`/storage/${course.cover_image}`} alt="Cover" className="aspect-video w-full object-cover rounded-lg mb-4" />
+                                        ) : (
+                                            <div className="aspect-video bg-gradient-to-br from-primary/20 to-primary/10 rounded-lg flex items-center justify-center mb-4">
+                                                <PlayCircle className="h-12 w-12 text-primary/60 group-hover:text-primary transition-colors" />
+                                            </div>
+                                        )}
                                     </div>
-                                    <div className="flex gap-2 absolute top-3 left-3">
-                                        <Badge variant="secondary" className={
-                                            course.level === 'Débutant'
-                                                ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
-                                                : "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300"
-                                        }>
-                                            {course.level}
-                                        </Badge>
-                                        <Badge variant="outline" className="bg-background/80 backdrop-blur">
-                                            ⭐ {course.rating}
-                                        </Badge>
+                                    <CardTitle className="text-xl group-hover:text-primary transition-colors line-clamp-2">
+                                        {course.title}
+                                    </CardTitle>
+                                    <CardDescription className="line-clamp-2">
+                                        {course.description}
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                    {/* Informations du cours */}
+                                    <div className="flex items-center justify-between text-sm text-muted-foreground">
+                                        <span className="flex items-center gap-1">
+                                            <Clock className="h-3 w-3" />
+                                            {course.duration_seconds ? Math.round(course.duration_seconds / 60) + ' min' : '—'}
+                                        </span>
+                                        <span>{course.lessons_count ?? 0} leçons</span>
                                     </div>
-                                </div>
-                                <CardTitle className="text-xl group-hover:text-primary transition-colors line-clamp-2">
-                                    {course.title}
-                                </CardTitle>
-                                <CardDescription className="line-clamp-2">
-                                    {course.description}
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                {/* Informations du cours */}
-                                <div className="flex items-center justify-between text-sm text-muted-foreground">
-                                    <span>Formateur: {course.instructor}</span>
-                                    <span className="flex items-center gap-1">
-                                        <Clock className="h-3 w-3" />
-                                        {course.duration}
-                                    </span>
-                                </div>
 
-                                {/* Barre de progression */}
-                                <div className="space-y-2">
-                                    <div className="flex justify-between text-sm">
-                                        <span>Progression</span>
-                                        <span className="font-medium">{course.progress}%</span>
+                                    {/* Barre de progression */}
+                                    <div className="space-y-2">
+                                        <div className="flex justify-between text-sm">
+                                            <span>Progression</span>
+                                            <span className="font-medium">{course.progress_percent ?? 0}%</span>
+                                        </div>
+                                        <Progress value={course.progress_percent ?? 0} className="h-2" />
+                                        <div className="text-xs text-muted-foreground">
+                                            {/* Optionnel: afficher complétées si disponibles côté back */}
+                                        </div>
                                     </div>
-                                    <Progress value={course.progress} className="h-2" />
-                                    <div className="text-xs text-muted-foreground">
-                                        {course.completed}/{course.lessons} leçons complétées
-                                    </div>
-                                </div>
-                            </CardContent>
-                            <CardFooter>
-                                <Button asChild className="w-full">
-                                    <Link href={route('courses.show', course.id)}>
-                                        <PlayCircle className="h-4 w-4 mr-2" />
-                                        {course.progress > 0 ? 'Continuer' : 'Commencer'}
-                                    </Link>
-                                </Button>
-                            </CardFooter>
-                        </Card>
-                    ))}
+                                </CardContent>
+                                <CardFooter>
+                                    <Button asChild className="w-full">
+                                        <Link href={route('courses.show', course.id)}>
+                                            <PlayCircle className="h-4 w-4 mr-2" />
+                                            {(course.progress_percent ?? 0) > 0 ? 'Continuer' : 'Commencer'}
+                                        </Link>
+                                    </Button>
+                                </CardFooter>
+                            </Card>
+                        ))}
                 </div>
 
                 {/* Cours récemment terminés */}

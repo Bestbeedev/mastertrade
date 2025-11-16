@@ -114,7 +114,8 @@ export default function Page() {
 }
 
 export function ActiveSoftwareSection() {
-    const activeSoftware = [
+    const { activeSoftware: activeSoftwareProp } = usePage().props as any;
+    const fallback = [
         {
             id: 1,
             name: "MasterTrade",
@@ -148,7 +149,16 @@ export function ActiveSoftwareSection() {
             iconColor: "text-purple-600 dark:text-purple-400",
             bgColor: "bg-purple-100 dark:bg-purple-900/20"
         }
-    ]
+    ];
+
+    const activeSoftware = (Array.isArray(activeSoftwareProp) && activeSoftwareProp.length
+        ? activeSoftwareProp.map((s: any) => ({
+            ...s,
+            icon: IconTrendingUp,
+            iconColor: "text-blue-600 dark:text-blue-400",
+            bgColor: "bg-blue-100 dark:bg-blue-900/20",
+        }))
+        : fallback);
 
     return (
         <Card>

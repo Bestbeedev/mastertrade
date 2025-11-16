@@ -1,14 +1,16 @@
 import AppLayout from "@/layouts/app-layout";
 import { BreadcrumbItem } from "@/types";
-import { Head, Link } from "@inertiajs/react";
+import { Head, Link, usePage } from "@inertiajs/react";
 import { route } from "ziggy-js";
-import { Search, Download, Eye, Calendar, Package, ArrowUpDown } from "lucide-react";
+import { Search, Download, Eye, Calendar, Package, ArrowUpDown, Database, Zap } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { toast } from "sonner";
 
 export default function Commande() {
     const breadcrumbs: BreadcrumbItem[] = [
@@ -20,6 +22,10 @@ export default function Commande() {
 
     const [statusFilter, setStatusFilter] = useState('all');
     const [searchTerm, setSearchTerm] = useState('');
+    const { orders: realOrders = [] } = usePage().props as any;
+    const [activeTab, setActiveTab] = useState(realOrders.length ? 'real' : 'mock');
+
+    const formatCurrency = (amountCents: number) => new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format((amountCents ?? 0) / 100);
 
     type OrderStatus = 'completed' | 'pending' | 'processing' | 'cancelled';
     type OrderItem = {
@@ -33,7 +39,7 @@ export default function Commande() {
         licenseKey: string;
     };
 
-    const orders: OrderItem[] = [
+    const mockOrders: OrderItem[] = [
         {
             id: 'CMD-2024-001',
             product: "Application de Gestion Professionnelle",
@@ -100,7 +106,7 @@ export default function Commande() {
 
             {/* En-tête */}
             <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-                <div className="w-full px-4 sm:px-6 lg:px-8 py-6">
+                <div className="w-full px-4 sm:px-6 lg:px-8 py-8">
                     <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                         <div>
                             <h1 className="text-3xl font-bold tracking-tight">Mes Commandes</h1>
@@ -175,71 +181,90 @@ export default function Commande() {
                                     Consultez toutes vos commandes passées
                                 </CardDescription>
                             </div>
-                            <Button variant="outline" size="sm" className="flex items-center gap-2">
-                                <ArrowUpDown className="h-4 w-4" />
-                                Trier
-                            </Button>
+                            <div className="flex items-center gap-3">
+                                <Tabs value={activeTab} onValueChange={setActiveTab}>
+                                    <TabsList className="grid grid-cols-2">
+                                        <TabsTrigger value="real" className="flex items-center gap-2">
+                                            <Database className="h-4 w-4" /> Réelles
+                                        </TabsTrigger>
+                                        <TabsTrigger value="mock" className="flex items-center gap-2">
+                                            <Zap className="h-4 w-4" /> Démo
+                                        </TabsTrigger>
+                                    </TabsList>
+                                </Tabs>
+                                <Button variant="outline" size="sm" className="flex items-center gap-2">
+                                    <ArrowUpDown className="h-4 w-4" />
+                                    Trier
+                                </Button>
+                            </div>
                         </div>
                     </CardHeader>
                     <CardContent className="p-0">
                         <div className="divide-y">
-                            {orders.map((order) => (
-                                <div key={order.id} className="p-6 hover:bg-accent/50 transition-colors">
-                                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                                        <div className="flex items-start gap-4 flex-1">
-                                            <div className="p-3 bg-primary/10 rounded-lg">
-                                                <Package className="h-6 w-6 text-primary" />
-                                            </div>
-                                            <div className="space-y-2">
-                                                <div>
-                                                    <h3 className="font-semibold text-lg">{order.product}</h3>
-                                                    <p className="text-sm text-muted-foreground">
-                                                        {order.id} • {order.items} article(s)
-                                                    </p>
+                            {(activeTab === 'real' ? realOrders : mockOrders).map((order: any) => {
+                                const productName = order.product?.name ?? order.product;
+                                const date = order.created_at ? new Date(order.created_at).toLocaleDateString('fr-FR') : order.date;
+                                const amount = typeof order.amount === 'number' ? formatCurrency(order.amount) : order.amount;
+                                const status = order.status as OrderStatus;
+                                const statusText = (statusConfig[status]?.text) || (order.statusText ?? String(order.status));
+                                return (
+                                    <div key={order.id} className="p-6 hover:bg-accent/50 transition-colors">
+                                        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                                            <div className="flex items-start gap-4 flex-1">
+                                                <div className="p-3 bg-primary/10 rounded-lg">
+                                                    <Package className="h-6 w-6 text-primary" />
                                                 </div>
-                                                <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                                                    <span className="flex items-center gap-1">
-                                                        <Calendar className="h-3 w-3" />
-                                                        {order.date}
-                                                    </span>
-                                                    <span>Clé de licence: {order.licenseKey}</span>
+                                                <div className="space-y-2">
+                                                    <div>
+                                                        <h3 className="font-semibold text-lg">{productName}</h3>
+                                                        <p className="text-sm text-muted-foreground">
+                                                            {order.id}
+                                                        </p>
+                                                    </div>
+                                                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                                                        <span className="flex items-center gap-1">
+                                                            <Calendar className="h-3 w-3" />
+                                                            {date}
+                                                        </span>
+                                                        {order.licenseKey && <span>Clé de licence: {order.licenseKey}</span>}
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        </div>
-
-                                        <div className="flex flex-col sm:flex-row lg:flex-col xl:flex-row items-start lg:items-end xl:items-center gap-4">
-                                            <div className="text-right">
-                                                <div className="text-xl font-bold text-foreground">
-                                                    {order.amount}
-                                                </div>
-                                                <Badge variant={statusConfig[order.status as keyof typeof statusConfig].variant}>
-                                                    {order.statusText}
-                                                </Badge>
                                             </div>
 
-                                            <div className="flex items-center gap-2">
-                                                <Button asChild variant="outline" size="sm">
-                                                    <Link href={route('orders.show', order.id)}>
-                                                        <Eye className="h-4 w-4 mr-2" />
-                                                        Détails
-                                                    </Link>
-                                                </Button>
+                                            <div className="flex flex-col sm:flex-row lg:flex-col xl:flex-row items-start lg:items-end xl:items-center gap-4">
+                                                <div className="text-right">
+                                                    <div className="text-xl font-bold text-foreground">
+                                                        {amount}
+                                                    </div>
+                                                    <Badge variant={statusConfig[status]?.variant}>
+                                                        {statusText}
+                                                    </Badge>
+                                                </div>
 
-                                                {order.status === 'completed' && (
-                                                    <Button variant="default" size="sm">
-                                                        <Download className="h-4 w-4 mr-2" />
-                                                        Télécharger
+                                                <div className="flex items-center gap-2">
+                                                    <Button asChild variant="outline" size="sm">
+                                                        <Link href={route('orders.show', order.id)}>
+                                                            <Eye className="h-4 w-4 mr-2" />
+                                                            Détails
+                                                        </Link>
                                                     </Button>
-                                                )}
+
+                                                    {status === 'completed' && (
+                                                        <Button variant="default" size="sm" onClick={() => toast.success('Téléchargement en cours...')}>
+                                                            <Download className="h-4 w-4 mr-2" />
+                                                            Télécharger
+                                                        </Button>
+                                                    )}
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
 
                         {/* Aucune commande */}
-                        {orders.length === 0 && (
+                        {(activeTab === 'real' ? realOrders.length === 0 : mockOrders.length === 0) && (
                             <div className="p-12 text-center">
                                 <Package className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                                 <h3 className="text-lg font-semibold mb-2">Aucune commande trouvée</h3>

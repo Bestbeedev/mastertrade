@@ -31,7 +31,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { useIsAdmin } from "@/hooks/use-is-admin";
 
-export default function Catalogue() {
+export default function Catalogue({ products = [] as { id: string; name: string; description?: string; category?: string; version?: string; sku?: string }[] }: { products?: { id: string; name: string; description?: string; category?: string; version?: string; sku?: string }[] }) {
     const isAdmin = useIsAdmin();
     const breadcrumbs: BreadcrumbItem[] = [
         {
@@ -46,54 +46,41 @@ export default function Catalogue() {
     const [priceRange, setPriceRange] = useState('all');
     const [selectedRatings, setSelectedRatings] = useState<number[]>([]);
 
-    const products = [
-        {
-            id: 1,
-            name: "Application de Gestion",
-            description: "Solution complète de gestion d'entreprise avec modules intégrés",
-            price: "299€",
-            originalPrice: "399€",
-            category: "Logiciels",
-            image: "/images/app-gestion.jpg",
-            rating: 4.5,
-            reviewCount: 124,
-            tags: ["Populaire", "Nouveau"],
-            features: ["Multi-utilisateurs", "Support 24/7", "Mises à jour gratuites"]
-        },
-        {
-            id: 2,
-            name: "Outil de Productivité",
-            description: "Boostez votre efficacité au quotidien avec nos outils avancés",
-            price: "149€",
-            category: "Productivité",
-            image: "/images/productivite.jpg",
-            rating: 4.2,
-            reviewCount: 89,
-            tags: ["Essentiel"],
-            features: ["Interface intuitive", "Export multiple", "Templates"]
-        },
-        {
-            id: 3,
-            name: "Suite Sécurité Pro",
-            description: "Protection avancée pour votre entreprise et vos données",
-            price: "199€",
-            originalPrice: "249€",
-            category: "Sécurité",
-            image: "/images/securite.jpg",
-            rating: 4.8,
-            reviewCount: 67,
-            tags: ["Promo"],
-            features: ["Chiffrement AES-256", "Sauvegarde cloud", "Audit de sécurité"]
-        },
-    ];
-
+    const slugify = (s: string) => (s || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    const categoryIcon = (cat?: string) => {
+        const c = (cat || '').toLowerCase();
+        if (c.includes('éduc') || c.includes('ecole') || c.includes('scolar')) return GraduationCap;
+        if (c.includes('sécur') || c.includes('security')) return Shield;
+        if (c.includes('prod') || c.includes('product')) return Zap;
+        if (c.includes('logiciel') || c.includes('soft') || c.includes('app')) return Laptop;
+        return Package;
+    };
+    const items = (products || []).map((p) => ({
+        id: p.id,
+        name: p.name,
+        description: p.description || '',
+        category: p.category || 'Logiciels',
+        version: p.version || '',
+        sku: p.sku || '',
+        rating: 0,
+        reviewCount: 0,
+        tags: [] as string[],
+        features: [] as string[],
+        price: undefined as unknown as string | undefined,
+        originalPrice: undefined as unknown as string | undefined,
+    }));
     const categories = [
-        { id: 'all', name: 'Tous les produits', count: 12, icon: Package },
-        { id: 'logiciels', name: 'Logiciels', count: 5, icon: Laptop },
-        { id: 'productivite', name: 'Productivité', count: 4, icon: Zap },
-        { id: 'securite', name: 'Sécurité', count: 3, icon: Shield },
-        { id: 'formation', name: 'Formations', count: 2, icon: GraduationCap },
+        { id: 'all', name: 'Tous les logiciels', count: items.length, icon: Package },
+        ...Array.from(new Set(items.map((i) => i.category))).map((cat) => ({
+            id: slugify(cat),
+            name: cat,
+            count: items.filter((i) => i.category === cat).length,
+            icon: categoryIcon(cat),
+        })),
     ];
+    const filteredItems = items
+        .filter((i) => (activeCategory === 'all' ? true : slugify(i.category) === activeCategory))
+        .filter((i) => (!searchTerm ? true : i.name.toLowerCase().includes(searchTerm.toLowerCase()) || i.description.toLowerCase().includes(searchTerm.toLowerCase())));
 
     const toggleRating = (rating: number) => {
         setSelectedRatings(prev =>
@@ -299,7 +286,7 @@ export default function Catalogue() {
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 p-4 bg-muted/50 rounded-xl">
                             <div>
                                 <p className="text-muted-foreground">
-                                    <span className="font-semibold text-foreground">{products.length}</span> produits trouvés
+                                    <span className="font-semibold text-foreground">{filteredItems.length}</span> produits trouvés
                                     {searchTerm && (
                                         <span> pour "<span className="font-semibold">{searchTerm}</span>"</span>
                                     )}
@@ -325,7 +312,7 @@ export default function Catalogue() {
                         {/* Grille de produits */}
                         {viewMode === 'grid' ? (
                             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-6">
-                                {products.map((product) => (
+                                {filteredItems.map((product) => (
                                     <Card key={product.id} className="group hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-card to-card/50 overflow-hidden">
                                         <CardHeader className="pb-4 relative">
                                             {/* Badges */}
@@ -416,7 +403,7 @@ export default function Catalogue() {
                             </div>
                         ) : (
                             <div className="space-y-6">
-                                {products.map((product) => (
+                                {filteredItems.map((product) => (
                                     <Card key={product.id} className="group hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-card to-card/50">
                                         <div className="flex flex-col lg:flex-row">
                                             <div className="lg:w-64 flex-shrink-0 p-6">
