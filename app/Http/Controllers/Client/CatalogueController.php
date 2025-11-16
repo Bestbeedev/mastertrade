@@ -14,7 +14,13 @@ class CatalogueController extends Controller
      */
     public function index()
     {
-        return Inertia::render('client/catalogue');
+        $products = Product::query()
+            ->select(['id','name','sku','version','description','category'])
+            ->orderBy('name')
+            ->get();
+        return Inertia::render('client/catalogue', [
+            'products' => $products,
+        ]);
     }
 
     /**
