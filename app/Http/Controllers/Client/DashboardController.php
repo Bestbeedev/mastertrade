@@ -9,6 +9,9 @@ use App\Models\License;
 use App\Models\Order;
 use App\Models\Download;
 use App\Models\Ticket;
+use App\Models\Course;
+use App\Models\CourseEnrollment;
+use App\Models\LessonProgress;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 
@@ -43,11 +46,27 @@ class DashboardController extends Controller
             ->count();
         $supportTickets = Ticket::where('user_id', $userId)->count();
 
+        // Courses progress for this user
+        $userEnrollments = CourseEnrollment::with(['course:id,title,cover_image'])
+            ->where('user_id', $userId)
+            ->get(['id', 'user_id', 'course_id', 'progress_percent']);
+        $activeCoursesCount = $userEnrollments->count();
+        $avgCourseProgress = $activeCoursesCount > 0 ? (int) round($userEnrollments->avg('progress_percent')) : 0;
+
+        $myCourses = $userEnrollments->map(function ($e) {
+            return [
+                'course_id' => $e->course_id,
+                'title' => $e->course->title ?? 'Formation',
+                'cover_image' => $e->course->cover_image ?? null,
+                'progress_percent' => (int) ($e->progress_percent ?? 0),
+            ];
+        });
+
         $dashboardStats = [
             'activeLicenses' => $activeLicenses,
             'totalOrders' => $totalOrders,
             'totalDownloads' => $totalDownloads,
-            'activeCourses' => 0, // keep 0 until implemented
+            'activeCourses' => $activeCoursesCount,
             'pendingRenewals' => $pendingRenewals,
             'supportTickets' => $supportTickets,
             'licenseStatus' => [
@@ -56,6 +75,7 @@ class DashboardController extends Controller
                 'trial' => 0,
             ],
             'recentActivity' => [], // keep empty for now
+            'courseProgressAvg' => $avgCourseProgress,
         ];
 
         // Active software list from licenses + products
@@ -80,6 +100,7 @@ class DashboardController extends Controller
             'user_data' => $authUser,
             'dashboardStats' => $dashboardStats,
             'activeSoftware' => $activeSoftware,
+            'myCourses' => $myCourses,
         ]);
     }
 

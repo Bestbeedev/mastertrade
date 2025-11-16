@@ -17,6 +17,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\PaymentController;
 use App\Models\Product;
 use App\Models\Course;
+use App\Models\CourseEnrollment;
 use App\Models\User;
 use App\Models\License;
 use App\Models\Order as OrderModel;
@@ -181,6 +182,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->whereDate('expiry_date', '<=', Carbon::today()->addDays(30))
             ->count();
 
+        $courseEnrollments30 = CourseEnrollment::where('started_at', '>=', $since)->count();
+        $avgCourseProgress = (int) round((float) (CourseEnrollment::avg('progress_percent') ?? 0));
+
         $topProducts30 = OrderModel::where('created_at', '>=', $since)
             ->selectRaw('product_id, COUNT(*) as orders_count, SUM(amount) as revenue_cents')
             ->groupBy('product_id')
@@ -256,6 +260,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
                     'total' => $ticketsCount,
                     'open' => $ticketsOpen,
                 ],
+                'course_enrollments_30d' => $courseEnrollments30,
+                'avg_course_progress' => $avgCourseProgress,
             ],
             'recentOrders' => $recentOrders,
             'recentTickets' => $recentTickets,

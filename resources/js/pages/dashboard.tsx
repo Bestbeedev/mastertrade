@@ -30,6 +30,7 @@ import { usePage } from "@inertiajs/react"
 
 import data from "./data.json"
 import { useAuthStore } from "@/stores/auth";
+import { Progress } from "@/components/ui/progress";
 import { useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -50,6 +51,8 @@ export default function Page() {
     if (!isAuthenticated) {
         return <p>Veuillez vous connecter.</p>
     }
+
+
 
     return (
         <SidebarProvider
@@ -99,6 +102,7 @@ export default function Page() {
                             {/* Sections du dashboard */}
                             <div className="space-y-8 px-6 lg:px-8">
                                 <ActiveSoftwareSection />
+                                <MyCoursesSection />
                                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
                                     <RecentActivitySection />
                                     <RecommendedCoursesSection />
@@ -113,6 +117,47 @@ export default function Page() {
     )
 }
 
+  export function MyCoursesSection() {
+        const { myCourses = [] } = usePage().props as any;
+        if (!Array.isArray(myCourses)) return null;
+        return (
+            <Card>
+                <CardHeader className="pb-4">
+                    <CardTitle className="text-xl font-semibold text-foreground flex items-center gap-2">
+                        <IconSchool className="h-5 w-5 text-purple-600" />
+                        Mes Formations
+                    </CardTitle>
+                    <CardDescription className="text-muted-foreground">
+                        Reprenez où vous vous êtes arrêté
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                        {myCourses.length === 0 && (
+                            <div className="text-sm text-muted-foreground">Vous n'êtes inscrit à aucune formation pour l'instant.</div>
+                        )}
+                        {myCourses.map((c: any) => (
+                            <Link key={c.course_id} href={route('courses.show', c.course_id)} className="border rounded-lg p-3 hover:bg-muted/50 transition-colors group">
+                                {c.cover_image ? (
+                                    <img src={`/storage/${c.cover_image}`} alt="Cover" className="h-28 w-full object-cover rounded-md mb-2" />
+                                ) : (
+                                    <div className="h-28 w-full rounded-md bg-muted mb-2" />
+                                )}
+                                <div className="text-sm font-medium line-clamp-1">{c.title}</div>
+                                <div className="mt-2">
+                                    <div className="flex items-center justify-between text-xs text-muted-foreground">
+                                        <span>Progression</span>
+                                        <span className="font-medium text-foreground">{c.progress_percent ?? 0}%</span>
+                                    </div>
+                                    <Progress value={c.progress_percent ?? 0} className="h-1.5" />
+                                </div>
+                            </Link>
+                        ))}
+                    </div>
+                </CardContent>
+            </Card>
+        );
+    }
 export function ActiveSoftwareSection() {
     const { activeSoftware: activeSoftwareProp } = usePage().props as any;
     const fallback = [

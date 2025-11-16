@@ -68,7 +68,7 @@ export function SectionCards() {
             total: source.activeCourses,
             trend: source.activeCourses > 0 ? 'up' : 'stable',
             change: source.activeCourses > 0 ? '1 en cours' : 'Aucune',
-            description: source.activeCourses > 0 ? '67% de complétion moyenne' : '—'
+            description: source.activeCourses > 0 ? `${source.courseProgressAvg ?? 0}% de complétion moyenne` : '—'
         },
         renewals: {
             total: source.pendingRenewals,
@@ -129,7 +129,7 @@ export function SectionCards() {
                 <CardHeader>
                     <CardDescription className="flex items-center gap-2">
                         <IconDownload className="h-4 w-4 text-blue-500" />
-                     Téléchargements
+                        Téléchargements
                     </CardDescription>
                     <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
                         {stats.downloads.total}

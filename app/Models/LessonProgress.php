@@ -10,6 +10,8 @@ class LessonProgress extends Model
 {
     use HasFactory, UuidTrait;
 
+    protected $table = 'lesson_progresses';
+
     protected $fillable = [
         'user_id',
         'course_id',
