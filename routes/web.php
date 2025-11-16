@@ -15,6 +15,14 @@ use App\Http\Controllers\Client\CatalogueController;
 use App\Http\Controllers\Client\DashboardController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\PaymentController;
+use App\Models\Product;
+use App\Models\Course;
+use App\Models\User;
+use App\Models\License;
+use App\Models\Order as OrderModel;
+use App\Models\Ticket;
+use App\Models\Download as DownloadModel;
+use Illuminate\Support\Carbon;
 
 Route::get('/', function () {
     return Inertia::render('welcome');
@@ -63,25 +71,30 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('course-progress', [CourseController::class, 'progress'])->name('courses.progress');
 });
 
+// Activation de licences (auth requis, PAS besoin de verified pour ne pas casser le flux)
+Route::middleware(['auth'])->group(function () {
+    // Placer ces routes statiques AVANT la route dynamique licenses/{license}
+    Route::get('licenses/activate', [LicenseController::class, 'activationStart'])->name('licenses.activation.start');
+    Route::post('licenses/checkout', [LicenseController::class, 'activationCheckout'])->name('licenses.activation.checkout');
+    Route::get('licenses/activate/complete/{license}', [LicenseController::class, 'activationComplete'])->whereUuid('license')->name('licenses.activation.complete');
+});
+
 // Routes pour les licenses
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('licenses', [LicenseController::class, 'index'])->name('licenses');
     Route::post('licenses', [LicenseController::class, 'store'])->name('licenses.create');
-    Route::get('licenses/{license}', [LicenseController::class, 'show'])->name('licenses.show');
+    Route::get('licenses/{license}', [LicenseController::class, 'show'])->whereUuid('license')->name('licenses.show');
     Route::put('licenses/{license}', [LicenseController::class, 'update'])->name('licenses.update');
     Route::post('licenses/{license}/renew', [LicenseController::class, 'renew'])->name('licenses.renew');
     Route::post('licenses/{license}/extend', [LicenseController::class, 'extend'])->name('licenses.extend');
-    Route::get('licenses/{license}/certificate', [LicenseController::class, 'certificate'])->name('licenses.certificate');
-    Route::get('licenses/activate', [LicenseController::class, 'activationStart'])->name('licenses.activation.start');
-    Route::post('licenses/checkout', [LicenseController::class, 'activationCheckout'])->name('licenses.activation.checkout');
-    Route::get('licenses/activate/complete/{license}', [LicenseController::class, 'activationComplete'])->name('licenses.activation.complete');
+    Route::get('licenses/{license}/certificate', [LicenseController::class, 'certificate'])->whereUuid('license')->name('licenses.certificate');
 });
 
 // Routes pour les commandes
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('orders', [OrderController::class, 'index'])->name('orders');
     Route::get('orders/{order}', [OrderController::class, 'show'])->name('orders.show');
-    Route::post('orders/{order}/invoice', [OrderController::class, 'invoice'])->name('orders.invoice');
+    Route::get('orders/{order}/invoice', [OrderController::class, 'invoice'])->name('orders.invoice');
     Route::post('orders/{order}/cancel', [OrderController::class, 'cancel'])->name('orders.cancel');
     Route::post('orders/{order}/refund', [OrderController::class, 'refund'])->name('orders.refund');
 });
@@ -152,16 +165,132 @@ Route::post('api/license/validate', [LicenseController::class, 'validateKey'])->
 // Routes Admin (Inertia pages)
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('admin', function () {
-        return Inertia::render('admin/index');
+        $productsCount = Product::count();
+        $coursesCount = Course::count();
+        $usersCount = User::count();
+        $licensesCount = License::count();
+        $licensesActiveCount = License::where('status', 'active')->count();
+        $since = Carbon::now()->subDays(30);
+        $ordersLast30 = OrderModel::where('created_at', '>=', $since)->count();
+        $revenueCents30 = (int) OrderModel::where('created_at', '>=', $since)->sum('amount');
+        $ticketsCount = Ticket::count();
+        $ticketsOpen = Ticket::where('status', 'open')->count();
+        $downloads30 = DownloadModel::where('timestamp', '>=', $since)->count();
+        $renewalsDue30 = License::where('status', 'active')
+            ->whereDate('expiry_date', '>=', Carbon::today())
+            ->whereDate('expiry_date', '<=', Carbon::today()->addDays(30))
+            ->count();
+
+        $topProducts30 = OrderModel::where('created_at', '>=', $since)
+            ->selectRaw('product_id, COUNT(*) as orders_count, SUM(amount) as revenue_cents')
+            ->groupBy('product_id')
+            ->orderByDesc('revenue_cents')
+            ->with(['product:id,name'])
+            ->take(5)->get();
+
+        $recentProducts = Product::select(['id', 'name', 'sku', 'version', 'category', 'created_at'])
+            ->latest()->take(5)->get();
+        $recentCoursesList = Course::select(['id', 'title', 'created_at'])
+            ->latest()->take(5)->get();
+
+        // Données pour les graphiques
+        $days = collect(range(29, 0))->map(function ($daysAgo) {
+            return [
+                'date' => now()->subDays($daysAgo)->format('Y-m-d'),
+                'date_formatted' => now()->subDays($daysAgo)->format('d M'),
+            ];
+        });
+
+        // Données des commandes par jour
+        $ordersByDay = OrderModel::selectRaw('DATE(created_at) as date, COUNT(*) as count')
+            ->where('created_at', '>=', $since)
+            ->groupBy('date')
+            ->pluck('count', 'date');
+
+        // Données des revenus par jour
+        $revenueByDay = OrderModel::selectRaw('DATE(created_at) as date, SUM(amount) as total')
+            ->where('created_at', '>=', $since)
+            ->groupBy('date')
+            ->pluck('total', 'date');
+
+        // Données des téléchargements par jour
+        $downloadsByDay = DownloadModel::selectRaw('DATE(timestamp) as date, COUNT(*) as count')
+            ->where('timestamp', '>=', $since)
+            ->groupBy('date')
+            ->pluck('count', 'date');
+
+        // Préparation des données pour les graphiques
+        $chartData = $days->map(function ($day) use ($ordersByDay, $revenueByDay, $downloadsByDay) {
+            return [
+                'date' => $day['date'],
+                'orders' => $ordersByDay[$day['date']] ?? 0,
+                'revenue' => ($revenueByDay[$day['date']] ?? 0) / 100, // Convertir en euros
+                'downloads' => $downloadsByDay[$day['date']] ?? 0,
+            ];
+        });
+
+        $recentOrders = OrderModel::with(['product:id,name', 'user:id,name'])
+            ->latest()->take(5)
+            ->get(['id', 'product_id', 'user_id', 'status', 'amount', 'created_at']);
+        $recentTickets = Ticket::with(['user:id,name'])
+            ->latest()->take(5)
+            ->get(['id', 'subject', 'status', 'created_at', 'user_id']);
+        $recentLicenses = License::with(['product:id,name', 'user:id,name'])
+            ->latest()->take(5)
+            ->get(['id', 'product_id', 'user_id', 'status', 'expiry_date', 'created_at']);
+
+        return Inertia::render('admin/index', [
+            'adminStats' => [
+                'products' => $productsCount,
+                'courses' => $coursesCount,
+                'users' => $usersCount,
+                'licenses' => [
+                    'total' => $licensesCount,
+                    'active' => $licensesActiveCount,
+                ],
+                'orders_30d' => $ordersLast30,
+                'revenue_cents_30d' => $revenueCents30,
+                'downloads_30d' => $downloads30,
+                'renewals_due_30d' => $renewalsDue30,
+                'tickets' => [
+                    'total' => $ticketsCount,
+                    'open' => $ticketsOpen,
+                ],
+            ],
+            'recentOrders' => $recentOrders,
+            'recentTickets' => $recentTickets,
+            'recentLicenses' => $recentLicenses,
+            'topProducts30' => $topProducts30,
+            'recentProducts' => $recentProducts,
+            'recentCourses' => $recentCoursesList,
+            'chartData' => $chartData,
+        ]);
     })->name('admin');
 
     Route::get('admin/courses', function () {
-        return Inertia::render('admin/courses');
+        $courses = Course::with('product:id,name')
+            ->select(['id', 'title', 'description', 'is_paid', 'product_id'])
+            ->latest()->get();
+        $products = Product::select(['id', 'name'])->orderBy('name')->get();
+        return Inertia::render('admin/courses', [
+            'courses' => $courses,
+            'products' => $products,
+        ]);
     })->name('admin.courses');
+    Route::post('admin/courses', [CourseController::class, 'store'])->name('admin.courses.store');
+    Route::delete('admin/courses/{course}', [CourseController::class, 'destroy'])->name('admin.courses.destroy');
+    Route::get('admin/courses/{course}', [CourseController::class, 'edit'])->name('admin.courses.edit');
+    Route::patch('admin/courses/{course}', [CourseController::class, 'update'])->name('admin.courses.update');
 
     Route::get('admin/products', function () {
-        return Inertia::render('admin/products');
+        $products = Product::select(['id', 'name', 'sku', 'version', 'category', 'description'])
+            ->latest()->get();
+        return Inertia::render('admin/products', [
+            'products' => $products,
+        ]);
     })->name('admin.products');
+    Route::post('admin/products', [ProductController::class, 'store'])->name('admin.products.store');
+    Route::delete('admin/products/{product}', [ProductController::class, 'destroy'])->name('admin.products.destroy');
 });
 
 require __DIR__ . '/settings.php';
