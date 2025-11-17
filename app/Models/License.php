@@ -9,7 +9,7 @@ use App\Traits\UuidTrait;
 class License extends Model
 {
     use HasFactory, UuidTrait;
-    protected $fillable = ['key', 'product_id', 'user_id', 'status', 'type', 'expiry_date', 'max_activations', 'activations_count', 'renewed_at'];
+    protected $fillable = ['key', 'product_id', 'user_id', 'status', 'type', 'expiry_date', 'max_activations', 'activations_count', 'renewed_at', 'last_device_id', 'last_machine', 'last_mac_address', 'last_activated_at'];
     public function product()
     {
         return $this->belongsTo(Product::class);

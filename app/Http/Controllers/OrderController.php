@@ -13,10 +13,10 @@ class OrderController extends Controller
      */
     public function index()
     {
-        $orders = Order::with(['product:id,name'])
+        $orders = Order::with(['product:id,name,download_url'])
             ->where('user_id', auth()->id())
             ->latest()
-            ->get(['id','product_id','status','amount','created_at']);
+            ->get(['id', 'product_id', 'status', 'amount', 'created_at']);
 
         return Inertia::render('client/commande', [
             'orders' => $orders,
@@ -44,6 +44,8 @@ class OrderController extends Controller
      */
     public function show(Order $order)
     {
+        abort_if($order->user_id !== auth()->id(), 403);
+        $order->loadMissing(['product:id,name,download_url,version']);
         return Inertia::render('client/order', [
             'order' => $order,
         ]);

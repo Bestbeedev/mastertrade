@@ -9,6 +9,7 @@ use Inertia\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Schema;
 
 class LicenseController extends Controller
 {
@@ -142,6 +143,8 @@ class LicenseController extends Controller
         $productParam = $request->input('product'); // can be sku or name
         $productSku = $request->input('sku');
         $deviceId = $request->input('device_id');
+        $macAddress = (string) $request->input('mac_address');
+        $machine = (string) $request->input('machine');
 
         $product = null;
         if ($productId) {
@@ -178,6 +181,15 @@ class LicenseController extends Controller
             'status' => $license?->status,
             'expires_at' => $expiresAt?->toIso8601String(),
             'days_left' => $daysLeft,
+            'last_device_id' => $license?->last_device_id,
+            'last_mac_address' => $license?->last_mac_address,
+            'last_machine' => $license?->last_machine,
+            'last_activated_at' => $license?->last_activated_at,
+            'requested_device' => [
+                'device_id' => $deviceId,
+                'mac_address' => $macAddress,
+                'machine' => $machine,
+            ],
             'message' => $isValid ? 'Valid license' : 'Invalid or expired license',
         ]);
     }
@@ -192,6 +204,7 @@ class LicenseController extends Controller
         $productSku = $request->input('sku');
         $deviceId = $request->input('device_id');
         $machine = $request->input('machine');
+        $macAddress = $request->input('mac_address');
 
         $product = null;
         if ($productId) {
@@ -229,6 +242,7 @@ class LicenseController extends Controller
                 ],
                 'device_id' => $deviceId,
                 'machine' => $machine,
+                'mac_address' => $macAddress,
             ]);
         }
 
@@ -239,6 +253,7 @@ class LicenseController extends Controller
             ],
             'device_id' => $deviceId,
             'machine' => $machine,
+            'mac_address' => $macAddress,
         ]);
     }
 
@@ -265,6 +280,19 @@ class LicenseController extends Controller
         $license->max_activations = 3;
         $license->activations_count = 0;
         $license->key = $this->generateLicenseKey();
+        // Device info if provided (from WinDev redirect). Set only if columns exist.
+        if (Schema::hasColumn('licenses', 'last_device_id')) {
+            $license->last_device_id = (string) $request->input('device_id', '');
+        }
+        if (Schema::hasColumn('licenses', 'last_machine')) {
+            $license->last_machine = (string) $request->input('machine', '');
+        }
+        if (Schema::hasColumn('licenses', 'last_mac_address')) {
+            $license->last_mac_address = (string) $request->input('mac_address', '');
+        }
+        if (Schema::hasColumn('licenses', 'last_activated_at')) {
+            $license->last_activated_at = Carbon::now();
+        }
         $license->save();
 
         return redirect()->route('licenses.activation.complete', ['license' => $license->id]);

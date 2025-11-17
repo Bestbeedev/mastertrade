@@ -1,6 +1,7 @@
 import type { ComponentType } from "react"
 
 import { Button } from "@/components/ui/button"
+import { Link, usePage } from "@inertiajs/react"
 import {
     SidebarGroup,
     SidebarGroupContent,
@@ -18,22 +19,29 @@ export function NavMain({
         icon?: ComponentType<any>
     }[]
 }) {
+    const { url } = usePage() as any
+    const currentPath = (typeof url === 'string' ? url : window.location.pathname) as string
+    const isActive = (href: string) => {
+        if (!href) return false
+        const path = currentPath.split('?')[0]
+        return path === href || path.startsWith(href + "/")
+    }
     return (
-            <SidebarGroup className="mt-6">
-              <SidebarGroupContent>
+        <SidebarGroup className="mt-6">
+            <SidebarGroupContent>
                 <SidebarMenu>
-                  {items.map((item) => (
-                    <SidebarMenuItem key={item.title}>
-                      <SidebarMenuButton asChild>
-                        <a href={item.url}>
-                          {item.icon && <item.icon />}
-                          <span>{item.title}</span>
-                        </a>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  ))}
+                    {items.map((item) => (
+                        <SidebarMenuItem key={item.title}>
+                            <SidebarMenuButton asChild isActive={isActive(item.url)}>
+                                <Link href={item.url} aria-current={isActive(item.url) ? 'page' : undefined}>
+                                    {item.icon && <item.icon />}
+                                    <span>{item.title}</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                    ))}
                 </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
+            </SidebarGroupContent>
+        </SidebarGroup>
     )
 }

@@ -2,15 +2,14 @@ import AppLayout from "@/layouts/app-layout";
 import { BreadcrumbItem } from "@/types";
 import { Head, Link, usePage } from "@inertiajs/react";
 import { route } from "ziggy-js";
-import { Search, Download, Eye, Calendar, Package, ArrowUpDown, Database, Zap } from "lucide-react";
+import { Search, Download, Eye, Calendar, Package, ArrowUpDown } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { toast } from "sonner";
+
 
 export default function Commande() {
     const breadcrumbs: BreadcrumbItem[] = [
@@ -23,44 +22,10 @@ export default function Commande() {
     const [statusFilter, setStatusFilter] = useState('all');
     const [searchTerm, setSearchTerm] = useState('');
     const { orders: realOrders = [] } = usePage().props as any;
-    const [activeTab, setActiveTab] = useState(realOrders.length ? 'real' : 'mock');
 
     const formatCurrency = (amountCents: number) => new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format((amountCents ?? 0) / 100);
 
     type OrderStatus = 'completed' | 'pending' | 'processing' | 'cancelled';
-    type OrderItem = {
-        id: string;
-        product: string;
-        date: string;
-        amount: string;
-        status: OrderStatus;
-        statusText: string;
-        items: number;
-        licenseKey: string;
-    };
-
-    const mockOrders: OrderItem[] = [
-        {
-            id: 'CMD-2024-001',
-            product: "Application de Gestion Professionnelle",
-            date: "15 Jan 2024",
-            amount: "299€",
-            status: "completed",
-            statusText: "Livrée",
-            items: 1,
-            licenseKey: "ABCD-EFGH-IJKL-MNOP"
-        },
-        {
-            id: 'CMD-2024-002',
-            product: "Outil de Productivité Avancée",
-            date: "10 Jan 2024",
-            amount: "149€",
-            status: "pending",
-            statusText: "En traitement",
-            items: 1,
-            licenseKey: "WXYZ-1234-5678-90AB"
-        },
-    ];
 
     const statusConfig = {
         completed: { variant: "default" as const, text: "Livrée" },
@@ -69,35 +34,15 @@ export default function Commande() {
         cancelled: { variant: "destructive" as const, text: "Annulée" }
     } as const;
 
+    const totalOrders = realOrders.length;
+    const pendingCount = realOrders.filter((o: any) => o.status === 'pending').length;
+    const deliveredCount = realOrders.filter((o: any) => o.status === 'completed').length;
+    const totalSpent = realOrders.reduce((s: number, o: any) => s + (o.amount || 0), 0);
     const stats = [
-        {
-            title: "Commandes totales",
-            value: "12",
-            description: "+2 ce mois-ci",
-            icon: Package,
-            trend: "up"
-        },
-        {
-            title: "En attente",
-            value: "2",
-            description: "En traitement",
-            icon: Calendar,
-            trend: "neutral"
-        },
-        {
-            title: "Livrées",
-            value: "8",
-            description: "Cette année",
-            icon: Download,
-            trend: "up"
-        },
-        {
-            title: "Dépensé total",
-            value: "1,847€",
-            description: "Toutes commandes",
-            icon: "€",
-            trend: "up"
-        }
+        { title: "Commandes totales", value: String(totalOrders), description: "", icon: Package, trend: "neutral" },
+        { title: "En attente", value: String(pendingCount), description: "", icon: Calendar, trend: "neutral" },
+        { title: "Livrées", value: String(deliveredCount), description: "", icon: Download, trend: "neutral" },
+        { title: "Dépensé total", value: formatCurrency(totalSpent), description: "", icon: "€", trend: "neutral" },
     ];
 
     return (
@@ -182,16 +127,6 @@ export default function Commande() {
                                 </CardDescription>
                             </div>
                             <div className="flex items-center gap-3">
-                                <Tabs value={activeTab} onValueChange={setActiveTab}>
-                                    <TabsList className="grid grid-cols-2">
-                                        <TabsTrigger value="real" className="flex items-center gap-2">
-                                            <Database className="h-4 w-4" /> Réelles
-                                        </TabsTrigger>
-                                        <TabsTrigger value="mock" className="flex items-center gap-2">
-                                            <Zap className="h-4 w-4" /> Démo
-                                        </TabsTrigger>
-                                    </TabsList>
-                                </Tabs>
                                 <Button variant="outline" size="sm" className="flex items-center gap-2">
                                     <ArrowUpDown className="h-4 w-4" />
                                     Trier
@@ -201,12 +136,12 @@ export default function Commande() {
                     </CardHeader>
                     <CardContent className="p-0">
                         <div className="divide-y">
-                            {(activeTab === 'real' ? realOrders : mockOrders).map((order: any) => {
+                            {realOrders.map((order: any) => {
                                 const productName = order.product?.name ?? order.product;
-                                const date = order.created_at ? new Date(order.created_at).toLocaleDateString('fr-FR') : order.date;
-                                const amount = typeof order.amount === 'number' ? formatCurrency(order.amount) : order.amount;
+                                const date = order.created_at ? new Date(order.created_at).toLocaleDateString('fr-FR') : '';
+                                const amount = typeof order.amount === 'number' ? formatCurrency(order.amount) : String(order.amount ?? '');
                                 const status = order.status as OrderStatus;
-                                const statusText = (statusConfig[status]?.text) || (order.statusText ?? String(order.status));
+                                const statusText = (statusConfig[status]?.text) || String(order.status);
                                 return (
                                     <div key={order.id} className="p-6 hover:bg-accent/50 transition-colors">
                                         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
@@ -249,10 +184,12 @@ export default function Commande() {
                                                         </Link>
                                                     </Button>
 
-                                                    {status === 'completed' && (
-                                                        <Button variant="default" size="sm" onClick={() => toast.success('Téléchargement en cours...')}>
-                                                            <Download className="h-4 w-4 mr-2" />
-                                                            Télécharger
+                                                    {status === 'completed' && order.product?.download_url && (
+                                                        <Button asChild variant="default" size="sm">
+                                                            <a href={route('downloads.start', order.product_id)}>
+                                                                <Download className="h-4 w-4 mr-2" />
+                                                                Télécharger
+                                                            </a>
                                                         </Button>
                                                     )}
                                                 </div>
@@ -264,7 +201,7 @@ export default function Commande() {
                         </div>
 
                         {/* Aucune commande */}
-                        {(activeTab === 'real' ? realOrders.length === 0 : mockOrders.length === 0) && (
+                        {realOrders.length === 0 && (
                             <div className="p-12 text-center">
                                 <Package className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                                 <h3 className="text-lg font-semibold mb-2">Aucune commande trouvée</h3>

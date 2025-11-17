@@ -57,7 +57,7 @@ export function NavUser({
                                 </AvatarFallback>
                             </Avatar>
                             <div className="grid flex-1 text-left text-sm leading-tight">
-                                <span className="truncate font-medium">{user.name}</span>
+                                <span className="truncate font-medium">{user.name.toUpperCase()}</span>
                                 <span className="text-muted-foreground truncate text-xs">
                                     {user.email}
                                 </span>
@@ -82,7 +82,7 @@ export function NavUser({
                                     </AvatarFallback>
                                 </Avatar>
                                 <div className="grid flex-1 text-left text-sm leading-tight">
-                                    <span className="truncate font-medium">{user.name}</span>
+                                    <span className="truncate font-medium">{user.name.toUpperCase()}</span>
                                     <span className="text-muted-foreground truncate text-xs">
                                         {user.email}
                                     </span>
@@ -93,7 +93,7 @@ export function NavUser({
                         <DropdownMenuGroup>
                             <DropdownMenuItem onClick={() => router.get(route('account.index'))}>
                                 <IconUserCircle />
-                                Account
+                                Mon profil
                             </DropdownMenuItem>
                             <DropdownMenuItem>
                                 <IconCreditCard />
@@ -105,9 +105,9 @@ export function NavUser({
                             </DropdownMenuItem>
                         </DropdownMenuGroup>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => router.post(route('logout'))} className="text-white bg-red-500  hover:bg-red-800">
-                            <a className="flex items-center w-full gap-2">
-                                <IconLogout />Log out
+                        <DropdownMenuItem onClick={() => router.post(route('logout'))} className="text-white bg-red-500  hover:bg-red-600!">
+                            <a className="flex  text-white items-center w-full gap-2">
+                                <IconLogout className="text-white"  />Se deconnecter
                             </a>
                         </DropdownMenuItem>
                     </DropdownMenuContent>

@@ -15,11 +15,11 @@ type ChartData = Array<{
 export function OrdersChart({ data }: { data?: ChartData }) {
     if (!data?.length) {
         return (
-            <Card>
-                <CardHeader>
+            <Card className="h-full flex flex-col">
+                <CardHeader className="flex-shrink-0">
                     <CardTitle>Commandes (30j)</CardTitle>
                 </CardHeader>
-                <CardContent className="h-[300px] flex items-center justify-center">
+                <CardContent className="flex-1 min-h-0 p-0 flex items-center justify-center">
                     <p className="text-muted-foreground">Aucune donnée disponible</p>
                 </CardContent>
             </Card>
@@ -27,11 +27,11 @@ export function OrdersChart({ data }: { data?: ChartData }) {
     }
 
     return (
-        <Card>
-            <CardHeader>
+        <Card className="h-full flex flex-col">
+            <CardHeader className="flex-shrink-0">
                 <CardTitle>Commandes (30j)</CardTitle>
             </CardHeader>
-            <CardContent className="h-[300px]">
+            <CardContent className="flex-1 min-h-0 p-0">
                 <ChartContainer config={{}}>
                     <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={data}>
@@ -69,11 +69,11 @@ export function OrdersChart({ data }: { data?: ChartData }) {
 export function RevenueChart({ data }: { data?: ChartData }) {
     if (!data?.length) {
         return (
-            <Card>
-                <CardHeader>
+            <Card className="h-full flex flex-col">
+                <CardHeader className="flex-shrink-0">
                     <CardTitle>Revenus (30j)</CardTitle>
                 </CardHeader>
-                <CardContent className="h-[300px] flex items-center justify-center">
+                <CardContent className="flex-1 min-h-0 p-0 flex items-center justify-center">
                     <p className="text-muted-foreground">Aucune donnée disponible</p>
                 </CardContent>
             </Card>
@@ -81,11 +81,11 @@ export function RevenueChart({ data }: { data?: ChartData }) {
     }
 
     return (
-        <Card>
-            <CardHeader>
+        <Card className="h-full flex flex-col">
+            <CardHeader className="flex-shrink-0">
                 <CardTitle>Revenus (30j)</CardTitle>
             </CardHeader>
-            <CardContent className="h-[300px]">
+            <CardContent className="flex-1 min-h-0 p-0">
                 <ChartContainer config={{}}>
                     <ResponsiveContainer width="100%" height="100%">
                         <LineChart data={data}>
@@ -125,11 +125,11 @@ export function RevenueChart({ data }: { data?: ChartData }) {
 export function DownloadsChart({ data }: { data?: ChartData }) {
     if (!data?.length) {
         return (
-            <Card>
-                <CardHeader>
+            <Card className="h-full flex flex-col">
+                <CardHeader className="flex-shrink-0">
                     <CardTitle>Téléchargements (30j)</CardTitle>
                 </CardHeader>
-                <CardContent className="h-[300px] flex items-center justify-center">
+                <CardContent className="flex-1 min-h-0 p-0 flex items-center justify-center">
                     <p className="text-muted-foreground">Aucune donnée disponible</p>
                 </CardContent>
             </Card>
@@ -137,14 +137,14 @@ export function DownloadsChart({ data }: { data?: ChartData }) {
     }
 
     return (
-        <Card>
-            <CardHeader>
+        <Card className="h-full flex flex-col">
+            <CardHeader className="flex-shrink-0">
                 <CardTitle>Téléchargements (30j)</CardTitle>
             </CardHeader>
-            <CardContent className="h-[300px]">
+            <CardContent className="flex-1 min-h-0 p-0">
                 <ChartContainer
                     config={{}}
-                    className="h-full [&_.recharts-cartesian-axis-tick]:text-xs"
+                    className="h-full w-full [&_.recharts-cartesian-axis-tick]:text-xs"
                 >
                     <ResponsiveContainer width="100%" height="100%">
                         <BarChart

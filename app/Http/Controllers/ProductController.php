@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class ProductController extends Controller
 {
@@ -33,6 +34,7 @@ class ProductController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'sku' => ['required', 'string', 'max:255', 'unique:products,sku'],
             'version' => ['required', 'string', 'max:255'],
+            'download_url' => ['nullable', 'url', 'max:2048'],
             'checksum' => ['nullable', 'string', 'max:255'],
             'size' => ['required', 'integer', 'min:0'],
             'changelog' => ['nullable', 'string'],
@@ -70,7 +72,30 @@ class ProductController extends Controller
      */
     public function update(Request $request, Product $product)
     {
-        //
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'sku' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('products', 'sku')->ignore($product->id),
+            ],
+            'version' => ['required', 'string', 'max:255'],
+            'download_url' => ['nullable', 'url', 'max:2048'],
+            'checksum' => ['nullable', 'string', 'max:255'],
+            'size' => ['required', 'integer', 'min:0'],
+            'changelog' => ['nullable', 'string'],
+            'description' => ['required', 'string'],
+            'category' => ['required', 'string', 'max:255'],
+        ]);
+
+        if (empty($data['checksum'])) {
+            $data['checksum'] = hash('sha256', ($data['name'] ?? '') . '@' . ($data['version'] ?? ''));
+        }
+
+        $product->update($data);
+
+        return back()->with('status', 'Produit mis à jour');
     }
 
     /**

@@ -28,7 +28,6 @@ import {
 import { User } from "@/types/model"
 import { usePage } from "@inertiajs/react"
 
-import data from "./data.json"
 import { useAuthStore } from "@/stores/auth";
 import { Progress } from "@/components/ui/progress";
 import { useEffect } from "react"
@@ -117,93 +116,55 @@ export default function Page() {
     )
 }
 
-  export function MyCoursesSection() {
-        const { myCourses = [] } = usePage().props as any;
-        if (!Array.isArray(myCourses)) return null;
-        return (
-            <Card>
-                <CardHeader className="pb-4">
-                    <CardTitle className="text-xl font-semibold text-foreground flex items-center gap-2">
-                        <IconSchool className="h-5 w-5 text-purple-600" />
-                        Mes Formations
-                    </CardTitle>
-                    <CardDescription className="text-muted-foreground">
-                        Reprenez où vous vous êtes arrêté
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                        {myCourses.length === 0 && (
-                            <div className="text-sm text-muted-foreground">Vous n'êtes inscrit à aucune formation pour l'instant.</div>
-                        )}
-                        {myCourses.map((c: any) => (
-                            <Link key={c.course_id} href={route('courses.show', c.course_id)} className="border rounded-lg p-3 hover:bg-muted/50 transition-colors group">
-                                {c.cover_image ? (
-                                    <img src={`/storage/${c.cover_image}`} alt="Cover" className="h-28 w-full object-cover rounded-md mb-2" />
-                                ) : (
-                                    <div className="h-28 w-full rounded-md bg-muted mb-2" />
-                                )}
-                                <div className="text-sm font-medium line-clamp-1">{c.title}</div>
-                                <div className="mt-2">
-                                    <div className="flex items-center justify-between text-xs text-muted-foreground">
-                                        <span>Progression</span>
-                                        <span className="font-medium text-foreground">{c.progress_percent ?? 0}%</span>
-                                    </div>
-                                    <Progress value={c.progress_percent ?? 0} className="h-1.5" />
+export function MyCoursesSection() {
+    const { myCourses = [] } = usePage().props as any;
+    if (!Array.isArray(myCourses)) return null;
+    return (
+        <Card>
+            <CardHeader className="pb-4">
+                <CardTitle className="text-xl font-semibold text-foreground flex items-center gap-2">
+                    <IconSchool className="h-5 w-5 text-purple-600" />
+                    Mes Formations
+                </CardTitle>
+                <CardDescription className="text-muted-foreground">
+                    Reprenez où vous vous êtes arrêté
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                    {myCourses.length === 0 && (
+                        <div className="text-sm text-muted-foreground">Vous n'êtes inscrit à aucune formation pour l'instant.</div>
+                    )}
+                    {myCourses.map((c: any) => (
+                        <Link key={c.course_id} href={route('courses.show', c.course_id)} className="border rounded-lg p-3 hover:bg-muted/50 transition-colors group">
+                            {c.cover_image ? (
+                                <img src={`/storage/${c.cover_image}`} alt="Cover" className="h-28 w-full object-cover rounded-md mb-2" />
+                            ) : (
+                                <div className="h-28 w-full rounded-md bg-muted mb-2" />
+                            )}
+                            <div className="text-sm font-medium line-clamp-1">{c.title}</div>
+                            <div className="mt-2">
+                                <div className="flex items-center pb-2 justify-between text-xs text-muted-foreground">
+                                    <span>Progression</span>
+                                    <span className="font-medium text-foreground">{c.progress_percent ?? 0}%</span>
                                 </div>
-                            </Link>
-                        ))}
-                    </div>
-                </CardContent>
-            </Card>
-        );
-    }
+                                <Progress value={c.progress_percent ?? 0} className="h-1.5" />
+                            </div>
+                        </Link>
+                    ))}
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
 export function ActiveSoftwareSection() {
     const { activeSoftware: activeSoftwareProp } = usePage().props as any;
-    const fallback = [
-        {
-            id: 1,
-            name: "MasterTrade",
-            version: "v3.2.1",
-            status: "active",
-            expiry: "2024-12-15",
-            icon: IconTrendingUp,
-            category: "Gestion Commerciale",
-            iconColor: "text-blue-600 dark:text-blue-400",
-            bgColor: "bg-blue-100 dark:bg-blue-900/20"
-        },
-        {
-            id: 2,
-            name: "MasterImmo",
-            version: "v1.8.3",
-            status: "active",
-            expiry: "2024-08-20",
-            icon: IconBuilding,
-            category: "Immobilier",
-            iconColor: "text-green-600 dark:text-green-400",
-            bgColor: "bg-green-100 dark:bg-green-900/20"
-        },
-        {
-            id: 3,
-            name: "MasterAdogbe",
-            version: "v2.1.0",
-            status: "warning",
-            expiry: "2024-03-15",
-            icon: IconUsers,
-            category: "Tontines",
-            iconColor: "text-purple-600 dark:text-purple-400",
-            bgColor: "bg-purple-100 dark:bg-purple-900/20"
-        }
-    ];
-
-    const activeSoftware = (Array.isArray(activeSoftwareProp) && activeSoftwareProp.length
-        ? activeSoftwareProp.map((s: any) => ({
-            ...s,
-            icon: IconTrendingUp,
-            iconColor: "text-blue-600 dark:text-blue-400",
-            bgColor: "bg-blue-100 dark:bg-blue-900/20",
-        }))
-        : fallback);
+    const activeSoftware = (Array.isArray(activeSoftwareProp) ? activeSoftwareProp : []).map((s: any) => ({
+        ...s,
+        icon: IconTrendingUp,
+        iconColor: "text-blue-600 dark:text-blue-400",
+        bgColor: "bg-blue-100 dark:bg-blue-900/20",
+    }));
 
     return (
         <Card>
@@ -218,7 +179,10 @@ export function ActiveSoftwareSection() {
             </CardHeader>
             <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {activeSoftware.map((software) => (
+                    {activeSoftware.length === 0 && (
+                        <div className="text-sm text-muted-foreground">Aucun logiciel actif pour le moment.</div>
+                    )}
+                    {activeSoftware.map((software: any) => (
                         <div key={software.id} className="bg-card border rounded-lg p-4 hover:shadow-sm transition-all duration-200 group">
                             <div className="flex items-start justify-between mb-3">
                                 <div className="flex items-center gap-3">
@@ -250,10 +214,19 @@ export function ActiveSoftwareSection() {
                             </div>
 
                             <div className="flex gap-2">
-                                <Button size="sm" variant="default" className="flex-1 text-xs">
-                                    <IconDownload className="h-3 w-3 mr-1" />
-                                    Télécharger
-                                </Button>
+                                {software.download_available && software.product_id ? (
+                                    <Button size="sm" variant="default" className="flex-1 text-xs" asChild>
+                                        <a href={route('downloads.start', software.product_id)}>
+                                            <IconDownload className="h-3 w-3 mr-1" />
+                                            Télécharger
+                                        </a>
+                                    </Button>
+                                ) : (
+                                    <Button size="sm" variant="outline" className="flex-1 text-xs" disabled>
+                                        <IconDownload className="h-3 w-3 mr-1" />
+                                        Indisponible
+                                    </Button>
+                                )}
                                 <Button size="sm" variant="outline" className="px-2">
                                     <IconLicense className="h-3 w-3" />
                                 </Button>
@@ -267,46 +240,7 @@ export function ActiveSoftwareSection() {
 }
 
 export function RecentActivitySection() {
-    const activities = [
-        {
-            id: 1,
-            type: "download",
-            product: "MasterTrade",
-            version: "v3.2.1",
-            date: "2024-01-15 14:30",
-            icon: IconDownload,
-            iconColor: "text-blue-600 dark:text-blue-400",
-            bgColor: "bg-blue-100 dark:bg-blue-900/20"
-        },
-        {
-            id: 2,
-            type: "renewal",
-            product: "MasterImmo",
-            date: "2024-01-10 09:15",
-            icon: IconLicense,
-            iconColor: "text-green-600 dark:text-green-400",
-            bgColor: "bg-green-100 dark:bg-green-900/20"
-        },
-        {
-            id: 3,
-            type: "support",
-            product: "Support Technique",
-            date: "2024-01-08 16:45",
-            icon: IconHeadset,
-            iconColor: "text-orange-600 dark:text-orange-400",
-            bgColor: "bg-orange-100 dark:bg-orange-900/20"
-        },
-        {
-            id: 4,
-            type: "course",
-            product: "Formation MasterTrade",
-            date: "2024-01-05 11:20",
-            icon: IconSchool,
-            iconColor: "text-purple-600 dark:text-purple-400",
-            bgColor: "bg-purple-100 dark:bg-purple-900/20"
-        }
-    ]
-
+    const { recentActivity = [] } = usePage().props as any;
     return (
         <Card>
             <CardHeader className="pb-4">
@@ -324,71 +258,40 @@ export function RecentActivitySection() {
                 </CardDescription>
             </CardHeader>
             <CardContent className="p-0">
-                <div className="divide-y divide-border">
-                    {activities.map((activity) => (
-                        <div key={activity.id} className="p-4 flex items-center gap-3 hover:bg-muted/50 transition-colors first:rounded-t-lg last:rounded-b-lg">
-                            <div className={`w-8 h-8 ${activity.bgColor} rounded-lg flex items-center justify-center flex-shrink-0`}>
-                                <activity.icon className={`h-4 w-4 ${activity.iconColor}`} />
+                {(!Array.isArray(recentActivity) || recentActivity.length === 0) ? (
+                    <div className="p-6 text-sm text-muted-foreground">Aucune activité récente.</div>
+                ) : (
+                    <div className="divide-y divide-border">
+                        {recentActivity.map((activity: any, idx: number) => (
+                            <div key={idx} className="p-4 flex items-center gap-3 hover:bg-muted/50 transition-colors first:rounded-t-lg last:rounded-b-lg">
+                                <div className={`w-8 h-8 bg-blue-100 dark:bg-blue-900/20 rounded-lg flex items-center justify-center flex-shrink-0`}>
+                                    <IconDownload className={`h-4 w-4 text-blue-600 dark:text-blue-400`} />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <p className="font-medium text-foreground text-sm truncate">{activity.product}</p>
+                                    <p className="text-xs text-muted-foreground truncate">
+                                        {activity.type === 'download' ? 'Téléchargement effectué' : 'Commande créée'}
+                                    </p>
+                                </div>
+                                <div className="text-right flex-shrink-0">
+                                    <p className="text-xs font-medium text-foreground">
+                                        {new Date(activity.date).toLocaleDateString('fr-FR')}
+                                    </p>
+                                    <p className="text-xs text-muted-foreground">
+                                        {new Date(activity.date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                                    </p>
+                                </div>
                             </div>
-                            <div className="flex-1 min-w-0">
-                                <p className="font-medium text-foreground text-sm truncate">{activity.product}</p>
-                                <p className="text-xs text-muted-foreground truncate">
-                                    {activity.type === 'download' && 'Téléchargement effectué'}
-                                    {activity.type === 'renewal' && 'Licence renouvelée'}
-                                    {activity.type === 'support' && 'Ticket support créé'}
-                                    {activity.type === 'course' && 'Formation consultée'}
-                                </p>
-                            </div>
-                            <div className="text-right flex-shrink-0">
-                                <p className="text-xs font-medium text-foreground">
-                                    {new Date(activity.date).toLocaleDateString('fr-FR')}
-                                </p>
-                                <p className="text-xs text-muted-foreground">
-                                    {new Date(activity.date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
-                                </p>
-                            </div>
-                        </div>
-                    ))}
-                </div>
+                        ))}
+                    </div>
+                )}
             </CardContent>
         </Card>
     )
 }
 
 export function RecommendedCoursesSection() {
-    const recommendedCourses = [
-        {
-            id: 1,
-            title: "Maîtriser MasterTrade Avancé",
-            description: "Techniques avancées de gestion commerciale",
-            duration: "2h 30min",
-            progress: 65,
-            category: "Commercial",
-            icon: IconTrendingUp,
-            gradient: "from-blue-500 to-blue-600"
-        },
-        {
-            id: 2,
-            title: "Gestion Immobilière avec MasterImmo",
-            description: "Optimisez votre gestion de patrimoine",
-            duration: "1h 45min",
-            progress: 0,
-            category: "Immobilier",
-            icon: IconBuilding,
-            gradient: "from-green-500 to-green-600"
-        },
-        {
-            id: 3,
-            title: "Automatisation des Tontines",
-            description: "Gestion optimisée des systèmes de tontine",
-            duration: "3h 15min",
-            progress: 0,
-            category: "Finance",
-            icon: IconUsers,
-            gradient: "from-purple-500 to-purple-600"
-        }
-    ]
-
+    const { recommendedCourses = [] } = usePage().props as any;
     return (
         <Card>
             <CardHeader className="pb-4">
@@ -406,41 +309,26 @@ export function RecommendedCoursesSection() {
                 </CardDescription>
             </CardHeader>
             <CardContent>
-                <div className="space-y-4">
-                    {recommendedCourses.map((course) => (
-                        <div key={course.id} className="flex items-center gap-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors group">
-                            <div className={`w-12 h-12 bg-gradient-to-r ${course.gradient} rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform`}>
-                                <course.icon className="h-6 w-6 text-white" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                                <h3 className="font-semibold text-foreground text-sm line-clamp-1">{course.title}</h3>
-                                <p className="text-xs text-muted-foreground line-clamp-1">{course.description}</p>
-                                <div className="flex items-center justify-between mt-1">
-                                    <span className="text-xs text-muted-foreground flex items-center gap-1">
-                                        <IconClock className="h-3 w-3" />
-                                        {course.duration}
-                                    </span>
-                                    {course.progress > 0 && (
-                                        <span className="text-xs font-medium text-blue-600 dark:text-blue-400">
-                                            {course.progress}% terminé
-                                        </span>
-                                    )}
+                {Array.isArray(recommendedCourses) && recommendedCourses.length > 0 ? (
+                    <div className="space-y-4">
+                        {recommendedCourses.map((course: any) => (
+                            <div key={course.id} className="flex items-center gap-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors group">
+                                <div className={`w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform`}>
+                                    <IconTrendingUp className="h-6 w-6 text-white" />
                                 </div>
-                                {course.progress > 0 && (
-                                    <div className="w-full bg-muted rounded-full h-1.5 mt-2">
-                                        <div
-                                            className="bg-blue-600 h-1.5 rounded-full transition-all duration-300"
-                                            style={{ width: `${course.progress}%` }}
-                                        ></div>
-                                    </div>
-                                )}
+                                <div className="flex-1 min-w-0">
+                                    <h3 className="font-semibold text-foreground text-sm line-clamp-1">{course.title}</h3>
+                                    <p className="text-xs text-muted-foreground line-clamp-1">{course.description}</p>
+                                </div>
+                                <Button size="sm" variant="default" className="flex-shrink-0 text-xs">
+                                    Démarrer
+                                </Button>
                             </div>
-                            <Button size="sm" variant={course.progress > 0 ? "outline" : "default"} className="flex-shrink-0 text-xs">
-                                {course.progress > 0 ? 'Continuer' : 'Démarrer'}
-                            </Button>
-                        </div>
-                    ))}
-                </div>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="text-sm text-muted-foreground">Aucune recommandation pour le moment.</div>
+                )}
             </CardContent>
         </Card>
     )

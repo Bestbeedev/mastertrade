@@ -30,7 +30,8 @@ import {
 } from "@/components/ui/sidebar"
 import { usePage } from "@inertiajs/react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { LayoutDashboard } from "lucide-react";
+import { LayoutDashboard, SquareChevronUpIcon } from "lucide-react";
+import { Separator } from "./ui/separator";
 
 const data = {
     user: {
@@ -95,14 +96,6 @@ const data = {
             icon: IconHelp,
         },
     ],
-    quickAccess: [
-        {
-            name: "MasterAdogbe v2.1",
-            url: "/downloads/masteradogbe",
-            icon: IconDownload,
-            version: "Dernière version",
-        },
-    ],
 }
 
 
@@ -110,6 +103,7 @@ const data = {
 // Composant pour le header du sidebar avec comportement responsive
 function SidebarHeaderContent() {
     const { state } = useSidebar();
+    const isAdmin = !!(usePage().props as any)?.auth?.isAdmin;
 
     if (state === "collapsed") {
         return (
@@ -117,16 +111,16 @@ function SidebarHeaderContent() {
                 <TooltipTrigger asChild>
                     <a
                         href="/dashboard"
-                        className="flex items-center justify-center w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 rounded-lg transition-colors"
+                        className="flex items-center justify-center w-10 h-10 mx-auto bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 rounded-lg transition-colors"
                     >
-                        <div className="w-6 h-6 bg-white rounded flex items-center justify-center">
-                            <IconUser className="!size-3 text-gray-900" />
+                        <div className="w-6 h-6 bg-white rounded-lg flex items-center justify-center">
+                            <IconUser className="!size-4 text-gray-900" />
                         </div>
                     </a>
                 </TooltipTrigger>
                 <TooltipContent side="right">
-                    <div className="text-sm font-medium">MASTERTRADE</div>
-                    <div className="text-xs text-muted-foreground">Espace Client</div>
+                    <div className="text-sm font-bold">MASTERTRADE</div>
+                    <div className="text-xs text-muted-foreground">Espace { isAdmin ? 'Admin' : 'Client'}</div>
                 </TooltipContent>
             </Tooltip>
         );
@@ -135,14 +129,14 @@ function SidebarHeaderContent() {
     return (
         <a
             href="/"
-            className="flex items-center gap-3 px-3 py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 rounded-lg transition-colors"
+            className="flex items-center gap-3 px-3 py-4 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 rounded-lg transition-colors"
         >
             <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
                 <IconUser className="!size-4 text-gray-900" />
             </div>
             <div className="flex flex-col items-start">
                 <span className="text-base font-bold text-gray-100">MASTERTRADE</span>
-                <span className="text-xs text-gray-200">Espace Client</span>
+                <span className="text-xs text-gray-200">Espace { isAdmin ? 'Admin' : 'Client'}</span>
             </div>
         </a>
     );
@@ -157,7 +151,7 @@ export function AppSidebar({ user, ...props }: { user: User; } & React.Component
     const isAdmin = !!(usePage().props as any)?.auth?.isAdmin;
     const adminItems = [
         {
-            title: "Administration",
+            title: "Admin Panels",
             url: "/admin",
             icon: IconSettings,
         },
@@ -170,6 +164,11 @@ export function AppSidebar({ user, ...props }: { user: User; } & React.Component
             title: "Gérer les produits",
             url: "/admin/products",
             icon: IconPackage,
+        },
+        {
+            title: "Gérer les licences",
+            url: "/admin/licenses",
+            icon: IconLicense,
         },
     ];
 
@@ -190,12 +189,11 @@ export function AppSidebar({ user, ...props }: { user: User; } & React.Component
                     {/* Navigation principale */}
                     <div className="flex-1 ">
                         <NavMain items={data.navMain} />
+                        <br />
                         {isAdmin && <NavMain items={adminItems} />}
-
+                    </div>
                     {/* Navigation secondaire */}
                     <NavSecondary items={data.navSecondary} className="mt-auto" />
-                    </div>
-
                 </SidebarContent>
 
                 <SidebarFooter>

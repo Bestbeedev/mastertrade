@@ -20,70 +20,43 @@ import {
 } from "@/components/ui/card"
 import { usePage } from "@inertiajs/react"
 
-// Données dynamiques du client
-const clientStats = {
-    activeLicenses: 3,
-    totalOrders: 8,
-    totalDownloads: 24,
-    activeCourses: 2,
-    pendingRenewals: 1,
-    supportTickets: 2,
-    licenseStatus: {
-        active: 3,
-        expired: 1,
-        trial: 0
-    },
-    recentActivity: [
-        { product: "MasterTrade", action: "Téléchargement", date: "2024-01-15" },
-        { product: "MasterImmo", action: "Renouvellement", date: "2024-01-10" }
-    ]
-}
-
-const products = {
-    "MasterAdogbe": { name: "MasterAdogbe", version: "v2.1.0", category: "Tontines" },
-    "MasterImmo": { name: "MasterImmo", version: "v1.8.3", category: "Immobilier" },
-    "MasterTrade": { name: "MasterTrade", version: "v3.2.1", category: "Commercial" },
-    "MasterStock": { name: "MasterStock", version: "v2.0.3", category: "Logistique" },
-    "Ecosoft": { name: "Ecosoft", version: "v1.5.2", category: "Éducation" }
-}
-
 export function SectionCards() {
     const { dashboardStats } = usePage().props as any;
-    const source = dashboardStats ?? clientStats;
+    const source = dashboardStats ?? {};
     // Calcul des métriques dérivées
     const stats = {
         licenses: {
-            total: source.activeLicenses,
+            total: source.activeLicenses ?? 0,
             trend: source.activeLicenses > 2 ? 'up' : 'stable',
             change: '+1 ce mois-ci',
             description: `${source.licenseStatus?.active ?? 0} actives, ${source.licenseStatus?.expired ?? 0} expirées`
         },
         downloads: {
-            total: source.totalDownloads,
+            total: source.totalDownloads ?? 0,
             trend: source.totalDownloads > 20 ? 'up' : 'stable',
             change: '+3 ce mois-ci',
-            description: 'Dernier: MasterTrade v3.2.1'
+            description: ''
         },
         courses: {
-            total: source.activeCourses,
+            total: source.activeCourses ?? 0,
             trend: source.activeCourses > 0 ? 'up' : 'stable',
             change: source.activeCourses > 0 ? '1 en cours' : 'Aucune',
             description: source.activeCourses > 0 ? `${source.courseProgressAvg ?? 0}% de complétion moyenne` : '—'
         },
         renewals: {
-            total: source.pendingRenewals,
+            total: source.pendingRenewals ?? 0,
             trend: source.pendingRenewals > 0 ? 'down' : 'stable',
             change: source.pendingRenewals > 0 ? 'À traiter' : 'À jour',
             description: source.pendingRenewals > 0 ? 'Expire dans 15 jours' : '—'
         },
         support: {
-            total: source.supportTickets,
+            total: source.supportTickets ?? 0,
             trend: source.supportTickets > 0 ? 'down' : 'stable',
             change: source.supportTickets > 0 ? '1 en attente' : '0 en attente',
             description: source.supportTickets > 0 ? 'Dernier réponse: 2h' : '—'
         },
         orders: {
-            total: source.totalOrders,
+            total: source.totalOrders ?? 0,
             trend: 'up',
             change: '+2 cette année',
             description: 'Dernière commande: 10 Jan'

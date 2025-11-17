@@ -167,14 +167,18 @@ export default function TicketShow() {
                             />
                             <div>
                                 <Label htmlFor="reply_attachments">Pièces jointes (optionnel)</Label>
-                                <Dropzone multiple accept="image/*,application/pdf,text/plain,application/zip" onFiles={(files) => replyForm.setData('attachments', files)}>
-                                    <span>Glissez-déposez ici ou cliquez pour sélectionner</span>
-                                </Dropzone>
-                                {replyForm.data.attachments?.length > 0 && (
-                                    <div className="text-xs text-muted-foreground mt-1">
-                                        {replyForm.data.attachments.map((f: File) => f.name).join(', ')}
+                                <Dropzone
+                                    multiple
+                                    accept="image/*,application/pdf,text/plain,application/zip"
+                                    value={replyForm.data.attachments || []}
+                                    onFiles={(files) => replyForm.setData('attachments', files)}
+                                    className="min-h-[100px]"
+                                >
+                                    <div className="text-center p-4">
+                                        <p className="text-muted-foreground">Glissez-déposez des fichiers ici ou cliquez pour sélectionner</p>
+                                        <p className="text-xs text-muted-foreground mt-1">Formats acceptés: images, PDF, texte, ZIP</p>
                                     </div>
-                                )}
+                                </Dropzone>
                             </div>
                             <div className="flex justify-end">
                                 <Button type="submit" disabled={replyForm.processing}>Envoyer</Button>

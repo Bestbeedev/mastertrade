@@ -9,7 +9,7 @@ use App\Traits\UuidTrait;
 class Product extends Model
 {
     use HasFactory, UuidTrait;
-    protected $fillable = ['name', 'sku', 'version', 'checksum', 'size', 'changelog', 'description', 'category'];
+    protected $fillable = ['name', 'sku', 'version', 'download_url', 'checksum', 'size', 'changelog', 'description', 'category'];
     public function licenses()
     {
         return $this->hasMany(License::class);

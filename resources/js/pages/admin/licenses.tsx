@@ -17,6 +17,23 @@ export default function AdminLicenses({ licenses = [], products = [], users = []
     const [query, setQuery] = React.useState(filters.q ?? "");
     const [status, setStatus] = React.useState(filters.status ?? "");
     const [editing, setEditing] = React.useState<any | null>(null);
+    const getDaysRemaining = (dateStr?: string) => {
+        if (!dateStr) return null;
+        const today = new Date();
+        const start = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+        const end = new Date(dateStr);
+        const endDate = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+        const MS = 24 * 60 * 60 * 1000;
+        return Math.round((endDate.getTime() - start.getTime()) / MS);
+    };
+    const DaysRemaining: React.FC<{ date?: string }> = ({ date }) => {
+        const d = getDaysRemaining(date);
+        if (d === null) return null;
+        if (d < 0) return <span className="text-xs text-destructive">Expirée il y a {Math.abs(d)} j</span>;
+        if (d === 0) return <span className="text-xs text-amber-600">Expire aujourd’hui</span>;
+        if (d <= 30) return <span className="text-xs text-amber-600">Reste {d} j</span>;
+        return <span className="text-xs text-emerald-600">Reste {d} j</span>;
+    };
 
     const statusOptions = [
         { value: "all", label: "Tous" },
@@ -144,38 +161,53 @@ export default function AdminLicenses({ licenses = [], products = [], users = []
                                 </form>
                                 <div>
                                     <Table>
-                                            <TableHeader>
-                                                <TableRow>
-                                                    <TableHead>Clé</TableHead>
-                                                    <TableHead>Produit</TableHead>
-                                                    <TableHead>Utilisateur</TableHead>
-                                                    <TableHead>Type</TableHead>
-                                                    <TableHead>Statut</TableHead>
-                                                    <TableHead>Expire</TableHead>
-                                                    <TableHead>Activations</TableHead>
-                                                    <TableHead>Actions</TableHead>
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead>Clé</TableHead>
+                                                <TableHead>Produit</TableHead>
+                                                <TableHead>Utilisateur</TableHead>
+                                                <TableHead>Type</TableHead>
+                                                <TableHead>Statut</TableHead>
+                                                <TableHead>Expire</TableHead>
+                                                <TableHead>Activations</TableHead>
+                                                <TableHead>Device ID</TableHead>
+                                                <TableHead>Machine</TableHead>
+                                                <TableHead>Adresse MAC</TableHead>
+                                                <TableHead>Dernière activation</TableHead>
+                                                <TableHead>Actions</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {licenses.map((l) => (
+                                                <TableRow key={l.id}>
+                                                    <TableCell className="font-mono text-xs">{l.key}</TableCell>
+                                                    <TableCell>{l.product?.name ?? "—"}{l.product?.version ? ` • v${l.product.version}` : ""}</TableCell>
+                                                    <TableCell>{l.user?.name ?? "—"}</TableCell>
+                                                    <TableCell className="uppercase text-xs">{l.type}</TableCell>
+                                                    <TableCell className="uppercase text-xs">{l.status}</TableCell>
+                                                    <TableCell>
+                                                        {l.expiry_date ? (
+                                                            <div className="flex flex-col">
+                                                                <span>{new Date(l.expiry_date).toLocaleDateString('fr-FR')}</span>
+                                                                <DaysRemaining date={l.expiry_date} />
+                                                            </div>
+                                                        ) : "—"}
+                                                    </TableCell>
+                                                    <TableCell>{(l.activations_count ?? 0)}/{(l.max_activations ?? 1)}</TableCell>
+                                                    <TableCell className="font-mono text-xs">{l.last_device_id ?? "—"}</TableCell>
+                                                    <TableCell>{l.last_machine ?? "—"}</TableCell>
+                                                    <TableCell className="font-mono text-xs">{l.last_mac_address ?? "—"}</TableCell>
+                                                    <TableCell>{l.last_activated_at ? new Date(l.last_activated_at).toLocaleString('fr-FR') : "—"}</TableCell>
+                                                    <TableCell className="space-x-2">
+                                                        <Button size="sm" variant="outline" onClick={() => startEdit(l)}>Éditer</Button>
+                                                        <Button size="sm" variant="destructive" onClick={() => onDelete(l.id)} disabled={deleting}>Supprimer</Button>
+                                                    </TableCell>
                                                 </TableRow>
-                                            </TableHeader>
-                                            <TableBody>
-                                                {licenses.map((l) => (
-                                                    <TableRow key={l.id}>
-                                                        <TableCell className="font-mono text-xs">{l.key}</TableCell>
-                                                        <TableCell>{l.product?.name ?? "—"}{l.product?.version ? ` • v${l.product.version}` : ""}</TableCell>
-                                                        <TableCell>{l.user?.name ?? "—"}</TableCell>
-                                                        <TableCell className="uppercase text-xs">{l.type}</TableCell>
-                                                        <TableCell className="uppercase text-xs">{l.status}</TableCell>
-                                                        <TableCell>{l.expiry_date ? new Date(l.expiry_date).toLocaleDateString('fr-FR') : "—"}</TableCell>
-                                                        <TableCell>{(l.activations_count ?? 0)}/{(l.max_activations ?? 1)}</TableCell>
-                                                        <TableCell className="space-x-2">
-                                                            <Button size="sm" variant="outline" onClick={() => startEdit(l)}>Éditer</Button>
-                                                            <Button size="sm" variant="destructive" onClick={() => onDelete(l.id)} disabled={deleting}>Supprimer</Button>
-                                                        </TableCell>
-                                                    </TableRow>
-                                                ))}
-                                            </TableBody>
-                                            {licenses.length === 0 && <TableCaption>Aucune licence</TableCaption>}
-                                        </Table>
-                                    </div>
+                                            ))}
+                                        </TableBody>
+                                        {licenses.length === 0 && <TableCaption>Aucune licence</TableCaption>}
+                                    </Table>
+                                </div>
 
                                 <Dialog open={!!editing} onOpenChange={(open) => { if (!open) setEditing(null); }}>
                                     <DialogContent>
@@ -243,10 +275,29 @@ export default function AdminLicenses({ licenses = [], products = [], users = []
                                                     <div className="space-y-2">
                                                         <Label htmlFor="e_expiry">Expiration</Label>
                                                         <Input id="e_expiry" type="date" value={editForm.data.expiry_date || ""} onChange={(e) => editForm.setData("expiry_date", e.target.value)} />
+                                                        {editForm.data.expiry_date ? <DaysRemaining date={editForm.data.expiry_date} /> : null}
                                                     </div>
                                                     <div className="space-y-2">
                                                         <Label htmlFor="e_max">Max activations</Label>
                                                         <Input id="e_max" type="number" min={1} value={editForm.data.max_activations ?? ""} onChange={(e) => editForm.setData("max_activations", e.target.value)} />
+                                                    </div>
+                                                </div>
+                                                <div className="grid grid-cols-2 gap-3">
+                                                    <div className="space-y-2">
+                                                        <Label>Device ID (lecture seule)</Label>
+                                                        <Input value={editing.last_device_id ?? "—"} disabled />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <Label>Machine (lecture seule)</Label>
+                                                        <Input value={editing.last_machine ?? "—"} disabled />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <Label>Adresse MAC (lecture seule)</Label>
+                                                        <Input value={editing.last_mac_address ?? "—"} disabled />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <Label>Dernière activation (lecture seule)</Label>
+                                                        <Input value={editing.last_activated_at ? new Date(editing.last_activated_at).toLocaleString('fr-FR') : "—"} disabled />
                                                     </div>
                                                 </div>
                                                 <div className="flex items-center gap-2">

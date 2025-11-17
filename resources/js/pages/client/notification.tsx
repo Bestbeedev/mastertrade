@@ -6,6 +6,8 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
+import { usePage, router } from '@inertiajs/react'
+import { route } from 'ziggy-js'
 import {
     IconBell,
     IconCheck,
@@ -28,90 +30,49 @@ export default function Notification() {
             href: '/client/notification',
         },
     ];
-
-    const [notifications, setNotifications] = useState([
-        {
-            id: 1,
-            type: 'license',
-            title: 'Licence MasterTrade expirera bientôt',
-            description: 'Votre licence MasterTrade expire dans 15 jours. Renouvelez-la pour continuer à utiliser le logiciel.',
-            time: 'Il y a 2 heures',
-            read: false,
-            important: true,
-            icon: IconLicense,
-            iconColor: 'text-blue-600 dark:text-blue-400',
-            bgColor: 'bg-blue-100 dark:bg-blue-900/30'
-        },
-        {
-            id: 2,
-            type: 'download',
-            title: 'Nouvelle version disponible',
-            description: 'MasterTrade v3.2.2 est maintenant disponible. Téléchargez la mise à jour pour bénéficier des nouvelles fonctionnalités.',
-            time: 'Il y a 1 jour',
-            read: false,
-            important: false,
-            icon: IconDownload,
-            iconColor: 'text-green-600 dark:text-green-400',
-            bgColor: 'bg-green-100 dark:bg-green-900/30'
-        },
-        {
-            id: 3,
-            type: 'course',
-            title: 'Nouvelle formation disponible',
-            description: 'Découvrez notre nouvelle formation "Optimisation avancée" pour maîtriser MasterTrade.',
-            time: 'Il y a 2 jours',
-            read: true,
-            important: false,
-            icon: IconSchool,
-            iconColor: 'text-purple-600 dark:text-purple-400',
-            bgColor: 'bg-purple-100 dark:bg-purple-900/30'
-        },
-        {
-            id: 4,
-            type: 'system',
-            title: 'Maintenance planifiée',
-            description: 'Une maintenance est prévue ce weekend. Le service pourrait être indisponible pendant 2 heures.',
-            time: 'Il y a 3 jours',
-            read: true,
-            important: true,
-            icon: IconAlertTriangle,
-            iconColor: 'text-orange-600 dark:text-orange-400',
-            bgColor: 'bg-orange-100 dark:bg-orange-900/30'
-        },
-        {
-            id: 5,
-            type: 'info',
-            title: 'Nouveautés de la plateforme',
-            description: 'Découvrez les nouvelles fonctionnalités de votre espace client MasterTrade.',
-            time: 'Il y a 1 semaine',
-            read: true,
-            important: false,
-            icon: IconInfoCircle,
-            iconColor: 'text-cyan-600 dark:text-cyan-400',
-            bgColor: 'bg-cyan-100 dark:bg-cyan-900/30'
-        }
-    ]);
+    const { notifications: serverNotifications = [] } = usePage().props as any;
+    const notifications = (serverNotifications as any[]).map((n) => {
+        const type = n.type || 'info';
+        const visuals: Record<string, { icon: any; iconColor: string; bgColor: string }> = {
+            license: { icon: IconLicense, iconColor: 'text-blue-600 dark:text-blue-400', bgColor: 'bg-blue-100 dark:bg-blue-900/30' },
+            download: { icon: IconDownload, iconColor: 'text-green-600 dark:text-green-400', bgColor: 'bg-green-100 dark:bg-green-900/30' },
+            course: { icon: IconSchool, iconColor: 'text-purple-600 dark:text-purple-400', bgColor: 'bg-purple-100 dark:bg-purple-900/30' },
+            system: { icon: IconAlertTriangle, iconColor: 'text-orange-600 dark:text-orange-400', bgColor: 'bg-orange-100 dark:bg-orange-900/30' },
+            info: { icon: IconInfoCircle, iconColor: 'text-cyan-600 dark:text-cyan-400', bgColor: 'bg-cyan-100 dark:bg-cyan-900/30' },
+        };
+        const v = visuals[type] || visuals.info;
+        return {
+            id: n.id,
+            type,
+            title: n.data?.title || (type === 'download' ? 'Téléchargement' : type === 'license' ? 'Informations de licence' : 'Notification'),
+            description: n.data?.message || n.data?.description || '',
+            time: n.created_at ? new Date(n.created_at).toLocaleString('fr-FR') : '',
+            read: !!n.read_at,
+            important: !!n.data?.important,
+            icon: v.icon,
+            iconColor: v.iconColor,
+            bgColor: v.bgColor,
+        };
+    });
 
     const [filter, setFilter] = useState('all');
     const [emailNotifications, setEmailNotifications] = useState(true);
     const [pushNotifications, setPushNotifications] = useState(true);
 
     const markAsRead = (id: number) => {
-        setNotifications(notifications.map(notif =>
-            notif.id === id ? { ...notif, read: true } : notif
-        ));
+        router.post(route('notifications.read', id), {}, { preserveScroll: true });
     };
 
     const deleteNotification = (id: number) => {
-        setNotifications(notifications.filter(notif => notif.id !== id));
+        router.delete(route('notifications.destroy', id), { preserveScroll: true });
     };
 
     const markAllAsRead = () => {
-        setNotifications(notifications.map(notif => ({ ...notif, read: true })));
+        router.post(route('notifications.read-all'), {}, { preserveScroll: true });
     };
 
     const clearAll = () => {
-        setNotifications([]);
+        notifications.forEach(n => router.delete(route('notifications.destroy', n.id), { preserveScroll: true }));
     };
 
     const filteredNotifications = notifications.filter(notif => {
@@ -178,8 +139,8 @@ export default function Notification() {
                                         key={filterItem.key}
                                         onClick={() => setFilter(filterItem.key)}
                                         className={`w-full flex items-center justify-between p-2 rounded-lg text-sm transition-colors ${filter === filterItem.key
-                                                ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
-                                                : 'hover:bg-muted/50 text-muted-foreground'
+                                            ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
+                                            : 'hover:bg-muted/50 text-muted-foreground'
                                             }`}
                                     >
                                         <span>{filterItem.label}</span>

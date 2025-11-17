@@ -10,6 +10,7 @@ use App\Models\Product;
 use App\Models\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Schema;
 
 class LicenseAdminController extends Controller
 {
@@ -18,7 +19,7 @@ class LicenseAdminController extends Controller
         $q = (string) $request->input('q', '');
         $status = (string) $request->input('status', '');
 
-        $licenses = License::with(['product:id,name,version', 'user:id,name,email'])
+        $licensesQuery = License::with(['product:id,name,version', 'user:id,name,email'])
             ->when($q !== '', function ($query) use ($q) {
                 $query->where(function ($s) use ($q) {
                     $s->where('key', 'like', "%$q%")
@@ -34,8 +35,16 @@ class LicenseAdminController extends Controller
                 $query->where('status', $status);
             })
             ->orderByDesc('created_at')
-            ->take(150)
-            ->get(['id', 'key', 'status', 'type', 'expiry_date', 'max_activations', 'activations_count', 'product_id', 'user_id', 'created_at']);
+            ->take(150);
+
+        $columns = ['id', 'key', 'status', 'type', 'expiry_date', 'max_activations', 'activations_count', 'product_id', 'user_id', 'created_at'];
+        foreach (['last_device_id', 'last_machine', 'last_mac_address', 'last_activated_at'] as $col) {
+            if (Schema::hasColumn('licenses', $col)) {
+                $columns[] = $col;
+            }
+        }
+
+        $licenses = $licensesQuery->get($columns);
 
         $products = Product::select(['id', 'name'])->orderBy('name')->get();
         $users = User::select(['id', 'name', 'email'])->orderBy('name')->take(200)->get();

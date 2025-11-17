@@ -7,17 +7,65 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Plus, Trash2, Package, FileText, Settings, Box, Tag, Hash, Info, FileDigit, FileArchive, FileCode, FileCheck2, List } from "lucide-react";
 import { route } from "ziggy-js";
 import { toast } from "sonner";
 
 export default function AdminProducts({ products = [] as any[] }: { products?: any[] }) {
     const [activeTab, setActiveTab] = React.useState("details");
+    const [selectedProduct, setSelectedProduct] = React.useState<any | null>(null);
+
+    const editForm = useForm({
+        id: "",
+        name: "",
+        sku: "",
+        version: "1.0.0",
+        download_url: "",
+        checksum: "",
+        size: 0 as number,
+        changelog: "",
+        description: "",
+        category: "software",
+    });
+
+    const openEdit = (product: any) => {
+        setSelectedProduct(product);
+        editForm.setData({
+            id: product.id,
+            name: product.name ?? "",
+            sku: product.sku ?? "",
+            version: product.version ?? "1.0.0",
+            download_url: product.download_url ?? "",
+            checksum: product.checksum ?? "",
+            size: product.size ?? 0,
+            changelog: product.changelog ?? "",
+            description: product.description ?? "",
+            category: product.category ?? "software",
+        });
+    };
+
+    const onSubmitEdit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!selectedProduct) return;
+        const t = toast.loading('Mise à jour du produit...');
+        editForm.patch(route('admin.products.update', selectedProduct.id), {
+            preserveScroll: true,
+            onSuccess: () => {
+                toast.success('Produit mis à jour', { id: t });
+                setSelectedProduct(null);
+            },
+            onError: () => {
+                toast.error("Erreur lors de la mise à jour du produit", { id: t });
+            },
+        });
+    };
 
     const form = useForm({
         name: "",
         sku: "",
         version: "1.0.0",
+        download_url: "",
         checksum: "",
         size: 0 as number,
         changelog: "- Correction de bugs mineurs\n- Amélioration des performances\n- Nouvelles fonctionnalités",
@@ -159,10 +207,20 @@ export default function AdminProducts({ products = [] as any[] }: { products?: a
                                                     </div>
                                                 </div>
                                                 <div className="flex items-center gap-2">
-                                                    {/* Bouton Modifier réservé pour une future édition */}
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        className="gap-1"
+                                                        type="button"
+                                                        onClick={() => openEdit(product)}
+                                                    >
+                                                        <Info className="h-4 w-4" />
+                                                        Détails
+                                                    </Button>
                                                     <Button
                                                         variant="destructive"
                                                         size="sm"
+                                                        type="button"
                                                         onClick={() => handleDelete(product.id)}
                                                         disabled={deleting}
                                                     >
@@ -177,6 +235,7 @@ export default function AdminProducts({ products = [] as any[] }: { products?: a
                         </Card>
                     </TabsContent>
 
+                    {/* Création d'un nouveau produit */}
                     <TabsContent value="new">
                         <form onSubmit={handleSubmit}>
                             <Card>
@@ -261,7 +320,7 @@ export default function AdminProducts({ products = [] as any[] }: { products?: a
                                                                 value={form.data.category}
                                                                 onValueChange={(value) => form.setData("category", value)}
                                                             >
-                                                                <SelectTrigger>
+                                                                <SelectTrigger className="w-full">
                                                                     <SelectValue placeholder="Sélectionnez une catégorie" />
                                                                 </SelectTrigger>
                                                                 <SelectContent>
@@ -391,6 +450,16 @@ export default function AdminProducts({ products = [] as any[] }: { products?: a
                                         <TabsContent value="files" className="space-y-4">
                                             <div className="grid gap-6 md:grid-cols-2">
                                                 <div className="space-y-4">
+                                                    <div className="space-y-2">
+                                                        <Label htmlFor="download_url">Lien de téléchargement (Google Drive)</Label>
+                                                        <Input
+                                                            id="download_url"
+                                                            placeholder="https://drive.google.com/file/d/FILE_ID/view"
+                                                            value={form.data.download_url}
+                                                            onChange={(e) => form.setData("download_url", e.target.value)}
+                                                        />
+                                                        <p className="text-xs text-muted-foreground">Collez un lien Google Drive public. Les téléchargements seront servis via l’application.</p>
+                                                    </div>
                                                     <div className="space-y-2">
                                                         <Label htmlFor="file">Fichier du produit</Label>
                                                         <div className="flex items-center gap-2">
@@ -636,6 +705,135 @@ export default function AdminProducts({ products = [] as any[] }: { products?: a
                         </form>
                     </TabsContent>
                 </Tabs>
+                {/* Modal détails / édition produit */}
+                <Dialog open={!!selectedProduct} onOpenChange={(open) => !open && setSelectedProduct(null)}>
+                    <DialogContent className="max-w-2xl">
+                        <DialogHeader>
+                            <DialogTitle>Détails du produit</DialogTitle>
+                            <DialogDescription>
+                                Consultez et mettez à jour les informations de ce produit logiciel.
+                            </DialogDescription>
+                        </DialogHeader>
+
+                        {selectedProduct && (
+                            <form onSubmit={onSubmitEdit} className="space-y-4">
+                                <div className="grid gap-4 md:grid-cols-2">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="edit_name">Nom du produit</Label>
+                                        <Input
+                                            id="edit_name"
+                                            value={editForm.data.name}
+                                            onChange={(e) => editForm.setData('name', e.target.value)}
+                                            required
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="edit_sku">Référence (SKU)</Label>
+                                        <Input
+                                            id="edit_sku"
+                                            value={editForm.data.sku}
+                                            onChange={(e) => editForm.setData('sku', e.target.value)}
+                                            required
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="edit_version">Version</Label>
+                                        <Input
+                                            id="edit_version"
+                                            value={editForm.data.version}
+                                            onChange={(e) => editForm.setData('version', e.target.value)}
+                                            required
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="edit_category">Catégorie</Label>
+                                        <Select
+                                            value={editForm.data.category}
+                                            onValueChange={(value) => editForm.setData('category', value)}
+                                        >
+                                            <SelectTrigger id="edit_category" className="w-full">
+                                                <SelectValue placeholder="Sélectionnez une catégorie" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {productCategories.map((category) => (
+                                                    <SelectItem key={category.value} value={category.value}>
+                                                        {category.label}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                </div>
+
+                                <div className="grid gap-4 md:grid-cols-2">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="edit_size">Taille du fichier (octets)</Label>
+                                        <Input
+                                            id="edit_size"
+                                            type="number"
+                                            min={0}
+                                            value={editForm.data.size}
+                                            onChange={(e) => editForm.setData('size', parseInt(e.target.value || '0', 10))}
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="edit_checksum">Empreinte (SHA-256)</Label>
+                                        <Input
+                                            id="edit_checksum"
+                                            value={editForm.data.checksum}
+                                            onChange={(e) => editForm.setData('checksum', e.target.value)}
+                                            placeholder="Laisser vide pour régénérer automatiquement"
+                                        />
+                                    </div>
+                                    <div className="space-y-2 md:col-span-2">
+                                        <Label htmlFor="edit_download_url">Lien de téléchargement (Google Drive)</Label>
+                                        <Input
+                                            id="edit_download_url"
+                                            value={editForm.data.download_url as any}
+                                            onChange={(e) => editForm.setData('download_url', e.target.value)}
+                                            placeholder="https://drive.google.com/file/d/FILE_ID/view"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="edit_description">Description</Label>
+                                    <textarea
+                                        id="edit_description"
+                                        value={editForm.data.description}
+                                        onChange={(e) => editForm.setData('description', e.target.value)}
+                                        rows={4}
+                                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                                    />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="edit_changelog">Notes de version</Label>
+                                    <textarea
+                                        id="edit_changelog"
+                                        value={editForm.data.changelog}
+                                        onChange={(e) => editForm.setData('changelog', e.target.value)}
+                                        rows={4}
+                                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                                    />
+                                </div>
+
+                                <div className="flex justify-between items-center text-xs text-muted-foreground">
+                                    <span>Créé le {selectedProduct.created_at ? new Date(selectedProduct.created_at).toLocaleDateString('fr-FR') : '—'}</span>
+                                </div>
+
+                                <div className="flex justify-end gap-2">
+                                    <Button type="button" variant="outline" onClick={() => setSelectedProduct(null)}>
+                                        Annuler
+                                    </Button>
+                                    <Button type="submit" disabled={editForm.processing}>
+                                        {editForm.processing ? 'Enregistrement...' : 'Enregistrer les modifications'}
+                                    </Button>
+                                </div>
+                            </form>
+                        )}
+                    </DialogContent>
+                </Dialog>
             </div>
         </AppLayout>
     );

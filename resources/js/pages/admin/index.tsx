@@ -191,7 +191,7 @@ export default function AdminIndex() {
                                     value={stats.courses}
                                     icon={GraduationCap}
                                     action={
-                                        <Button asChild size="sm">
+                                        <Button asChild size="sm" >
                                             <Link href="/admin/courses">Gérer</Link>
                                         </Button>
                                     }
@@ -202,7 +202,7 @@ export default function AdminIndex() {
                                     value={stats.products}
                                     icon={Package}
                                     action={
-                                        <Button asChild size="sm">
+                                        <Button asChild size="sm" variant="outline">
                                             <Link href="/admin/products">Gérer</Link>
                                         </Button>
                                     }
@@ -213,7 +213,7 @@ export default function AdminIndex() {
                                     value={stats.users}
                                     icon={Users}
                                     action={
-                                        <Button asChild size="sm" variant="outline">
+                                        <Button asChild size="sm" variant="outline" >
                                             <Link href="/admin/users">Voir</Link>
                                         </Button>
                                     }
@@ -225,7 +225,7 @@ export default function AdminIndex() {
                                     secondaryValue={`${stats.licenses.active} actives`}
                                     icon={Receipt}
                                     action={
-                                        <Button asChild size="sm" variant="outline">
+                                        <Button asChild size="sm">
                                             <Link href="/admin/licenses">Voir</Link>
                                         </Button>
                                     }
@@ -238,6 +238,7 @@ export default function AdminIndex() {
                         <div>
                             <h3 className="text-lg font-semibold mb-4">Performance (30 jours)</h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+
                                 <StatCard
                                     title="Commandes"
                                     value={stats.orders_30d}
@@ -252,11 +253,18 @@ export default function AdminIndex() {
                                     variant="secondary"
                                     description="Chiffre d'affaires"
                                 />
+
                                 <StatCard
                                     title="Téléchargements"
                                     value={stats.downloads_30d}
+                                    secondaryValue={`${stats.downloads_30d} téléchargements`}
                                     icon={Download}
-                                    variant="secondary"
+                                    action={
+                                        <Button asChild size="sm" variant="outline">
+                                            <Link href="/admin/downloads">Voir</Link>
+                                        </Button>
+                                    }
+                                    variant="default"
                                     description="Fichiers téléchargés"
                                 />
                             </div>
@@ -301,7 +309,7 @@ export default function AdminIndex() {
                                     icon={Ticket}
 
                                     action={
-                                        <Button asChild size="sm" variant="ghost">
+                                        <Button asChild size="sm" variant="secondary">
                                             <Link href="supportsTickets">Gérer</Link>
                                         </Button>
                                     }
@@ -319,21 +327,25 @@ export default function AdminIndex() {
                 </section>
 
                 {/* 📊 Section des graphiques */}
-                <section>
+                <section className="w-full overflow-x-auto">
                     <SectionHeader
                         title="Analytiques"
                         subtitle="Statistiques et tendances récentes"
                     />
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <OrdersChart data={chartData?.map((item: any) => ({
-                            date: item.date,
-                            value: item.orders
-                        }))} />
-                        <RevenueChart data={chartData?.map((item: any) => ({
-                            date: item.date,
-                            value: item.revenue
-                        }))} />
-                        <div className="lg:col-span-2">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 min-w-[300px]">
+                        <div className="w-full min-w-[300px] h-[350px] sm:h-[400px]">
+                            <OrdersChart data={chartData?.map((item: any) => ({
+                                date: item.date,
+                                value: item.orders
+                            }))} />
+                        </div>
+                        <div className="w-full min-w-[300px] h-[350px] sm:h-[400px]">
+                            <RevenueChart data={chartData?.map((item: any) => ({
+                                date: item.date,
+                                value: item.revenue
+                            }))} />
+                        </div>
+                        <div className="lg:col-span-2 w-full min-w-[300px] h-[350px] sm:h-[400px]">
                             <DownloadsChart data={chartData?.map((item: any) => ({
                                 date: item.date,
                                 value: item.downloads

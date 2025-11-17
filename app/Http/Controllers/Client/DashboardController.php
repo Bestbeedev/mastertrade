@@ -79,7 +79,7 @@ class DashboardController extends Controller
         ];
 
         // Active software list from licenses + products
-        $activeSoftware = License::with(['product:id,name,version,category'])
+        $activeSoftware = License::with(['product:id,name,version,category,download_url'])
             ->where('user_id', $userId)
             ->where('status', 'active')
             ->orderBy('expiry_date')
@@ -88,19 +88,54 @@ class DashboardController extends Controller
             ->map(function ($lic) {
                 return [
                     'id' => $lic->id,
+                    'product_id' => $lic->product?->id,
                     'name' => $lic->product->name ?? 'Produit',
                     'version' => $lic->product?->version ? 'v' . $lic->product->version : null,
                     'status' => 'active',
                     'expiry' => $lic->expiry_date ? Carbon::parse($lic->expiry_date)->toDateString() : null,
                     'category' => $lic->product->category ?? null,
+                    'download_available' => (bool) ($lic->product?->download_url),
                 ];
             });
+
+        // Recent activity: combine recent downloads and orders
+        $recentDownloads = Download::with('product:id,name,version')
+            ->where('user_id', $userId)
+            ->orderByDesc('timestamp')
+            ->take(5)
+            ->get()
+            ->map(function ($d) {
+                return [
+                    'type' => 'download',
+                    'product' => ($d->product->name ?? 'Produit') . ($d->product?->version ? (' v' . $d->product->version) : ''),
+                    'date' => Carbon::parse($d->timestamp)->toDateTimeString(),
+                ];
+            });
+
+        $recentOrders = Order::with('product:id,name,version')
+            ->where('user_id', $userId)
+            ->latest()
+            ->take(5)
+            ->get(['id', 'product_id', 'status', 'amount', 'created_at'])
+            ->map(function ($o) {
+                return [
+                    'type' => 'order',
+                    'product' => ($o->product->name ?? 'Produit') . ($o->product?->version ? (' v' . $o->product->version) : ''),
+                    'date' => Carbon::parse($o->created_at)->toDateTimeString(),
+                ];
+            });
+
+        $recentActivity = $recentDownloads->merge($recentOrders)
+            ->sortByDesc('date')
+            ->values()
+            ->take(6);
 
         return Inertia::render('dashboard', [
             'user_data' => $authUser,
             'dashboardStats' => $dashboardStats,
             'activeSoftware' => $activeSoftware,
             'myCourses' => $myCourses,
+            'recentActivity' => $recentActivity,
         ]);
     }
 

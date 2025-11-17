@@ -65,15 +65,18 @@ export default function TicketCreate() {
                                     </div>
                                     <div className="space-y-2">
                                         <Label>Pièces jointes (optionnel)</Label>
-                                        <Dropzone multiple accept="image/*,application/pdf,text/plain,application/zip" onFiles={(files) => form.setData('attachments', files)}>
-                                            <span>Glissez-déposez ici ou cliquez pour sélectionner</span>
-                                        </Dropzone>
-                                        {form.data.attachments?.length > 0 && (
-                                            <div className="text-xs text-muted-foreground">
-                                                {form.data.attachments.map((f: File) => f.name).join(', ')}
+                                        <Dropzone
+                                            multiple
+                                            accept="image/*,application/pdf,text/plain,application/zip"
+                                            value={form.data.attachments || []}
+                                            onFiles={(files) => form.setData('attachments', files)}
+                                            className="min-h-[100px]"
+                                        >
+                                            <div className="text-center p-4">
+                                                <p className="text-muted-foreground">Glissez-déposez des fichiers ici ou cliquez pour sélectionner</p>
+                                                <p className="text-xs text-muted-foreground mt-1">Formats acceptés: images, PDF, texte, ZIP</p>
                                             </div>
-                                        )}
-                                        <p className="text-xs text-muted-foreground">Formats acceptés: images/PDF/logs. Max selon configuration serveur.</p>
+                                        </Dropzone>
                                     </div>
 
                                     <div className="space-y-2">
