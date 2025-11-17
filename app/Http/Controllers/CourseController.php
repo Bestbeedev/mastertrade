@@ -11,6 +11,7 @@ use App\Models\Lesson;
 use App\Models\CourseEnrollment;
 use App\Models\LessonProgress;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
 
 class CourseController extends Controller
 {
@@ -20,7 +21,22 @@ class CourseController extends Controller
     public function index()
     {
         $courses = Course::withCount('lessons')
-            ->select(['id', 'title', 'description', 'is_paid', 'price', 'cover_image', 'duration_seconds', 'created_at'])
+            ->select([
+                'id',
+                'title',
+                'description',
+                'intro',
+                'what_you_will_learn',
+                'requirements',
+                'audience',
+                'level',
+                'tags',
+                'is_paid',
+                'price',
+                'cover_image',
+                'duration_seconds',
+                'created_at',
+            ])
             ->latest()->get();
 
         $enrollments = CourseEnrollment::where('user_id', Auth::id())
@@ -33,6 +49,12 @@ class CourseController extends Controller
                 'id' => $c->id,
                 'title' => $c->title,
                 'description' => $c->description,
+                'intro' => $c->intro,
+                'what_you_will_learn' => $c->what_you_will_learn,
+                'requirements' => $c->requirements,
+                'audience' => $c->audience,
+                'level' => $c->level,
+                'tags' => $c->tags,
                 'is_paid' => $c->is_paid,
                 'price' => $c->price,
                 'cover_image' => $c->cover_image,
@@ -68,6 +90,12 @@ class CourseController extends Controller
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'description' => ['required', 'string'],
+            'intro' => ['nullable', 'string'],
+            'what_you_will_learn' => ['nullable', 'string'],
+            'requirements' => ['nullable', 'string'],
+            'audience' => ['nullable', 'string'],
+            'level' => ['nullable', 'string', 'max:255'],
+            'tags' => ['nullable', 'string'],
             'is_paid' => ['nullable', 'boolean'],
             'price' => ['nullable', 'numeric', 'min:0'],
             'product_id' => ['nullable', 'string', 'exists:products,id'],
@@ -91,6 +119,12 @@ class CourseController extends Controller
         $course = Course::create([
             'title' => $validated['title'],
             'description' => $validated['description'],
+            'intro' => $validated['intro'] ?? null,
+            'what_you_will_learn' => $validated['what_you_will_learn'] ?? null,
+            'requirements' => $validated['requirements'] ?? null,
+            'audience' => $validated['audience'] ?? null,
+            'level' => $validated['level'] ?? null,
+            'tags' => $validated['tags'] ?? null,
             'is_paid' => $isPaid,
             'price' => $price,
             'product_id' => $validated['product_id'] ?? null,
@@ -134,6 +168,15 @@ class CourseController extends Controller
                     }
                 }
 
+                // Fetch duration from YouTube if video and no duration provided
+                $durationSeconds = $les['duration_seconds'] ?? null;
+                if ($type === 'video' && $contentUrl) {
+                    $fetched = $this->fetchYouTubeDurationSeconds($contentUrl);
+                    if ($fetched !== null) {
+                        $durationSeconds = $fetched;
+                    }
+                }
+
                 $lesson = Lesson::create([
                     'course_id' => $course->id,
                     'module_id' => $module->id,
@@ -142,7 +185,7 @@ class CourseController extends Controller
                     'content_url' => $contentUrl ?? ($les['content_url'] ?? ''),
                     'type' => $type,
                     'is_preview' => (bool) ($les['is_preview'] ?? false),
-                    'duration_seconds' => $les['duration_seconds'] ?? null,
+                    'duration_seconds' => $durationSeconds ? (int) $durationSeconds : null,
                 ]);
                 $totalDuration += (int) ($lesson->duration_seconds ?? 0);
             }
@@ -224,6 +267,16 @@ class CourseController extends Controller
             'completed' => ['nullable', 'boolean'],
         ]);
         $userId = Auth::id();
+
+        // Ensure user is enrolled
+        CourseEnrollment::firstOrCreate([
+            'user_id' => $userId,
+            'course_id' => $course->id,
+        ], [
+            'started_at' => now(),
+            'progress_percent' => 0,
+        ]);
+
         $progress = LessonProgress::firstOrCreate([
             'user_id' => $userId,
             'course_id' => $course->id,
@@ -247,7 +300,7 @@ class CourseController extends Controller
         CourseEnrollment::where('user_id', $userId)->where('course_id', $course->id)
             ->update(['progress_percent' => $percent, 'last_lesson_id' => $data['lesson_id']]);
 
-        return response()->json(['ok' => true, 'progress_percent' => $percent]);
+        return back()->with('progress_percent', $percent);
     }
 
     /**
@@ -344,6 +397,12 @@ class CourseController extends Controller
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'description' => ['required', 'string'],
+            'intro' => ['nullable', 'string'],
+            'what_you_will_learn' => ['nullable', 'string'],
+            'requirements' => ['nullable', 'string'],
+            'audience' => ['nullable', 'string'],
+            'level' => ['nullable', 'string', 'max:255'],
+            'tags' => ['nullable', 'string'],
             'is_paid' => ['nullable', 'boolean'],
             'price' => ['nullable', 'numeric', 'min:0'],
             'product_id' => ['nullable', 'string', 'exists:products,id'],
@@ -367,6 +426,12 @@ class CourseController extends Controller
         $course->fill([
             'title' => $validated['title'],
             'description' => $validated['description'],
+            'intro' => $validated['intro'] ?? null,
+            'what_you_will_learn' => $validated['what_you_will_learn'] ?? null,
+            'requirements' => $validated['requirements'] ?? null,
+            'audience' => $validated['audience'] ?? null,
+            'level' => $validated['level'] ?? null,
+            'tags' => $validated['tags'] ?? null,
             'is_paid' => $isPaid,
             'price' => $price,
             'product_id' => $validated['product_id'] ?? null,
@@ -417,6 +482,15 @@ class CourseController extends Controller
                     }
                 }
 
+                // Fetch duration from YouTube if video and no duration provided
+                $durationSeconds = $les['duration_seconds'] ?? null;
+                if ($type === 'video' && $contentUrl) {
+                    $fetched = $this->fetchYouTubeDurationSeconds($contentUrl);
+                    if ($fetched !== null) {
+                        $durationSeconds = $fetched;
+                    }
+                }
+
                 $lesson = Lesson::create([
                     'course_id' => $course->id,
                     'module_id' => $module->id,
@@ -425,7 +499,7 @@ class CourseController extends Controller
                     'content_url' => $contentUrl ?? '',
                     'type' => $type,
                     'is_preview' => (bool) ($les['is_preview'] ?? false),
-                    'duration_seconds' => $les['duration_seconds'] ?? null,
+                    'duration_seconds' => $durationSeconds ? (int) $durationSeconds : null,
                 ]);
                 $totalDuration += (int) ($lesson->duration_seconds ?? 0);
             }
@@ -435,6 +509,58 @@ class CourseController extends Controller
         $course->save();
 
         return back()->with('status', 'Formation mise à jour');
+    }
+
+    private function fetchYouTubeDurationSeconds(?string $url): ?int
+    {
+        if (!$url) return null;
+        $id = $this->extractYouTubeId($url);
+        if (!$id) return null;
+        $key = config('services.youtube.key');
+        if (!$key) return null;
+        try {
+            $res = Http::get('https://www.googleapis.com/youtube/v3/videos', [
+                'id' => $id,
+                'part' => 'contentDetails',
+                'key' => $key,
+            ]);
+            if ($res->failed()) return null;
+            $items = $res->json('items');
+            $iso = $items[0]['contentDetails']['duration'] ?? null;
+            if (!$iso) return null;
+            return $this->parseIso8601DurationToSeconds($iso);
+        } catch (\Throwable $e) {
+            return null;
+        }
+    }
+
+    private function extractYouTubeId(string $url): ?string
+    {
+        // watch?v=
+        if (str_contains($url, 'watch?v=')) {
+            $q = parse_url($url, PHP_URL_QUERY);
+            parse_str((string) $q, $params);
+            return $params['v'] ?? null;
+        }
+        // youtu.be/
+        if (preg_match('#youtu\.be/([A-Za-z0-9_-]{6,})#', $url, $m)) {
+            return $m[1] ?? null;
+        }
+        // embed/
+        if (preg_match('#/embed/([A-Za-z0-9_-]{6,})#', $url, $m)) {
+            return $m[1] ?? null;
+        }
+        return null;
+    }
+
+    private function parseIso8601DurationToSeconds(string $duration): int
+    {
+        // Example: PT1H2M10S
+        $interval = new \DateInterval($duration);
+        $seconds = ($interval->h * 3600) + ($interval->i * 60) + $interval->s;
+        // DateInterval with days
+        $seconds += ($interval->d * 86400);
+        return $seconds;
     }
 
     /**

@@ -22,9 +22,15 @@ export default function AdminCourseEdit() {
         { title: course?.title || "Éditer", href: route('admin.courses.edit', course?.id) },
     ];
 
-    const form = useForm({
+    const form = useForm<any>({
         title: course?.title || "",
         description: course?.description || "",
+        intro: course?.intro || "",
+        what_you_will_learn: course?.what_you_will_learn || "",
+        requirements: course?.requirements || "",
+        audience: course?.audience || "",
+        level: course?.level || "",
+        tags: course?.tags || "",
         is_paid: !!course?.is_paid,
         price: course?.price ?? "",
         product_id: course?.product_id || "",
@@ -164,8 +170,36 @@ export default function AdminCourseEdit() {
                             </div>
 
                             <div className="space-y-2">
+                                <Label htmlFor="intro">Introduction (optionnel)</Label>
+                                <textarea id="intro" value={form.data.intro} onChange={(e) => form.setData('intro', e.target.value)} rows={3} className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" />
+                            </div>
+
+                            <div className="space-y-2">
                                 <Label htmlFor="description">Description</Label>
                                 <textarea id="description" value={form.data.description} onChange={(e) => form.setData('description', e.target.value)} rows={4} className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" />
+                            </div>
+
+                            <div className="grid gap-4 md:grid-cols-2">
+                                <div className="space-y-2">
+                                    <Label htmlFor="what_you_will_learn">Ce que vous apprendrez</Label>
+                                    <textarea id="what_you_will_learn" value={form.data.what_you_will_learn} onChange={(e) => form.setData('what_you_will_learn', e.target.value)} rows={4} className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" placeholder={"Point 1\nPoint 2\nPoint 3"} />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="requirements">Prérequis</Label>
+                                    <textarea id="requirements" value={form.data.requirements} onChange={(e) => form.setData('requirements', e.target.value)} rows={4} className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" placeholder={"Compétence A\nOutil B"} />
+                                </div>
+                                <div className="space-y-2 md:col-span-2">
+                                    <Label htmlFor="audience">Pour qui ?</Label>
+                                    <textarea id="audience" value={form.data.audience} onChange={(e) => form.setData('audience', e.target.value)} rows={3} className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" placeholder={"Débutants, Étudiants, Professionnels..."} />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="level">Niveau</Label>
+                                    <Input id="level" value={form.data.level} onChange={(e) => form.setData('level', e.target.value)} placeholder="Débutant / Intermédiaire / Avancé" />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="tags">Tags</Label>
+                                    <Input id="tags" value={form.data.tags} onChange={(e) => form.setData('tags', e.target.value)} placeholder="ex: sécurité, windows, réseau" />
+                                </div>
                             </div>
 
                             <div className="space-y-2">
@@ -227,7 +261,7 @@ export default function AdminCourseEdit() {
                                                                     <div className="space-y-1">
                                                                         <Label>Type</Label>
                                                                         <Select value={les.type} onValueChange={(v) => updateLesson(mi, li, { type: v, content_url: '', file: undefined })}>
-                                                                            <SelectTrigger><SelectValue placeholder="Type de contenu" /></SelectTrigger>
+                                                                            <SelectTrigger className="w-full"><SelectValue placeholder="Type de contenu" /></SelectTrigger>
                                                                             <SelectContent>
                                                                                 <SelectItem value="video">Vidéo (YouTube)</SelectItem>
                                                                                 <SelectItem value="pdf">PDF / Ebook</SelectItem>

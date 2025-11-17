@@ -12,6 +12,8 @@ export default function Course() {
     const { course, is_enrolled = false, progress_percent = 0, completed_lessons = [] } = usePage().props as any;
 
     const modules = course?.modules || [];
+    const modulesCount = modules.length;
+    const lessonsCount = useMemo(() => modules.reduce((sum: number, m: any) => sum + ((m.lessons || []).length), 0), [modules]);
     const flatLessons = useMemo(() => {
         const arr: any[] = [];
         modules.forEach((m: any) => (m.lessons || []).forEach((l: any) => arr.push({ ...l, moduleTitle: m.title })));
@@ -40,18 +42,23 @@ export default function Course() {
         });
     };
 
-    const completeForm = useForm({});
+    const completeForm = useForm<{ lesson_id: string; position_seconds?: number; seconds_watched?: number; completed?: boolean }>({
+        lesson_id: "",
+        position_seconds: 0,
+        seconds_watched: 0,
+        completed: false,
+    });
     const onComplete = (done = true) => {
         if (!activeLesson) return;
         const t = toast.loading("Mise à jour de la progression...");
+        completeForm.setData({
+            lesson_id: activeLesson.id,
+            position_seconds: secondsWatched,
+            seconds_watched: secondsWatched,
+            completed: done,
+        });
         completeForm.post(route('courses.complete-lesson', course.id), {
             preserveScroll: true,
-            data: {
-                lesson_id: activeLesson.id,
-                position_seconds: secondsWatched,
-                seconds_watched: secondsWatched,
-                completed: done,
-            },
             onSuccess: () => toast.success("Progression mise à jour", { id: t }),
             onError: () => toast.error("Erreur de progression", { id: t }),
         });
@@ -99,7 +106,12 @@ export default function Course() {
                             <div className="flex items-start justify-between gap-3">
                                 <div>
                                     <CardTitle className="text-2xl">{course?.title}</CardTitle>
-                                    <CardDescription>{course?.description}</CardDescription>
+                                    <CardDescription className="mt-2">{course?.description}</CardDescription>
+                                    <div className="mt-2 text-xs text-muted-foreground flex flex-wrap gap-3">
+                                        <span>Créée le {course?.created_at ? new Date(course.created_at).toLocaleDateString('fr-FR') : '—'}</span>
+                                        <span>Modules: {modulesCount}</span>
+                                        <span>Leçons: {lessonsCount}</span>
+                                    </div>
                                 </div>
                                 <div className="hidden lg:flex flex-col items-end gap-2 min-w-[160px]">
                                     <div className="text-xs text-muted-foreground">Progression</div>
@@ -142,6 +154,57 @@ export default function Course() {
                                     <Play className="h-10 w-10 text-primary" />
                                 </div>
                             )}
+                            {/* Introduction */}
+                            {course?.intro ? (
+                                <div className="mt-6 space-y-2">
+                                    <div className="text-sm font-medium">Introduction</div>
+                                    <p className="text-sm text-muted-foreground whitespace-pre-line">{course.intro}</p>
+                                </div>
+                            ) : null}
+
+                            {/* Ce que vous apprendrez */}
+                            {course?.what_you_will_learn ? (
+                                <div className="mt-6 space-y-2">
+                                    <div className="text-sm font-medium">Ce que vous apprendrez</div>
+                                    <ul className="list-disc pl-5 text-sm text-muted-foreground whitespace-pre-line">
+                                        {String(course.what_you_will_learn).split('\n').filter(Boolean).map((l: string, idx: number) => (
+                                            <li key={idx}>{l}</li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            ) : null}
+
+                            {/* Prérequis */}
+                            {course?.requirements ? (
+                                <div className="mt-6 space-y-2">
+                                    <div className="text-sm font-medium">Prérequis</div>
+                                    <ul className="list-disc pl-5 text-sm text-muted-foreground whitespace-pre-line">
+                                        {String(course.requirements).split('\n').filter(Boolean).map((l: string, idx: number) => (
+                                            <li key={idx}>{l}</li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            ) : null}
+
+                            {/* Pour qui ? */}
+                            {course?.audience ? (
+                                <div className="mt-6 space-y-2">
+                                    <div className="text-sm font-medium">Pour qui ?</div>
+                                    <p className="text-sm text-muted-foreground whitespace-pre-line">{course.audience}</p>
+                                </div>
+                            ) : null}
+
+                            {/* Niveau et tags */}
+                            {(course?.level || course?.tags) ? (
+                                <div className="mt-6 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                                    {course?.level ? (
+                                        <span className="px-2 py-1 rounded-full border">Niveau: {course.level}</span>
+                                    ) : null}
+                                    {course?.tags ? String(course.tags).split(',').map((t: string, idx: number) => (
+                                        <span key={idx} className="px-2 py-1 rounded-full border">{t.trim()}</span>
+                                    )) : null}
+                                </div>
+                            ) : null}
                         </CardContent>
                     </Card>
 

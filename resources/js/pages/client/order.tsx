@@ -4,62 +4,18 @@ import { Head, Link } from "@inertiajs/react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, Package, ArrowLeft, Download, Receipt, FileText, Database, Zap } from "lucide-react";
+import { Calendar, Package, ArrowLeft, Download, Receipt, FileText } from "lucide-react";
 import { route } from "ziggy-js";
 import { toast } from "sonner";
 
-// Données fictives pour la démonstration
-const mockOrder = {
-    id: "CMD-2024-001",
-    product: "Application de Gestion Professionnelle",
-    date: "15 Jan 2024",
-    amount: 29900, // en centimes
-    status: "completed",
-    statusText: "Livrée",
-    items: 1,
-    licenseKey: "ABCD-EFGH-IJKL-MNOP",
-    customer: {
-        name: "Jean Dupont",
-        email: "jean.dupont@example.com",
-        company: "Entreprise ABC"
-    },
-    items: [
-        {
-            id: 1,
-            name: "Application de Gestion Pro",
-            price: 29900,
-            quantity: 1,
-            total: 29900
-        }
-    ],
-    payment: {
-        method: "Carte de crédit",
-        transaction: "PAY-123456",
-        status: "Payé",
-        date: "15 Jan 2024 14:30"
-    },
-    shipping: {
-        method: "Téléchargement",
-        status: "Expédié",
-        tracking: null
-    }
-};
+// Cette page utilise uniquement la commande réelle fournie par le serveur.
 
 export default function OrderPage({ order }: { order?: any }) {
-    const realOrder = order ? {
+    const currentOrder = order ? {
         ...order,
-        // Assurer que les montants sont au bon format
         amount: order.amount || 0,
-        items: order.items?.map((item: any) => ({
-            ...item,
-            price: item.price || 0,
-            total: (item.price || 0) * (item.quantity || 1)
-        })) || []
+        items: Array.isArray(order.items) ? order.items : [],
     } : null;
-
-    const [activeTab, setActiveTab] = React.useState(realOrder ? 'real' : 'mock');
-    const currentOrder = activeTab === 'real' && realOrder ? realOrder : mockOrder;
 
     const formatCurrency = (amount: number) => {
         return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(amount / 100);
@@ -89,11 +45,11 @@ export default function OrderPage({ order }: { order?: any }) {
                     <div className="flex items-center gap-2">
                         <h2 className="text-2xl font-bold">Commande #{order.id}</h2>
                         <Badge variant={statusVariant[order.status as keyof typeof statusVariant] || 'default'}>
-                            {order.statusText || order.status}
+                            {order.status}
                         </Badge>
                     </div>
                     <p className="text-muted-foreground">
-                        Passée le {order.date}
+                        Passée le {order.created_at ? new Date(order.created_at).toLocaleDateString('fr-FR') : ''}
                     </p>
                 </div>
                 <div className="flex flex-wrap gap-2">
@@ -104,9 +60,11 @@ export default function OrderPage({ order }: { order?: any }) {
                         <FileText className="h-4 w-4 mr-2" />
                         Copier la référence
                     </Button>
-                    <Button onClick={() => handleDownload(order)}>
-                        <Download className="h-4 w-4 mr-2" />
-                        Télécharger la facture
+                    <Button asChild>
+                        <a href={route('orders.invoice', order.id)}>
+                            <Receipt className="h-4 w-4 mr-2" />
+                            Télécharger la facture
+                        </a>
                     </Button>
                 </div>
             </div>
@@ -120,27 +78,31 @@ export default function OrderPage({ order }: { order?: any }) {
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-4">
-                            {order.items?.map((item: any) => (
-                                <div key={item.id} className="flex items-start justify-between border-b pb-4">
-                                    <div className="flex gap-4">
-                                        <div className="p-2 bg-muted rounded-md">
-                                            <Package className="h-5 w-5" />
+                            {Array.isArray(order.items) && order.items.length > 0 ? (
+                                order.items.map((item: any) => (
+                                    <div key={item.id} className="flex items-start justify-between border-b pb-4">
+                                        <div className="flex gap-4">
+                                            <div className="p-2 bg-muted rounded-md">
+                                                <Package className="h-5 w-5" />
+                                            </div>
+                                            <div>
+                                                <h4 className="font-medium">{item.name || order.product?.name || 'Article'}</h4>
+                                                {item.quantity && <p className="text-sm text-muted-foreground">Quantité: {item.quantity}</p>}
+                                            </div>
                                         </div>
-                                        <div>
-                                            <h4 className="font-medium">{item.name}</h4>
-                                            <p className="text-sm text-muted-foreground">Quantité: {item.quantity}</p>
+                                        <div className="text-right">
+                                            {typeof item.total === 'number' && <p className="font-medium">{formatCurrency(item.total)}</p>}
+                                            {item.quantity > 1 && typeof item.price === 'number' && (
+                                                <p className="text-sm text-muted-foreground">
+                                                    {formatCurrency(item.price)} l'unité
+                                                </p>
+                                            )}
                                         </div>
                                     </div>
-                                    <div className="text-right">
-                                        <p className="font-medium">{formatCurrency(item.total)}</p>
-                                        {item.quantity > 1 && (
-                                            <p className="text-sm text-muted-foreground">
-                                                {formatCurrency(item.price)} l'unité
-                                            </p>
-                                        )}
-                                    </div>
-                                </div>
-                            ))}
+                                ))
+                            ) : (
+                                <div className="text-sm text-muted-foreground">Aucun article détaillé</div>
+                            )}
 
                             <div className="flex justify-between pt-4">
                                 <span className="font-medium">Total</span>
@@ -234,61 +196,55 @@ export default function OrderPage({ order }: { order?: any }) {
         </div>
     );
 
+    if (!currentOrder) {
+        return (
+            <AppLayout breadcrumbs={[{ title: "Commandes", href: route('orders') }, { title: `Commande`, href: "" }]}>
+                <Head title={`Commande`} />
+                <div className="w-full px-4 sm:px-6 lg:px-8 py-6">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Commande introuvable</CardTitle>
+                            <CardDescription>Réessayez depuis la liste des commandes.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <Button asChild variant="outline">
+                                <Link href={route('orders')}>Retour aux commandes</Link>
+                            </Button>
+                        </CardContent>
+                    </Card>
+                </div>
+            </AppLayout>
+        );
+    }
+
     return (
         <AppLayout breadcrumbs={[{ title: "Commandes", href: route('orders') }, { title: `Commande #${currentOrder.id}`, href: "" }]}>
             <Head title={`Commande #${currentOrder.id}`} />
             <div className="w-full px-4 sm:px-6 lg:px-8 py-6 space-y-6">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <Button variant="ghost" asChild className="w-full sm:w-auto">
-                        <a href={route('orders')} className="flex items-center justify-center sm:justify-start gap-2">
+                        <Link href={route('orders')} className="flex items-center justify-center sm:justify-start gap-2">
                             <ArrowLeft className="h-4 w-4" /> Retour aux commandes
-                        </a>
+                        </Link>
                     </Button>
-
-                    {realOrder && (
-                        <Tabs
-                            value={activeTab}
-                            onValueChange={setActiveTab}
-                            className="w-full sm:w-auto"
-                        >
-                            <TabsList className="grid w-full grid-cols-2">
-                                <TabsTrigger value="real" className="flex items-center gap-2">
-                                    <Database className="h-4 w-4" /> Données réelles
-                                </TabsTrigger>
-                                <TabsTrigger value="mock" className="flex items-center gap-2">
-                                    <Zap className="h-4 w-4" /> Données fictives
-                                </TabsTrigger>
-                            </TabsList>
-                        </Tabs>
-                    )}
                 </div>
-
-                {activeTab === 'mock' && !realOrder && (
-                    <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4">
-                        <div className="flex">
-                            <div className="flex-shrink-0">
-                                <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                                </svg>
-                            </div>
-                            <div className="ml-3">
-                                <p className="text-sm text-yellow-700">
-                                    Vous visualisez actuellement des données fictives. Aucune commande réelle n'a été trouvée.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                )}
 
                 <Card>
                     <CardHeader>
                         <CardTitle>Détails de la commande</CardTitle>
-                        <CardDescription>
-                            {activeTab === 'real' ? 'Données réelles de la commande' : 'Données fictives à titre d\'exemple'}
-                        </CardDescription>
+                        <CardDescription>Données réelles de la commande</CardDescription>
                     </CardHeader>
                     <CardContent>
                         {renderOrderDetails(currentOrder)}
+                        {currentOrder.status === 'completed' && currentOrder.product?.download_url && (
+                            <div className="mt-4 flex justify-end">
+                                <Button asChild>
+                                    <a href={route('downloads.start', currentOrder.product_id)}>
+                                        <Download className="h-4 w-4 mr-2" /> Télécharger le produit
+                                    </a>
+                                </Button>
+                            </div>
+                        )}
                     </CardContent>
                 </Card>
             </div>

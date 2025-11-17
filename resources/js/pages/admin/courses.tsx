@@ -14,52 +14,90 @@ import { BookOpen, Plus, Trash2, Info } from "lucide-react";
 import Dropzone from "@/components/ui/dropzone";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
+type LessonDraft = {
+    title: string;
+    type: 'video' | 'pdf';
+    content_url?: string;
+    file?: File | undefined;
+    is_preview: boolean;
+    duration_seconds?: string | number;
+};
+
+type ModuleDraft = {
+    title: string;
+    description?: string;
+    position: number;
+    lessons: LessonDraft[];
+};
+
+type CourseForm = {
+    title: string;
+    description: string;
+    intro: string;
+    what_you_will_learn: string;
+    requirements: string;
+    audience: string;
+    level: string;
+    tags: string;
+    is_paid: boolean;
+    price: string | number;
+    product_id: string;
+    modules: ModuleDraft[];
+    cover_image: File | null;
+};
+
 export default function AdminCourses({ courses = [], products = [] as { id: string; name: string }[] }: { courses?: any[]; products?: { id: string; name: string }[] }) {
     const [activeTab, setActiveTab] = React.useState("list");
     const [selectedCourse, setSelectedCourse] = React.useState<any | null>(null);
 
-    const form = useForm({
+    const form = useForm<CourseForm>({
         title: "",
         description: "",
-        is_paid: false as boolean,
-        price: "" as any,
-        product_id: "" as string,
-        modules: [] as any[],
-        cover_image: null as File | null,
+        intro: "",
+        what_you_will_learn: "",
+        requirements: "",
+        audience: "",
+        level: "",
+        tags: "",
+        is_paid: false,
+        price: "",
+        product_id: "",
+        modules: [],
+        cover_image: null,
     });
 
     const addModule = () => {
-        const modules = [...(form.data.modules || [])];
+        const modules = ([...(form.data.modules || [])] as ModuleDraft[]);
         modules.push({ title: "", description: "", position: modules.length, lessons: [] });
         form.setData("modules", modules);
     };
     const removeModule = (mi: number) => {
-        const modules = [...(form.data.modules || [])];
+        const modules = ([...(form.data.modules || [])] as ModuleDraft[]);
         modules.splice(mi, 1);
-        form.setData("modules", modules.map((m, i) => ({ ...m, position: i })));
+        form.setData("modules", modules.map((m, i) => ({ ...m, position: i })) as ModuleDraft[]);
     };
-    const updateModule = (mi: number, patch: any) => {
-        const modules = [...(form.data.modules || [])];
+    const updateModule = (mi: number, patch: Partial<ModuleDraft>) => {
+        const modules = ([...(form.data.modules || [])] as ModuleDraft[]);
         modules[mi] = { ...modules[mi], ...patch };
         form.setData("modules", modules);
     };
     const addLesson = (mi: number) => {
-        const modules = [...(form.data.modules || [])];
-        const lessons = [...(modules[mi]?.lessons || [])];
+        const modules = ([...(form.data.modules || [])] as ModuleDraft[]);
+        const lessons = ([...(modules[mi]?.lessons || [])] as LessonDraft[]);
         lessons.push({ title: "", type: "video", content_url: "", is_preview: false, duration_seconds: "" });
         modules[mi] = { ...modules[mi], lessons };
         form.setData("modules", modules);
     };
     const removeLesson = (mi: number, li: number) => {
-        const modules = [...(form.data.modules || [])];
-        const lessons = [...(modules[mi]?.lessons || [])];
+        const modules = ([...(form.data.modules || [])] as ModuleDraft[]);
+        const lessons = ([...(modules[mi]?.lessons || [])] as LessonDraft[]);
         lessons.splice(li, 1);
         modules[mi] = { ...modules[mi], lessons };
         form.setData("modules", modules);
     };
-    const updateLesson = (mi: number, li: number, patch: any) => {
-        const modules = [...(form.data.modules || [])];
-        const lessons = [...(modules[mi]?.lessons || [])];
+    const updateLesson = (mi: number, li: number, patch: Partial<LessonDraft>) => {
+        const modules = ([...(form.data.modules || [])] as ModuleDraft[]);
+        const lessons = ([...(modules[mi]?.lessons || [])] as LessonDraft[]);
         lessons[li] = { ...lessons[li], ...patch };
         modules[mi] = { ...modules[mi], lessons };
         form.setData("modules", modules);
@@ -123,8 +161,8 @@ export default function AdminCourses({ courses = [], products = [] as { id: stri
                                 {courses?.length ? (
                                     <div className="divide-y rounded-md border">
                                         {courses.map((c: any) => (
-                                            <div key={c.id} className="flex items-center justify-between p-3 gap-4">
-                                                <div className="flex items-center gap-4 flex-1">
+                                            <div key={c.id} className="flex flex-col gap-3 p-3 sm:flex-row sm:items-center sm:justify-between">
+                                                <div className="flex items-start gap-4 flex-1 sm:items-center">
                                                     {c.cover_image ? (
                                                         <img
                                                             src={`/storage/${c.cover_image}`}
@@ -136,12 +174,16 @@ export default function AdminCourses({ courses = [], products = [] as { id: stri
                                                             Pas de cover
                                                         </div>
                                                     )}
-                                                    <div className="space-y-1 min-w-0">
+                                                    <div className="space-y-2 min-w-0">
                                                         <div className="flex items-center gap-2">
-                                                            <div className="font-medium truncate">{c.title}</div>
-                                                            {c.is_paid && (
-                                                                <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                                            <div className="font-bold truncate">{c.title}</div>
+                                                            {c.is_paid ? (
+                                                                <span className="text-xs px-2 py-0.5 rounded-md bg-orange-50 text-orange-700 border border-orange-200">
                                                                     Payante{c.price ? ` • ${(Number(c.price) || 0).toFixed(2)} €` : ""}
+                                                                </span>
+                                                            ) : (
+                                                                <span className="text-xs px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                                                    Gratuite
                                                                 </span>
                                                             )}
                                                         </div>
@@ -161,7 +203,7 @@ export default function AdminCourses({ courses = [], products = [] as { id: stri
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <div className="flex items-center gap-2 flex-shrink-0">
+                                                <div className="flex items-center gap-2 flex-wrap justify-end sm:flex-nowrap sm:justify-end flex-shrink-0">
                                                     <Button
                                                         type="button"
                                                         variant="outline"
@@ -235,6 +277,18 @@ export default function AdminCourses({ courses = [], products = [] as { id: stri
                                     </div>
 
                                     <div className="space-y-2">
+                                        <Label htmlFor="intro">Introduction (optionnel)</Label>
+                                        <textarea
+                                            id="intro"
+                                            value={form.data.intro}
+                                            onChange={(e) => form.setData("intro", e.target.value)}
+                                            placeholder="Texte d’introduction, points clés, bénéfices..."
+                                            rows={3}
+                                            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                                        />
+                                    </div>
+
+                                    <div className="space-y-2">
                                         <Label htmlFor="description">Description</Label>
                                         <textarea
                                             id="description"
@@ -246,14 +300,43 @@ export default function AdminCourses({ courses = [], products = [] as { id: stri
                                         />
                                     </div>
 
+                                    <div className="grid gap-4 md:grid-cols-2">
+                                        <div className="space-y-2">
+                                            <Label htmlFor="what_you_will_learn">Ce que vous apprendrez</Label>
+                                            <textarea id="what_you_will_learn" value={form.data.what_you_will_learn} onChange={(e) => form.setData('what_you_will_learn', e.target.value)} rows={4} className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" placeholder={"Point 1\nPoint 2\nPoint 3"} />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="requirements">Prérequis</Label>
+                                            <textarea id="requirements" value={form.data.requirements} onChange={(e) => form.setData('requirements', e.target.value)} rows={4} className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" placeholder={"Compétence A\nOutil B"} />
+                                        </div>
+                                        <div className="space-y-2 md:col-span-2">
+                                            <Label htmlFor="audience">Pour qui ?</Label>
+                                            <textarea id="audience" value={form.data.audience} onChange={(e) => form.setData('audience', e.target.value)} rows={3} className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" placeholder={"Débutants, Étudiants, Professionnels..."} />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="level">Niveau</Label>
+                                            <Input id="level" value={form.data.level} onChange={(e) => form.setData('level', e.target.value)} placeholder="Débutant / Intermédiaire / Avancé" />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="tags">Tags</Label>
+                                            <Input id="tags" value={form.data.tags} onChange={(e) => form.setData('tags', e.target.value)} placeholder="ex: sécurité, windows, réseau" />
+                                        </div>
+                                    </div>
+
                                     <div className="space-y-2">
                                         <Label>Bannière de couverture</Label>
-                                        <Dropzone accept="image/*" multiple={false} onFiles={(files) => form.setData('cover_image', files[0] ?? null)}>
-                                            <span>Glissez-déposez une image ou cliquez pour sélectionner</span>
+                                        <Dropzone
+                                            accept="image/*"
+                                            multiple={false}
+                                            value={form.data.cover_image ? [form.data.cover_image] : []}
+                                            onFiles={(files) => form.setData('cover_image', files[0] ?? null)}
+                                            className="min-h-[100px]"
+                                        >
+                                            <div className="text-center p-4">
+                                                <p className="text-muted-foreground">Glissez-déposez une image ou cliquez pour sélectionner</p>
+                                                <p className="text-xs text-muted-foreground mt-1">Formats acceptés: .jpg, .jpeg, .png</p>
+                                            </div>
                                         </Dropzone>
-                                        {form.data.cover_image && (
-                                            <div className="text-xs text-muted-foreground">{form.data.cover_image.name}</div>
-                                        )}
                                     </div>
 
                                     <div className="space-y-4">
@@ -305,8 +388,8 @@ export default function AdminCourses({ courses = [], products = [] as { id: stri
                                                                             </div>
                                                                             <div className="space-y-1">
                                                                                 <Label>Type</Label>
-                                                                                <Select value={les.type} onValueChange={(v) => updateLesson(mi, li, { type: v, content_url: "", file: undefined })}>
-                                                                                    <SelectTrigger className="w-full"><SelectValue placeholder="Type de contenu" /></SelectTrigger>
+                                                                                <Select value={les.type} onValueChange={(v) => updateLesson(mi, li, { type: v as LessonDraft['type'], content_url: "", file: undefined })}>
+                                                                                    <SelectTrigger className="w-full"><SelectValue placeholder="Type de contenu" /></SelectTrigger >
                                                                                     <SelectContent>
                                                                                         <SelectItem value="video">Vidéo (YouTube)</SelectItem>
                                                                                         <SelectItem value="pdf">PDF / Ebook</SelectItem>

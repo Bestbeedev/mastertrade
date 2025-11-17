@@ -9,7 +9,19 @@ use App\Traits\UuidTrait;
 class Course extends Model
 {
     use HasFactory, UuidTrait;
-    protected $fillable = ['title', 'description', 'is_paid', 'price', 'product_id', 'cover_image', 'duration_seconds'];
+    protected $fillable = [
+        'title',
+        'description',
+        'intro',
+        'what_you_will_learn',
+        'requirements',
+        'audience',
+        'is_paid',
+        'price',
+        'product_id',
+        'cover_image',
+        'duration_seconds'
+    ];
     public function product()
     {
         return $this->belongsTo(Product::class);
