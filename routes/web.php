@@ -50,6 +50,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('downloads/software', [DownloadController::class, 'software'])->name('downloads.software');
     Route::get('downloads/documents', [DownloadController::class, 'documents'])->name('downloads.documents');
     Route::get('downloads/updates', [DownloadController::class, 'updates'])->name('downloads.updates');
+    Route::get('downloads/start/{product}', [DownloadController::class, 'start'])->name('downloads.start');
     Route::post('downloads/{download}/download', [DownloadController::class, 'download'])->name('downloads.download');
 });
 
@@ -283,8 +284,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('admin/courses', function () {
         $courses = Course::with('product:id,name')
-            ->withCount(['modules', 'lessons', 'enrollments'])
             ->select(['id', 'title', 'description', 'is_paid', 'price', 'product_id', 'cover_image', 'duration_seconds', 'created_at'])
+            ->withCount(['modules', 'lessons', 'enrollments'])
             ->latest()->get();
         $products = Product::select(['id', 'name'])->orderBy('name')->get();
         return Inertia::render('admin/courses', [
@@ -298,13 +299,28 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::patch('admin/courses/{course}', [CourseController::class, 'update'])->name('admin.courses.update');
 
     Route::get('admin/products', function () {
-        $products = Product::select(['id', 'name', 'sku', 'version', 'category', 'description'])
-            ->latest()->get();
+        $products = Product::select([
+            'id',
+            'name',
+            'sku',
+            'version',
+            'download_url',
+            'category',
+            'description',
+            'size',
+            'checksum',
+            'changelog',
+            'created_at',
+        ])
+            ->latest()
+            ->get();
+
         return Inertia::render('admin/products', [
             'products' => $products,
         ]);
     })->name('admin.products');
     Route::post('admin/products', [ProductController::class, 'store'])->name('admin.products.store');
+    Route::patch('admin/products/{product}', [ProductController::class, 'update'])->name('admin.products.update');
     Route::delete('admin/products/{product}', [ProductController::class, 'destroy'])->name('admin.products.destroy');
 
     // Admin Licenses Management
@@ -312,6 +328,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('admin/licenses', [LicenseAdminController::class, 'store'])->name('admin.licenses.store');
     Route::patch('admin/licenses/{license}', [LicenseAdminController::class, 'update'])->name('admin.licenses.update');
     Route::delete('admin/licenses/{license}', [LicenseAdminController::class, 'destroy'])->name('admin.licenses.destroy');
+
+    // Admin Downloads Logs
+    Route::get('admin/downloads', function () {
+        $logs = DownloadModel::with(['user:id,name,email', 'product:id,name,version'])
+            ->orderByDesc('timestamp')
+            ->take(300)
+            ->get(['id', 'user_id', 'product_id', 'ip_address', 'user_agent', 'file_version', 'timestamp']);
+
+        return Inertia::render('admin/downloads', [
+            'logs' => $logs,
+        ]);
+    })->name('admin.downloads');
 });
 
 require __DIR__ . '/settings.php';
