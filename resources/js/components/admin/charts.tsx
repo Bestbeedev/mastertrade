@@ -102,9 +102,9 @@ export function RevenueChart({ data }: { data?: ChartData }) {
                                 fontSize={12}
                                 tickLine={false}
                                 axisLine={false}
-                                tickFormatter={(value) => `€${value}`}
+                                tickFormatter={(value) => `CFA ${value}`}
                             />
-                            <ChartTooltip content={<ChartTooltipContent formatter={(value) => [`€${value}`, "Revenu"]} />} />
+                            <ChartTooltip content={<ChartTooltipContent formatter={(value) => [`CFA ${value}`, "Revenu"]} />} />
                             <Line
                                 type="monotone"
                                 dataKey="value"

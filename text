@@ -1,4 +1,4 @@
-Au niveau de la listes des formations existantes pour admin on doit afficher les details importants comme nobre de module, cover images , nobres inscrit, metadonnes sur la formation bref tout les doetails qu'il faut sur la formatin creer. On doit pouvoir voir ca quand on click sur peut etre voir les details et on  les details mais pas defaut on doit voit le cover en flex avec le titre et quelques infos peutre date de creation nbre module ou autres etc...
+Au niveau de la listes des formations existantes pour admin on doit afficher les details importants comme nobre de module, cover images , nobres inscrit, metadonnes sur la formation bref tout les doetails qu'il faut sur la formatin creer. On doit pouvoir voir ca quand on click sur peut etre voir les details et on les details mais pas defaut on doit voit le cover en flex avec le titre et quelques infos peutre date de creation nbre module ou autres etc...
 https://youtu.be/bGw-My1W5Iw
 <iframe width="1106" height="593" src="https://www.youtube.com/embed/bGw-My1W5Iw" title="How to send email in Laravel using Mailtrap" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 
@@ -11,3 +11,6 @@ Activation lien
 2-/licenses/activate?sku=MASTERTRADE&device_id=PC-98765&mac_address=00-11-22-33-44-55&machine=DESKTOP-WIN11
 
 3-/licenses/activate?product_id=00000000-0000-0000-0000-000000000000&device_id=PC-98765&mac_address=00-11-22-33-44-55&machine=DESKTOP-WIN11
+
+
+

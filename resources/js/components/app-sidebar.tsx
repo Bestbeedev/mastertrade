@@ -91,7 +91,7 @@ const data = {
             icon: IconSettings,
         },
         {
-            title: "Aide & Documentation",
+            title: "Centre d'aide",
             url: "/helps",
             icon: IconHelp,
         },
@@ -171,7 +171,7 @@ export function AppSidebar({ user, ...props }: { user: User; } & React.Component
             icon: IconLicense,
         },
         {
-            title: "Centre d'aide",
+            title: "Documentation",
             url: "/admin/help-articles",
             icon: IconHelp,
         },
@@ -194,7 +194,6 @@ export function AppSidebar({ user, ...props }: { user: User; } & React.Component
                     {/* Navigation principale */}
                     <div className="flex-1 ">
                         <NavMain items={data.navMain} />
-                        <br />
                         {isAdmin && <NavMain items={adminItems} />}
                     </div>
                     {/* Navigation secondaire */}

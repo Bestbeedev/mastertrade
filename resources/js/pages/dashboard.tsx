@@ -340,7 +340,7 @@ export function QuickSupportSection() {
             title: "Ouvrir un ticket",
             description: "Obtenir de l'aide technique",
             icon: IconHeadset,
-            href: "/support/tickets/new",
+            href: "/supportsTickets",
             iconColor: "text-blue-600 dark:text-blue-400",
             bgColor: "bg-blue-100 dark:bg-blue-900/20",
             borderColor: "border-blue-200 dark:border-blue-800"
@@ -349,7 +349,7 @@ export function QuickSupportSection() {
             title: "Documentation",
             description: "Guides et manuels",
             icon: IconFileDescription,
-            href: "/help/documentation",
+            href: "/helps/documentation",
             iconColor: "text-green-600 dark:text-green-400",
             bgColor: "bg-green-100 dark:bg-green-900/20",
             borderColor: "border-green-200 dark:border-green-800"
@@ -367,7 +367,7 @@ export function QuickSupportSection() {
             title: "FAQ",
             description: "Questions fréquentes",
             icon: IconHelp,
-            href: "/help/faq",
+            href: "/helps/faq",
             iconColor: "text-purple-600 dark:text-purple-400",
             bgColor: "bg-purple-100 dark:bg-purple-900/20",
             borderColor: "border-purple-200 dark:border-purple-800"

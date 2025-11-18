@@ -10,6 +10,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
+import { Badge } from "./ui/badge"
 
 export function NavSecondary({
   items,
@@ -19,6 +20,7 @@ export function NavSecondary({
     title: string
     url: string
     icon: Icon
+    badge?: string
   }[]
 } & React.ComponentPropsWithoutRef<typeof SidebarGroup>) {
   return (
@@ -30,7 +32,12 @@ export function NavSecondary({
               <SidebarMenuButton asChild>
                 <a href={item.url}>
                   <item.icon />
-                  <span>{item.title}</span>
+                          <span>{item.title}</span>
+                          {item.badge && (
+                            <Badge  className="text-xs bg-green-600 text-white">
+                              {item.badge}
+                            </Badge>
+                          )}
                 </a>
               </SidebarMenuButton>
             </SidebarMenuItem>
