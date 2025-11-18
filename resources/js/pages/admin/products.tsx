@@ -15,6 +15,7 @@ import { toast } from "sonner";
 export default function AdminProducts({ products = [] as any[] }: { products?: any[] }) {
     const [activeTab, setActiveTab] = React.useState("details");
     const [selectedProduct, setSelectedProduct] = React.useState<any | null>(null);
+    const [productToDelete, setProductToDelete] = React.useState<any | null>(null);
 
     const editForm = useForm({
         id: "",
@@ -139,10 +140,15 @@ export default function AdminProducts({ products = [] as any[] }: { products?: a
 
     const { delete: destroy, processing: deleting } = useForm({});
 
-    const handleDelete = (id: string) => {
+    const handleDelete = () => {
+        if (!productToDelete) return;
         const t = toast.loading('Suppression du produit...');
+        const id = productToDelete.id;
         destroy(route("admin.products.destroy", { product: id }), {
-            onSuccess: () => toast.success('Produit supprimé avec succès', { id: t }),
+            onSuccess: () => {
+                toast.success('Produit supprimé avec succès', { id: t });
+                setProductToDelete(null);
+            },
             onError: () => toast.error('Erreur lors de la suppression du produit', { id: t }),
         });
     };
@@ -221,7 +227,7 @@ export default function AdminProducts({ products = [] as any[] }: { products?: a
                                                         variant="destructive"
                                                         size="sm"
                                                         type="button"
-                                                        onClick={() => handleDelete(product.id)}
+                                                        onClick={() => setProductToDelete(product)}
                                                         disabled={deleting}
                                                     >
                                                         <Trash2 className="h-4 w-4" />
@@ -234,6 +240,36 @@ export default function AdminProducts({ products = [] as any[] }: { products?: a
                             </CardContent>
                         </Card>
                     </TabsContent>
+
+                    {/* Confirmation de suppression */}
+                    <Dialog open={!!productToDelete} onOpenChange={(open) => { if (!open) setProductToDelete(null); }}>
+                        <DialogContent>
+                            <DialogHeader>
+                                <DialogTitle>Confirmer la suppression</DialogTitle>
+                                <DialogDescription>
+                                    Êtes-vous sûr de vouloir supprimer ce produit&nbsp;?
+                                    Cette action est définitive et supprimera l'accès au téléchargement associé.
+                                </DialogDescription>
+                            </DialogHeader>
+                            <div className="flex justify-end gap-2 mt-4">
+                                <Button
+                                    variant="outline"
+                                    type="button"
+                                    onClick={() => setProductToDelete(null)}
+                                >
+                                    Annuler
+                                </Button>
+                                <Button
+                                    variant="destructive"
+                                    type="button"
+                                    onClick={handleDelete}
+                                    disabled={deleting}
+                                >
+                                    Supprimer
+                                </Button>
+                            </div>
+                        </DialogContent>
+                    </Dialog>
 
                     {/* Création d'un nouveau produit */}
                     <TabsContent value="new">
@@ -388,7 +424,7 @@ export default function AdminProducts({ products = [] as any[] }: { products?: a
                                             <div className="grid gap-6 md:grid-cols-2">
                                                 <div className="space-y-4">
                                                     <div className="space-y-2">
-                                                        <Label htmlFor="price">Prix (€)</Label>
+                                                        <Label htmlFor="price">Prix (FCFA)</Label>
                                                         <Input
                                                             id="price"
                                                             type="number"
@@ -439,7 +475,7 @@ export default function AdminProducts({ products = [] as any[] }: { products?: a
                                                         </p>
                                                         <div className="pt-2">
                                                             <span className="text-lg font-bold">
-                                                                {form.data.price ? `${form.data.price.toFixed(2)} €` : 'Gratuit'}
+                                                                {form.data.price ? `${form.data.price.toFixed(2)} FCFA` : 'Gratuit'}
                                                             </span>
                                                         </div>
                                                     </div>
@@ -825,6 +861,15 @@ export default function AdminProducts({ products = [] as any[] }: { products?: a
                                 <div className="flex justify-end gap-2">
                                     <Button type="button" variant="outline" onClick={() => setSelectedProduct(null)}>
                                         Annuler
+                                    </Button>
+                                    <Button
+                                        variant="destructive"
+                                        size="sm"
+                                        type="button"
+                                        onClick={() => setProductToDelete(selectedProduct)}
+                                        disabled={deleting}
+                                    >
+                                        <Trash2 className="h-4 w-4" />
                                     </Button>
                                     <Button type="submit" disabled={editForm.processing}>
                                         {editForm.processing ? 'Enregistrement...' : 'Enregistrer les modifications'}

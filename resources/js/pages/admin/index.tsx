@@ -2,13 +2,37 @@ import AppLayout from "@/layouts/app-layout";
 import { Head, Link, usePage } from "@inertiajs/react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { BarChart3, GraduationCap, Package, Users, Ticket, Receipt, Download, Clock, AlertCircle, TrendingUp, DollarSign, BarChart2 } from "lucide-react";
+import {
+    BarChart3,
+    GraduationCap,
+    Package,
+    Users,
+    Ticket,
+    Receipt,
+    Download,
+    Clock,
+    AlertCircle,
+    TrendingUp,
+    DollarSign,
+    BarChart2,
+    HelpCircle,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import React from "react";
 import { OrdersChart, RevenueChart, DownloadsChart } from "@/components/admin/charts";
+import { formatCFA } from "@/lib/utils";
 
 export default function AdminIndex() {
-    const { adminStats, recentOrders, recentTickets, recentLicenses, topProducts30, recentProducts, recentCourses, chartData } = usePage().props as any;
+    const {
+        adminStats,
+        recentOrders,
+        recentTickets,
+        recentLicenses,
+        topProducts30,
+        recentProducts,
+        recentCourses,
+        chartData,
+    } = usePage().props as any;
 
     const stats = adminStats ?? {
         products: 0,
@@ -20,10 +44,9 @@ export default function AdminIndex() {
         tickets: { total: 0, open: 0 },
         downloads_30d: 0,
         renewals_due_30d: 0,
+        course_enrollments_30d: 0,
+        avg_course_progress: 0,
     };
-
-    const euro = (cents: number) =>
-        new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format((cents ?? 0) / 100);
 
     const EmptyState = ({ message }: { message: string }) => (
         <div className="text-center py-8 border-2 border-dashed rounded-lg bg-muted/20">
@@ -60,13 +83,12 @@ export default function AdminIndex() {
                     </CardTitle>
                     {trend && (
                         <Badge variant={trend.value >= 0 ? "default" : "destructive"} className="text-xs">
-                            {trend.value >= 0 ? "+" : ""}{trend.value}%
+                            {trend.value >= 0 ? "+" : ""}
+                            {trend.value}%
                         </Badge>
                     )}
                 </div>
-                {description && (
-                    <CardDescription className="text-xs">{description}</CardDescription>
-                )}
+                {description && <CardDescription className="text-xs">{description}</CardDescription>}
             </CardHeader>
             <CardContent>
                 <div className="flex items-center justify-between">
@@ -78,9 +100,7 @@ export default function AdminIndex() {
                     </div>
                     {variant === "default" && action}
                 </div>
-                {trend && (
-                    <p className="text-xs text-muted-foreground mt-2">{trend.label}</p>
-                )}
+                {trend && <p className="text-xs text-muted-foreground mt-2">{trend.label}</p>}
             </CardContent>
         </Card>
     );
@@ -89,7 +109,7 @@ export default function AdminIndex() {
         title,
         description,
         children,
-        emptyMessage = "Aucune donnée disponible pour le moment"
+        emptyMessage = "Aucune donnée disponible pour le moment",
     }: {
         title: string;
         description: string;
@@ -102,12 +122,8 @@ export default function AdminIndex() {
                 <CardDescription>{description}</CardDescription>
             </CardHeader>
             <CardContent className="p-4">
-                <div className="space-y-3">
-                    {children}
-                </div>
-                {React.Children.count(children) === 0 && (
-                    <EmptyState message={emptyMessage} />
-                )}
+                <div className="space-y-3">{children}</div>
+                {React.Children.count(children) === 0 && <EmptyState message={emptyMessage} />}
             </CardContent>
         </Card>
     );
@@ -119,7 +135,7 @@ export default function AdminIndex() {
         value,
         status,
         date,
-        badge
+        badge,
     }: {
         primary: string;
         secondary?: string;
@@ -139,20 +155,22 @@ export default function AdminIndex() {
                         </Badge>
                     )}
                 </div>
-                {secondary && (
-                    <div className="text-muted-foreground text-sm truncate mt-1">{secondary}</div>
-                )}
-                {tertiary && (
-                    <div className="text-xs text-muted-foreground mt-1">{tertiary}</div>
-                )}
+                {secondary && <div className="text-muted-foreground text-sm truncate mt-1">{secondary}</div>}
+                {tertiary && <div className="text-xs text-muted-foreground mt-1">{tertiary}</div>}
             </div>
             <div className="text-right text-sm ml-4 flex-shrink-0">
                 {value && <div className="font-semibold">{value}</div>}
                 {status && (
-                    <div className={`uppercase text-xs font-medium ${status === 'completed' || status === 'active' ? 'text-green-600' :
-                        status === 'pending' ? 'text-yellow-600' :
-                            status === 'cancelled' ? 'text-red-600' : 'text-muted-foreground'
-                        }`}>
+                    <div
+                        className={`uppercase text-xs font-medium ${status === "completed" || status === "active"
+                                ? "text-green-600"
+                                : status === "pending"
+                                    ? "text-yellow-600"
+                                    : status === "cancelled"
+                                        ? "text-red-600"
+                                        : "text-muted-foreground"
+                            }`}
+                    >
                         {status}
                     </div>
                 )}
@@ -164,9 +182,7 @@ export default function AdminIndex() {
     const SectionHeader = ({ title, subtitle }: { title: string; subtitle?: string }) => (
         <div className="mb-6">
             <h2 className="text-2xl font-bold tracking-tight">{title}</h2>
-            {subtitle && (
-                <p className="text-muted-foreground mt-1">{subtitle}</p>
-            )}
+            {subtitle && <p className="text-muted-foreground mt-1">{subtitle}</p>}
         </div>
     );
 
@@ -175,158 +191,127 @@ export default function AdminIndex() {
             <Head title="Tableau de bord Admin" />
 
             <div className="w-full px-4 sm:px-6 lg:px-8 py-6 space-y-12">
-                {/* 🔥 Section principale des statistiques */}
                 <section>
                     <SectionHeader
-                        title="Aperçu général"
-                        subtitle="Vue d'ensemble de votre activité"
+                        title="Vue d'ensemble"
+                        subtitle="Suivez les indicateurs clés de votre plateforme"
                     />
-                    <div className="space-y-8">
-                        {/* 🎯 SECTION PRINCIPALE - ENTITÉS */}
-                        <div>
-                            <h3 className="text-lg font-semibold mb-4">Entités principales</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-                                <StatCard
-                                    title="Formations"
-                                    value={stats.courses}
-                                    icon={GraduationCap}
-                                    action={
-                                        <Button asChild size="sm" >
-                                            <Link href="/admin/courses">Gérer</Link>
-                                        </Button>
-                                    }
-                                    variant="default"
-                                />
+                    <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                        <div className="space-y-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <StatCard
                                     title="Produits"
                                     value={stats.products}
                                     icon={Package}
-                                    action={
+                                    description="Total produits actifs"
+                                    action=
+                                    {
                                         <Button asChild size="sm" variant="outline">
                                             <Link href="/admin/products">Gérer</Link>
                                         </Button>
                                     }
-                                    variant="default"
+                                />
+                                <StatCard
+                                    title="Formations"
+                                    value={stats.courses}
+                                    icon={GraduationCap}
+                                    description="Formations publiées"
+                                    action=
+                                    {
+                                        <Button asChild size="sm" variant="outline">
+                                            <Link href="/admin/courses">Gérer</Link>
+                                        </Button>
+                                    }
                                 />
                                 <StatCard
                                     title="Utilisateurs"
                                     value={stats.users}
                                     icon={Users}
-                                    action={
-                                        <Button asChild size="sm" variant="outline" >
+                                    description="Comptes utilisateurs"
+                                    action=
+                                    {
+                                        <Button asChild size="sm" variant="outline">
                                             <Link href="/admin/users">Voir</Link>
                                         </Button>
                                     }
-                                    variant="default"
                                 />
                                 <StatCard
                                     title="Licences"
                                     value={stats.licenses.total}
                                     secondaryValue={`${stats.licenses.active} actives`}
                                     icon={Receipt}
-                                    action={
+                                    description="Licences générées"
+                                    action=
+                                    {
                                         <Button asChild size="sm">
                                             <Link href="/admin/licenses">Voir</Link>
                                         </Button>
                                     }
-                                    variant="default"
                                 />
                             </div>
                         </div>
 
-                        {/* 📊 SECTION PERFORMANCE - 30 JOURS */}
-                        <div>
-                            <h3 className="text-lg font-semibold mb-4">Performance (30 jours)</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-
+                        <div className="space-y-4">
+                            <h3 className="text-lg font-semibold mb-2">Performance (30 jours)</h3>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <StatCard
                                     title="Commandes"
                                     value={stats.orders_30d}
                                     icon={TrendingUp}
-                                    variant="secondary"
                                     description="Nouvelles commandes"
+                                    variant="secondary"
                                 />
                                 <StatCard
                                     title="Revenus"
-                                    value={`${(stats.revenue_cents_30d / 100).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}`}
+                                    value={formatCFA(stats.revenue_cents_30d ?? 0)}
                                     icon={DollarSign}
+                                    description="Chiffre d'affaires 30j"
                                     variant="secondary"
-                                    description="Chiffre d'affaires"
                                 />
-
                                 <StatCard
                                     title="Téléchargements"
                                     value={stats.downloads_30d}
                                     secondaryValue={`${stats.downloads_30d} téléchargements`}
                                     icon={Download}
-                                    action={
-                                        <Button asChild size="sm" variant="outline">
-                                            <Link href="/admin/downloads">Voir</Link>
-                                        </Button>
-                                    }
-                                    variant="default"
                                     description="Fichiers téléchargés"
                                 />
                             </div>
                         </div>
 
-                        {/* 🎓 SECTION FORMATIONS */}
-                        <div>
-                            <h3 className="text-lg font-semibold mb-4">Formations</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                        <div className="space-y-4">
+                            <h3 className="text-lg font-semibold mb-2">Formations et support</h3>
+                            <div className="grid grid-cols-1 gap-4">
                                 <StatCard
-                                    title="Nouvelles inscriptions"
+                                    title="Inscriptions cours (30j)"
                                     value={stats.course_enrollments_30d ?? 0}
                                     icon={Users}
+                                    description="Nouvelles inscriptions"
                                     variant="secondary"
-                                    description="30 derniers jours"
                                 />
                                 <StatCard
                                     title="Progression moyenne"
                                     value={`${stats.avg_course_progress ?? 0}%`}
                                     icon={BarChart2}
-                                    variant="default"
                                     description="Tous les cours"
                                 />
-                                <StatCard
-                                    title="Taux de complétion"
-                                    value="--%"
-                                    icon={BarChart2}
-                                    variant="default"
-                                    description="En cours d'analyse"
-                                />
-                            </div>
-                        </div>
-
-                        {/* 🎫 SECTION SUPPORT */}
-                        <div>
-                            <h3 className="text-lg font-semibold mb-4">Support & Service</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <StatCard
                                     title="Tickets support"
                                     value={stats.tickets.total}
                                     secondaryValue={`${stats.tickets.open} ouverts`}
                                     icon={Ticket}
-
-                                    action={
+                                    description="Suivi du support"
+                                    action=
+                                    {
                                         <Button asChild size="sm" variant="secondary">
-                                            <Link href="supportsTickets">Gérer</Link>
+                                            <Link href="/supportsTickets">Gérer</Link>
                                         </Button>
                                     }
-                                />
-                                <StatCard
-                                    title="Taux de résolution"
-                                    value="--%"
-                                    icon={Clock}
-
-                                    description="Temps moyen de réponse"
                                 />
                             </div>
                         </div>
                     </div>
                 </section>
 
-                {/* 📊 Section des graphiques */}
                 <section className="w-full overflow-x-auto">
                     <SectionHeader
                         title="Analytiques"
@@ -334,46 +319,48 @@ export default function AdminIndex() {
                     />
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 min-w-[300px]">
                         <div className="w-full min-w-[300px] h-[350px] sm:h-[400px]">
-                            <OrdersChart data={chartData?.map((item: any) => ({
-                                date: item.date,
-                                value: item.orders
-                            }))} />
+                            <OrdersChart
+                                data={chartData?.map((item: any) => ({
+                                    date: item.date,
+                                    value: item.orders,
+                                }))}
+                            />
                         </div>
                         <div className="w-full min-w-[300px] h-[350px] sm:h-[400px]">
-                            <RevenueChart data={chartData?.map((item: any) => ({
-                                date: item.date,
-                                value: item.revenue
-                            }))} />
+                            <RevenueChart
+                                data={chartData?.map((item: any) => ({
+                                    date: item.date,
+                                    value: item.revenue,
+                                }))}
+                            />
                         </div>
                         <div className="lg:col-span-2 w-full min-w-[300px] h-[350px] sm:h-[400px]">
-                            <DownloadsChart data={chartData?.map((item: any) => ({
-                                date: item.date,
-                                value: item.downloads
-                            }))} />
+                            <DownloadsChart
+                                data={chartData?.map((item: any) => ({
+                                    date: item.date,
+                                    value: item.downloads,
+                                }))}
+                            />
                         </div>
                     </div>
                 </section>
 
-                {/* 📊 Section métriques détaillées */}
                 <section>
                     <SectionHeader
                         title="Métriques détaillées"
-                        subtitle="Indicateurs de performance clés"
+                        subtitle="Vue détaillée des performances"
                     />
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                         <StatCard
-                            title="Commandes (30j)"
-                            value={stats.orders_30d}
-                            icon={Receipt}
-                            description={`${stats.licenses?.active ?? 0} licences actives`}
+                            title="Produits actifs"
+                            value={stats.products}
+                            icon={Package}
                             variant="secondary"
-                            trend={{ value: 8, label: "nouvelles commandes" }}
                         />
                         <StatCard
-                            title="Tickets Support"
-                            value={`${stats.tickets?.open ?? 0}/${stats.tickets?.total ?? 0}`}
-                            icon={Ticket}
-                            description="Ouverts / Total"
+                            title="Formations actives"
+                            value={stats.courses}
+                            icon={GraduationCap}
                             variant="secondary"
                         />
                         <StatCard
@@ -381,7 +368,7 @@ export default function AdminIndex() {
                             value={stats.downloads_30d ?? 0}
                             icon={Download}
                             variant="secondary"
-                            trend={{ value: 15, label: "augmentation" }}
+                            trend={{ value: 0, label: "Variation sur 30 jours" }}
                         />
                         <StatCard
                             title="Renouvellements à venir"
@@ -393,7 +380,6 @@ export default function AdminIndex() {
                     </div>
                 </section>
 
-                {/* 📈 Section activité récente */}
                 <section>
                     <SectionHeader
                         title="Activité récente"
@@ -408,9 +394,9 @@ export default function AdminIndex() {
                             {(recentOrders ?? []).map((order: any) => (
                                 <ListItem
                                     key={order.id}
-                                    primary={order.product?.name ?? 'Produit'}
-                                    secondary={new Date(order.created_at).toLocaleDateString('fr-FR')}
-                                    value={euro(order.amount ?? 0)}
+                                    primary={order.product?.name ?? "Produit"}
+                                    secondary={new Date(order.created_at).toLocaleDateString("fr-FR")}
+                                    value={formatCFA(order.amount ?? 0)}
                                     status={order.status}
                                     badge={order.product?.type}
                                 />
@@ -425,14 +411,19 @@ export default function AdminIndex() {
                             {(recentLicenses ?? []).map((license: any) => (
                                 <ListItem
                                     key={license.id}
-                                    primary={license.product?.name ?? 'Produit'}
-                                    secondary={license.user?.name ?? 'Utilisateur'}
+                                    primary={license.product?.name ?? "Produit"}
+                                    secondary={license.user?.name ?? "Utilisateur"}
                                     status={license.status}
-                                    date={license.expiry_date ? new Date(license.expiry_date).toLocaleDateString('fr-FR') : '—'}
+                                    date={
+                                        license.expiry_date
+                                            ? new Date(license.expiry_date).toLocaleDateString("fr-FR")
+                                            : "—"
+                                    }
                                     badge="Licence"
                                 />
                             ))}
                         </ListCard>
+
                         <ListCard
                             title="Tickets récents"
                             description="5 tickets les plus récents"
@@ -442,9 +433,9 @@ export default function AdminIndex() {
                                 <ListItem
                                     key={ticket.id}
                                     primary={ticket.subject}
-                                    secondary={ticket.user?.name ?? 'Utilisateur'}
+                                    secondary={ticket.user?.name ?? "Utilisateur"}
                                     status={ticket.status}
-                                    date={new Date(ticket.created_at).toLocaleDateString('fr-FR')}
+                                    date={new Date(ticket.created_at).toLocaleDateString("fr-FR")}
                                     badge={ticket.priority}
                                 />
                             ))}
@@ -452,23 +443,22 @@ export default function AdminIndex() {
                     </div>
                 </section>
 
-                {/* 🎯 Section produits et formations */}
                 <section>
                     <SectionHeader
-                        title="Contenu & Performances"
+                        title="Contenu et performances"
                         subtitle="Gestion de vos produits et formations"
                     />
                     <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
                         <ListCard
-                            title="Top Produits (30j)"
+                            title="Top produits (30j)"
                             description="Produits les plus vendus par chiffre d'affaires"
                             emptyMessage="Aucune vente de produit enregistrée"
                         >
                             {(topProducts30 ?? []).map((product: any) => (
                                 <ListItem
                                     key={product.product_id}
-                                    primary={product.product?.name ?? 'Produit'}
-                                    value={euro(product.revenue_cents ?? 0)}
+                                    primary={product.product?.name ?? "Produit"}
+                                    value={formatCFA(product.revenue_cents ?? 0)}
                                     tertiary={`${product.orders_count} commandes`}
                                     badge="Top"
                                 />
@@ -485,8 +475,9 @@ export default function AdminIndex() {
                                     <ListItem
                                         key={product.id}
                                         primary={product.name}
-                                        secondary={`SKU ${product.sku} ${product.version ? `• v${product.version}` : ''}`}
-                                        date={new Date(product.created_at).toLocaleDateString('fr-FR')}
+                                        secondary={`SKU ${product.sku} ${product.version ? `• v${product.version}` : ""
+                                            }`}
+                                        date={new Date(product.created_at).toLocaleDateString("fr-FR")}
                                         badge="Nouveau"
                                     />
                                 ))}
@@ -501,7 +492,7 @@ export default function AdminIndex() {
                                     <ListItem
                                         key={course.id}
                                         primary={course.title}
-                                        date={new Date(course.created_at).toLocaleDateString('fr-FR')}
+                                        date={new Date(course.created_at).toLocaleDateString("fr-FR")}
                                         badge="Formation"
                                     />
                                 ))}
@@ -510,18 +501,47 @@ export default function AdminIndex() {
                     </div>
                 </section>
 
-                {/* ℹ️ Section informations */}
+                <section>
+                    <SectionHeader
+                        title="Centre d'aide"
+                        subtitle="Gérez les articles de FAQ, documentation et tutoriels affichés dans le centre d'aide client"
+                    />
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2 text-base font-semibold">
+                                    <HelpCircle className="h-4 w-4" />
+                                    Articles du centre d'aide
+                                </CardTitle>
+                                <CardDescription>
+                                    Créez et maintenez les articles d'aide (FAQ, documentation, tutoriels).
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent className="flex items-center justify-between">
+                                <div className="text-sm text-muted-foreground max-w-xs">
+                                    Accédez à l'interface de gestion des articles d'aide.
+                                </div>
+                                <Button asChild size="sm">
+                                    <Link href="/admin/help-articles">Gérer</Link>
+                                </Button>
+                            </CardContent>
+                        </Card>
+                    </div>
+                </section>
+
                 <section>
                     <Card className="bg-blue-50 border-blue-200">
                         <CardContent className="p-6">
                             <div className="flex items-start gap-4">
                                 <AlertCircle className="h-6 w-6 text-blue-600 mt-0.5 flex-shrink-0" />
                                 <div>
-                                    <h3 className="font-semibold text-blue-900 mb-2">Tableau de bord en développement</h3>
+                                    <h3 className="font-semibold text-blue-900 mb-2">
+                                        Tableau de bord en développement
+                                    </h3>
                                     <p className="text-blue-700 text-sm">
-                                        Certaines sections peuvent afficher "Aucune donnée disponible" car votre base de données
-                                        est en cours de peuplement. Les données s'afficheront automatiquement une fois que vous
-                                        aurez des produits, formations, commandes et tickets.
+                                        Certaines sections peuvent afficher "Aucune donnée disponible" car votre base de
+                                        données est en cours de peuplement. Les données s'afficheront automatiquement une
+                                        fois que vous aurez des produits, formations, commandes et tickets.
                                     </p>
                                 </div>
                             </div>

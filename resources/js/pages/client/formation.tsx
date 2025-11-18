@@ -25,39 +25,81 @@ export default function Formation() {
     const [searchTerm, setSearchTerm] = useState('');
 
     const { courses: realCourses = [] } = usePage().props as any;
-    const courses = Array.isArray(realCourses) && realCourses.length ? realCourses : [];
+    const courses = Array.isArray(realCourses) ? realCourses : [];
+
+    const inProgressCourses = courses.filter((c: any) => {
+        const p = c.progress_percent || 0;
+        return p > 0 && p < 100;
+    });
+
+    const completedCourses = courses.filter((c: any) => {
+        const p = c.progress_percent || 0;
+        return p >= 100 || !!c.completed_at;
+    });
+
+    const startedCourses = courses.filter((c: any) => (c.progress_percent || 0) > 0 || !!c.completed_at);
+    const totalDurationSeconds = courses.reduce((s: number, c: any) => s + (c.duration_seconds || 0), 0);
+
+    const avg = startedCourses.length
+        ? Math.round(startedCourses.reduce((s: number, c: any) => s + (c.progress_percent || 0), 0) / startedCourses.length)
+        : 0;
 
     const categories = [
         { id: 'all', name: 'Tous les cours', count: courses.length },
+        { id: 'in-progress', name: 'En cours', count: inProgressCourses.length },
+        { id: 'completed', name: 'Terminés', count: completedCourses.length },
     ];
 
-    const avg = courses.length ? Math.round(courses.reduce((s: any, c: any) => s + (c.progress_percent || 0), 0) / courses.length) : 0;
     const stats = [
         {
-            title: "Cours suivis",
-            value: String(courses.filter((c: any) => (c.progress_percent || 0) > 0).length),
-            description: "+1 cette semaine",
+            title: "Cours en cours",
+            value: String(inProgressCourses.length),
+            description: "Formations actives",
             icon: BookOpen
+        },
+        {
+            title: "Cours terminés",
+            value: String(completedCourses.length),
+            description: "Bravo pour vos progrès",
+            icon: CheckCircle
         },
         {
             title: "Progression moyenne",
             value: `${avg}%`,
-            description: "En amélioration",
+            description: "Sur vos cours suivis",
             icon: Award
         },
         {
             title: "Temps total",
-            value: courses.reduce((s: any, c: any) => s + (c.duration_seconds || 0), 0) ? "~" + Math.round(courses.reduce((s: any, c: any) => s + (c.duration_seconds || 0), 0) / 3600) + "h" : "—",
-            description: "Ce mois-ci",
+            value: totalDurationSeconds ? "~" + Math.round(totalDurationSeconds / 3600) + "h" : "—",
+            description: "Durée estimée",
             icon: Clock
-        },
-        {
-            title: "Certificats",
-            value: "—",
-            description: "Obtenus",
-            icon: CheckCircle
         }
     ];
+
+    const filteredCourses = courses.filter((c: any) => {
+        const search = searchTerm.toLowerCase();
+        const matchesSearch =
+            c.title.toLowerCase().includes(search) ||
+            (c.description || '').toLowerCase().includes(search);
+
+        const p = c.progress_percent || 0;
+        const isCompleted = p >= 100 || !!c.completed_at;
+        const isInProgress = p > 0 && p < 100;
+
+        if (activeCategory === 'completed' && !isCompleted) return false;
+        if (activeCategory === 'in-progress' && !isInProgress) return false;
+
+        return matchesSearch;
+    });
+
+    const recentCompleted = [...completedCourses]
+        .sort((a: any, b: any) => {
+            const aDate = a.completed_at ? new Date(a.completed_at).getTime() : 0;
+            const bDate = b.completed_at ? new Date(b.completed_at).getTime() : 0;
+            return bDate - aDate;
+        })
+        .slice(0, 3);
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -140,7 +182,7 @@ export default function Formation() {
                             </Button>
                         ))}
                     </div>
-                    <Button variant="destructive" onClick={() => router.get(route('all-courses'))} className="flex items-center gap-2">
+                    <Button variant="destructive" onClick={() => router.get(route('all-courses'))} className="flex shadow-lg hover:cursor-pointer! items-center gap-2">
                         <Filter className="h-4 w-4" />
                         Voir toutes les formations
                     </Button>
@@ -148,8 +190,7 @@ export default function Formation() {
 
                 {/* Liste des cours */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {courses
-                        .filter((c: any) => c.title.toLowerCase().includes(searchTerm.toLowerCase()) || (c.description || '').toLowerCase().includes(searchTerm.toLowerCase()))
+                    {filteredCourses
                         .map((course: any) => {
                             const firstBullet = String(course.what_you_will_learn || '').split('\n').filter(Boolean)[0] || '';
                             const audienceShort = (course.audience || '').length > 80 ? (course.audience || '').slice(0, 77) + '…' : (course.audience || '');
@@ -162,7 +203,7 @@ export default function Formation() {
                                                 <img src={`/storage/${course.cover_image}`} alt="Cover" className="aspect-video w-full object-cover rounded-lg mb-4" />
                                             ) : (
                                                 <div className="aspect-video bg-gradient-to-br from-primary/20 to-primary/10 rounded-lg flex items-center justify-center mb-4">
-                                                    <PlayCircle className="h-12 w-12 text-primary/60 group-hover:text-primary transition-colors" />
+                                                    <BookOpen className="h-12 w-12 text-primary/60 group-hover:text-primary transition-colors" />
                                                 </div>
                                             )}
                                         </div>
@@ -244,26 +285,39 @@ export default function Formation() {
                 {/* Cours récemment terminés */}
                 <div className="mt-12">
                     <h2 className="text-2xl font-bold tracking-tight mb-6">Récemment terminés</h2>
-                    <Card>
-                        <CardContent className="p-6">
-                            <div className="flex items-center justify-between p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
-                                <div className="flex items-center gap-4">
-                                    <CheckCircle className="h-8 w-8 text-green-600 dark:text-green-400" />
-                                    <div>
-                                        <h3 className="font-semibold text-green-900 dark:text-green-100">
-                                            Introduction à la Sécurité
-                                        </h3>
-                                        <p className="text-green-700 dark:text-green-300 text-sm">
-                                            Terminé le 12 Jan 2024 • Certificat obtenu
-                                        </p>
-                                    </div>
-                                </div>
-                                <Badge variant="outline" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300 border-green-200 dark:border-green-700">
-                                    100% complété
-                                </Badge>
-                            </div>
-                        </CardContent>
-                    </Card>
+                    {recentCompleted.length === 0 ? (
+                        <Card>
+                            <CardContent className="p-6 text-sm text-muted-foreground">
+                                Vous n'avez pas encore terminé de formation. Commencez un cours pour voir votre historique ici.
+                            </CardContent>
+                        </Card>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            {recentCompleted.map((course: any) => (
+                                <Card key={course.id} className="border-green-200 bg-green-50/80 dark:bg-green-900/20">
+                                    <CardContent className="p-4 flex items-center justify-between gap-3">
+                                        <div className="flex items-center gap-3">
+                                            <CheckCircle className="h-6 w-6 text-green-600 dark:text-green-400" />
+                                            <div>
+                                                <h3 className="font-semibold text-sm line-clamp-2">{course.title}</h3>
+                                                <p className="text-xs text-green-700 dark:text-green-300">
+                                                    {course.completed_at
+                                                        ? `Terminé le ${new Date(course.completed_at).toLocaleDateString('fr-FR')}`
+                                                        : 'Formation complétée'}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <Badge
+                                            variant="outline"
+                                            className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300 border-green-200 dark:border-green-700 text-[11px]"
+                                        >
+                                            100% complété
+                                        </Badge>
+                                    </CardContent>
+                                </Card>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </div>
         </AppLayout>

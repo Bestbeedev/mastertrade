@@ -16,6 +16,7 @@ export default function AdminUsers({ users = [], roles = [], filters = {} as any
     const [activeTab, setActiveTab] = React.useState("list");
     const [query, setQuery] = React.useState(filters.q ?? "");
     const [editing, setEditing] = React.useState<any | null>(null);
+    const [userToDelete, setUserToDelete] = React.useState<any | null>(null);
 
     const createForm = useForm({
         name: "",
@@ -81,10 +82,15 @@ export default function AdminUsers({ users = [], roles = [], filters = {} as any
         });
     };
 
-    const onDelete = (id: string) => {
+    const onDelete = () => {
+        if (!userToDelete) return;
         const t = toast.loading("Suppression de l'utilisateur...");
+        const id = userToDelete.id;
         destroy(route("admin.users.destroy", { user: id }), {
-            onSuccess: () => toast.success("Utilisateur supprimé", { id: t }),
+            onSuccess: () => {
+                toast.success("Utilisateur supprimé", { id: t });
+                setUserToDelete(null);
+            },
             onError: () => toast.error("Erreur lors de la suppression", { id: t }),
             preserveScroll: true,
         });
@@ -140,7 +146,7 @@ export default function AdminUsers({ users = [], roles = [], filters = {} as any
                                                     <TableCell>{u.phone ?? "—"}</TableCell>
                                                     <TableCell className="space-x-2">
                                                         <Button size="sm" variant="outline" onClick={() => startEdit(u)}>Éditer</Button>
-                                                        <Button size="sm" variant="destructive" onClick={() => onDelete(u.id)} disabled={deleting}>Supprimer</Button>
+                                                        <Button size="sm" variant="destructive" onClick={() => setUserToDelete(u)} disabled={deleting}>Supprimer</Button>
                                                     </TableCell>
                                                 </TableRow>
                                             ))}
@@ -199,6 +205,35 @@ export default function AdminUsers({ users = [], roles = [], filters = {} as any
                                                 </div>
                                             </form>
                                         )}
+                                    </DialogContent>
+                                </Dialog>
+
+                                <Dialog open={!!userToDelete} onOpenChange={(open) => { if (!open) setUserToDelete(null); }}>
+                                    <DialogContent>
+                                        <DialogHeader>
+                                            <DialogTitle>Confirmer la suppression</DialogTitle>
+                                            <DialogDescription>
+                                                Êtes-vous sûr de vouloir supprimer cet utilisateur&nbsp;?
+                                                Cette action est définitive et supprimera ses accès à la plateforme.
+                                            </DialogDescription>
+                                        </DialogHeader>
+                                        <div className="flex justify-end gap-2 mt-4">
+                                            <Button
+                                                variant="outline"
+                                                type="button"
+                                                onClick={() => setUserToDelete(null)}
+                                            >
+                                                Annuler
+                                            </Button>
+                                            <Button
+                                                variant="destructive"
+                                                type="button"
+                                                onClick={onDelete}
+                                                disabled={deleting}
+                                            >
+                                                Supprimer
+                                            </Button>
+                                        </div>
                                     </DialogContent>
                                 </Dialog>
                             </CardContent>

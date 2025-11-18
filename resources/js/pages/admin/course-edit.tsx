@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { route } from "ziggy-js";
 import { toast } from "sonner";
 import { ArrowLeft, Plus, Trash2 } from "lucide-react";
@@ -104,6 +105,8 @@ export default function AdminCourseEdit() {
     };
 
     const { delete: destroy, processing: deleting } = useForm({});
+    const [confirmDeleteOpen, setConfirmDeleteOpen] = React.useState(false);
+
     const onDelete = () => {
         const t = toast.loading('Suppression en cours...');
         destroy(route('admin.courses.destroy', course.id), {
@@ -123,9 +126,47 @@ export default function AdminCourseEdit() {
                         <Link href={route('admin.courses')}><ArrowLeft className="h-4 w-4 mr-2" />Retour</Link>
                     </Button>
                     <div className="flex items-center gap-2">
-                        <Button variant="destructive" onClick={onDelete} disabled={deleting}><Trash2 className="h-4 w-4 mr-2" />Supprimer</Button>
+                        <Button
+                            variant="destructive"
+                            onClick={() => setConfirmDeleteOpen(true)}
+                            disabled={deleting}
+                        >
+                            <Trash2 className="h-4 w-4 mr-2" />Supprimer
+                        </Button>
                     </div>
                 </div>
+
+                <Dialog open={confirmDeleteOpen} onOpenChange={(open) => { if (!open) setConfirmDeleteOpen(false); }}>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Confirmer la suppression</DialogTitle>
+                            <DialogDescription>
+                                Êtes-vous sûr de vouloir supprimer cette formation&nbsp;?
+                                Cette action est définitive et supprimera l'ensemble des modules et leçons associés.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="flex justify-end gap-2 mt-4">
+                            <Button
+                                variant="outline"
+                                type="button"
+                                onClick={() => setConfirmDeleteOpen(false)}
+                            >
+                                Annuler
+                            </Button>
+                            <Button
+                                variant="destructive"
+                                type="button"
+                                onClick={() => {
+                                    setConfirmDeleteOpen(false);
+                                    onDelete();
+                                }}
+                                disabled={deleting}
+                            >
+                                Supprimer
+                            </Button>
+                        </div>
+                    </DialogContent>
+                </Dialog>
 
                 <form onSubmit={onSubmit}>
                     <Card>

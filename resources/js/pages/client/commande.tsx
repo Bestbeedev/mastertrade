@@ -2,13 +2,14 @@ import AppLayout from "@/layouts/app-layout";
 import { BreadcrumbItem } from "@/types";
 import { Head, Link, usePage } from "@inertiajs/react";
 import { route } from "ziggy-js";
-import { Search, Download, Eye, Calendar, Package, ArrowUpDown } from "lucide-react";
+import { Search, Download, Eye, Calendar, Package, ArrowUpDown,ListOrderedIcon ,DollarSign} from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { formatCFA } from "@/lib/utils";
 
 
 export default function Commande() {
@@ -23,7 +24,7 @@ export default function Commande() {
     const [searchTerm, setSearchTerm] = useState('');
     const { orders: realOrders = [] } = usePage().props as any;
 
-    const formatCurrency = (amountCents: number) => new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format((amountCents ?? 0) / 100);
+    const formatCurrency = (amountCents: number) => formatCFA(amountCents ?? 0);
 
     type OrderStatus = 'completed' | 'pending' | 'processing' | 'cancelled';
 
@@ -42,7 +43,7 @@ export default function Commande() {
         { title: "Commandes totales", value: String(totalOrders), description: "", icon: Package, trend: "neutral" },
         { title: "En attente", value: String(pendingCount), description: "", icon: Calendar, trend: "neutral" },
         { title: "Livrées", value: String(deliveredCount), description: "", icon: Download, trend: "neutral" },
-        { title: "Dépensé total", value: formatCurrency(totalSpent), description: "", icon: "€", trend: "neutral" },
+        { title: "Dépensé total", value: formatCurrency(totalSpent), description: "", icon: DollarSign, trend: "neutral" },
     ];
 
     return (

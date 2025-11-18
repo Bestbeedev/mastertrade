@@ -136,7 +136,7 @@ export function MyCoursesSection() {
                         <div className="text-sm text-muted-foreground">Vous n'êtes inscrit à aucune formation pour l'instant.</div>
                     )}
                     {myCourses.map((c: any) => (
-                        <Link key={c.course_id} href={route('courses.show', c.course_id)} className="border rounded-lg p-3 hover:bg-muted/50 transition-colors group">
+                        <Link key={c.course_id} href={route('courses.show', c.course_id)} className="border rounded-lg  shadow-lg p-3 hover:scale-100 transition-all duration-200 group">
                             {c.cover_image ? (
                                 <img src={`/storage/${c.cover_image}`} alt="Cover" className="h-28 w-full object-cover rounded-md mb-2" />
                             ) : (
@@ -167,7 +167,7 @@ export function ActiveSoftwareSection() {
     }));
 
     return (
-        <Card>
+        <Card className="">
             <CardHeader className="pb-4">
                 <CardTitle className="text-xl font-semibold text-foreground flex items-center gap-2">
                     <IconLicense className="h-5 w-5 text-blue-600" />
@@ -183,7 +183,7 @@ export function ActiveSoftwareSection() {
                         <div className="text-sm text-muted-foreground">Aucun logiciel actif pour le moment.</div>
                     )}
                     {activeSoftware.map((software: any) => (
-                        <div key={software.id} className="bg-card border rounded-lg p-4 hover:shadow-sm transition-all duration-200 group">
+                        <div key={software.id} className="bg-card shadow-lg hover:scale-105 border rounded-lg p-4 transition-all duration-200 group">
                             <div className="flex items-start justify-between mb-3">
                                 <div className="flex items-center gap-3">
                                     <div className={`w-10 h-10 ${software.bgColor} rounded-lg flex items-center justify-center group-hover:scale-105 transition-transform`}>

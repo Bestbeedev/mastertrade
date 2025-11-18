@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Inertia\Inertia;
 use App\Models\License;
 use App\Models\Product;
+use App\Models\Notification;
+use App\Models\User;
 use Inertia\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -294,6 +296,43 @@ class LicenseController extends Controller
             $license->last_activated_at = Carbon::now();
         }
         $license->save();
+
+        // Notification pour l'utilisateur
+        if ($user) {
+            Notification::create([
+                'user_id' => $user->id,
+                'type' => 'license',
+                'data' => [
+                    'title' => 'Licence activée',
+                    'message' => ($product->name ?? 'Produit') . ' • clé ' . ($license->key ?? ''),
+                    'license_id' => $license->id,
+                    'product_id' => $product->id,
+                    'expires_at' => (string) $license->expiry_date,
+                    'important' => true,
+                ],
+            ]);
+        }
+
+        // Notifications pour les administrateurs
+        $adminUsers = User::whereHas('role', function ($q) {
+            $q->whereIn('name', ['admin', 'Admin', 'administrator', 'Administrator', 'superadmin', 'SuperAdmin']);
+        })->get(['id', 'name', 'email']);
+
+        foreach ($adminUsers as $admin) {
+            Notification::create([
+                'user_id' => $admin->id,
+                'type' => 'license',
+                'data' => [
+                    'title' => 'Nouvelle licence activée',
+                    'message' => ($user->name ?? 'Utilisateur') . ' a activé une licence pour ' . ($product->name ?? 'Produit'),
+                    'license_id' => $license->id,
+                    'product_id' => $product->id,
+                    'user_name' => $user->name ?? null,
+                    'user_email' => $user->email ?? null,
+                    'important' => true,
+                ],
+            ]);
+        }
 
         return redirect()->route('licenses.activation.complete', ['license' => $license->id]);
     }

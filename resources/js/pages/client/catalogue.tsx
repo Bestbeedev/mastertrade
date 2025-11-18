@@ -193,8 +193,8 @@ export default function Catalogue({ products = [] as { id: string; name: string;
                                                 key={category.id}
                                                 onClick={() => setActiveCategory(category.id)}
                                                 className={`w-full flex items-center justify-between p-3 rounded-xl text-left transition-all duration-200 ${activeCategory === category.id
-                                                        ? 'bg-primary text-primary-foreground shadow-md'
-                                                        : 'hover:bg-accent hover:shadow-sm border border-transparent hover:border-border'
+                                                    ? 'bg-primary text-primary-foreground shadow-md'
+                                                    : 'hover:bg-accent hover:shadow-sm border border-transparent hover:border-border'
                                                     }`}
                                             >
                                                 <div className="flex items-center gap-3">
@@ -232,9 +232,9 @@ export default function Catalogue({ products = [] as { id: string; name: string;
                                 <div className="space-y-2 text-sm">
                                     {[
                                         { label: "Gratuit", value: "free" },
-                                        { label: "Moins de 100€", value: "under100" },
-                                        { label: "100€ - 500€", value: "100-500" },
-                                        { label: "Plus de 500€", value: "over500" }
+                                        { label: "Moins de 100 FCFA", value: "under100" },
+                                        { label: "100 - 500 FCFA", value: "100-500" },
+                                        { label: "Plus de 500 FCFA", value: "over500" }
                                     ].map((range) => (
                                         <label key={range.value} className="flex items-center gap-3 p-2 rounded-lg hover:bg-accent cursor-pointer">
                                             <Checkbox />

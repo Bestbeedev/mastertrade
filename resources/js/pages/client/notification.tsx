@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { usePage, router } from '@inertiajs/react'
 import { route } from 'ziggy-js'
 import {
@@ -58,6 +59,8 @@ export default function Notification() {
     const [filter, setFilter] = useState('all');
     const [emailNotifications, setEmailNotifications] = useState(true);
     const [pushNotifications, setPushNotifications] = useState(true);
+    const [notificationToDelete, setNotificationToDelete] = useState<any | null>(null);
+    const [confirmClearOpen, setConfirmClearOpen] = useState(false);
 
     const markAsRead = (id: number) => {
         router.post(route('notifications.read', id), {}, { preserveScroll: true });
@@ -108,7 +111,7 @@ export default function Notification() {
                             <IconCheck className="h-4 w-4 mr-2" />
                             Tout marquer comme lu
                         </Button>
-                        <Button variant="outline" size="sm" onClick={clearAll}>
+                        <Button variant="outline" size="sm" onClick={() => setConfirmClearOpen(true)}>
                             <IconTrash className="h-4 w-4 mr-2" />
                             Tout effacer
                         </Button>
@@ -151,6 +154,72 @@ export default function Notification() {
                                 ))}
                             </CardContent>
                         </Card>
+
+                        {/* Confirmation suppression unique */}
+                        <Dialog open={!!notificationToDelete} onOpenChange={(open) => { if (!open) setNotificationToDelete(null); }}>
+                            <DialogContent>
+                                <DialogHeader>
+                                    <DialogTitle>Supprimer la notification</DialogTitle>
+                                    <DialogDescription>
+                                        Êtes-vous sûr de vouloir supprimer cette notification&nbsp;?
+                                        Cette action est définitive.
+                                    </DialogDescription>
+                                </DialogHeader>
+                                <div className="flex justify-end gap-2 mt-4">
+                                    <Button
+                                        variant="outline"
+                                        type="button"
+                                        onClick={() => setNotificationToDelete(null)}
+                                    >
+                                        Annuler
+                                    </Button>
+                                    <Button
+                                        variant="destructive"
+                                        type="button"
+                                        onClick={() => {
+                                            if (notificationToDelete) {
+                                                deleteNotification(notificationToDelete.id);
+                                                setNotificationToDelete(null);
+                                            }
+                                        }}
+                                    >
+                                        Supprimer
+                                    </Button>
+                                </div>
+                            </DialogContent>
+                        </Dialog>
+
+                        {/* Confirmation suppression de toutes les notifications */}
+                        <Dialog open={confirmClearOpen} onOpenChange={(open) => { if (!open) setConfirmClearOpen(false); }}>
+                            <DialogContent>
+                                <DialogHeader>
+                                    <DialogTitle>Tout effacer</DialogTitle>
+                                    <DialogDescription>
+                                        Voulez-vous vraiment supprimer toutes vos notifications&nbsp;?
+                                        Cette action est irréversible.
+                                    </DialogDescription>
+                                </DialogHeader>
+                                <div className="flex justify-end gap-2 mt-4">
+                                    <Button
+                                        variant="outline"
+                                        type="button"
+                                        onClick={() => setConfirmClearOpen(false)}
+                                    >
+                                        Annuler
+                                    </Button>
+                                    <Button
+                                        variant="destructive"
+                                        type="button"
+                                        onClick={() => {
+                                            setConfirmClearOpen(false);
+                                            clearAll();
+                                        }}
+                                    >
+                                        Tout effacer
+                                    </Button>
+                                </div>
+                            </DialogContent>
+                        </Dialog>
 
                         {/* Paramètres de notification */}
                         <Card>
@@ -263,7 +332,7 @@ export default function Notification() {
                                                                     variant="ghost"
                                                                     size="sm"
                                                                     className="h-8 w-8 p-0"
-                                                                    onClick={() => deleteNotification(notification.id)}
+                                                                    onClick={() => setNotificationToDelete(notification)}
                                                                 >
                                                                     <IconTrash className="h-4 w-4" />
                                                                 </Button>

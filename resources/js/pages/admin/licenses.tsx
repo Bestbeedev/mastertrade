@@ -17,6 +17,7 @@ export default function AdminLicenses({ licenses = [], products = [], users = []
     const [query, setQuery] = React.useState(filters.q ?? "");
     const [status, setStatus] = React.useState(filters.status ?? "");
     const [editing, setEditing] = React.useState<any | null>(null);
+    const [licenseToDelete, setLicenseToDelete] = React.useState<any | null>(null);
     const getDaysRemaining = (dateStr?: string) => {
         if (!dateStr) return null;
         const today = new Date();
@@ -112,10 +113,15 @@ export default function AdminLicenses({ licenses = [], products = [], users = []
         });
     };
 
-    const onDelete = (id: string) => {
+    const onDelete = () => {
+        if (!licenseToDelete) return;
         const t = toast.loading("Suppression de la licence...");
+        const id = licenseToDelete.id;
         destroy(route("admin.licenses.destroy", { license: id }), {
-            onSuccess: () => toast.success("Licence supprimée", { id: t }),
+            onSuccess: () => {
+                toast.success("Licence supprimée", { id: t });
+                setLicenseToDelete(null);
+            },
             onError: () => toast.error("Erreur lors de la suppression", { id: t }),
             preserveScroll: true,
         });
@@ -200,7 +206,7 @@ export default function AdminLicenses({ licenses = [], products = [], users = []
                                                     <TableCell>{l.last_activated_at ? new Date(l.last_activated_at).toLocaleString('fr-FR') : "—"}</TableCell>
                                                     <TableCell className="space-x-2">
                                                         <Button size="sm" variant="outline" onClick={() => startEdit(l)}>Éditer</Button>
-                                                        <Button size="sm" variant="destructive" onClick={() => onDelete(l.id)} disabled={deleting}>Supprimer</Button>
+                                                        <Button size="sm" variant="destructive" onClick={() => setLicenseToDelete(l)} disabled={deleting}>Supprimer</Button>
                                                     </TableCell>
                                                 </TableRow>
                                             ))}

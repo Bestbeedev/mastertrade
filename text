@@ -1,0 +1,13 @@
+Au niveau de la listes des formations existantes pour admin on doit afficher les details importants comme nobre de module, cover images , nobres inscrit, metadonnes sur la formation bref tout les doetails qu'il faut sur la formatin creer. On doit pouvoir voir ca quand on click sur peut etre voir les details et on  les details mais pas defaut on doit voit le cover en flex avec le titre et quelques infos peutre date de creation nbre module ou autres etc...
+https://youtu.be/bGw-My1W5Iw
+<iframe width="1106" height="593" src="https://www.youtube.com/embed/bGw-My1W5Iw" title="How to send email in Laravel using Mailtrap" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+
+oui ajoute ca et deja aussi au niveau des pages pour les clients on peut deja commencer remplacer les donnees fictives par les vrai donnees de la database memem chose pour les pages pour admin.Et deja dans la page Telechargemts on peut configurer comme une page sans les donnees fictives mais qui va fonctionner correctement quand les vrai telechargement vont debuter.Meme choses pour la pages des commandes.Corrige l'erruer qu'il y a dans la page client formation.Au niveau de notifications on va le rendre aussi bien fonctionnelles tu vas vraiment adapter ca a ma applications pour que les notifications se fasse et ques les utilisatuers etc ait de nitiicatiosn qu'il faut au temps qu'il faut etc et en ui je prefee le UI actuelle c'est telleemnt jolie tu vas me gerer bien maintenant la logique backend de ca.
+
+
+Activation lien
+1-/licenses/activate?product=MasterStock&device_id=PC-98765&mac_address=00-11-22-33-44-55&machine=DESKTOP-WIN11
+
+2-/licenses/activate?sku=MASTERTRADE&device_id=PC-98765&mac_address=00-11-22-33-44-55&machine=DESKTOP-WIN11
+
+3-/licenses/activate?product_id=00000000-0000-0000-0000-000000000000&device_id=PC-98765&mac_address=00-11-22-33-44-55&machine=DESKTOP-WIN11

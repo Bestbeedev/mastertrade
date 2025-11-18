@@ -17,6 +17,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\Admin\UserAdminController;
 use App\Http\Controllers\Admin\LicenseAdminController;
+use App\Http\Controllers\Admin\HelpAdminController;
 use App\Models\Product;
 use App\Models\Course;
 use App\Models\CourseEnrollment;
@@ -328,6 +329,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('admin/licenses', [LicenseAdminController::class, 'store'])->name('admin.licenses.store');
     Route::patch('admin/licenses/{license}', [LicenseAdminController::class, 'update'])->name('admin.licenses.update');
     Route::delete('admin/licenses/{license}', [LicenseAdminController::class, 'destroy'])->name('admin.licenses.destroy');
+
+    // Admin Help Articles
+    Route::get('admin/help-articles', [HelpAdminController::class, 'index'])->name('admin.help-articles');
+    Route::post('admin/help-articles', [HelpAdminController::class, 'store'])->name('admin.help-articles.store');
+    Route::patch('admin/help-articles/{article}', [HelpAdminController::class, 'update'])->name('admin.help-articles.update');
+    Route::delete('admin/help-articles/{article}', [HelpAdminController::class, 'destroy'])->name('admin.help-articles.destroy');
 
     // Admin Downloads Logs
     Route::get('admin/downloads', function () {

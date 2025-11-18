@@ -6,7 +6,10 @@ import {
     IconClock,
     IconCheck,
     IconTrendingUp,
-    IconTrendingDown
+    IconTrendingDown,
+    IconAlertCircle,
+    IconChartBar,
+    IconMoodHappy
 } from "@tabler/icons-react"
 
 import { Badge } from "@/components/ui/badge"
@@ -23,6 +26,7 @@ import { usePage } from "@inertiajs/react"
 export function SectionCards() {
     const { dashboardStats } = usePage().props as any;
     const source = dashboardStats ?? {};
+
     // Calcul des métriques dérivées
     const stats = {
         licenses: {
@@ -63,194 +67,149 @@ export function SectionCards() {
         }
     }
 
+    const cardConfigs = {
+        licenses: {
+            icon: IconLicense,
+            bgLight: "bg-gradient-to-br from-green-50 to-green-100/50 dark:from-green-950/20 dark:to-green-900/10",
+            iconColor: "text-green-600 dark:text-green-400",
+            badgeColor: "bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800",
+            textColor: "text-green-700 dark:text-green-300",
+            trendIcon: IconTrendingUp,
+            statusIcon: IconMoodHappy
+        },
+        downloads: {
+            icon: IconDownload,
+            bgLight: "bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-950/20 dark:to-blue-900/10",
+            iconColor: "text-blue-600 dark:text-blue-400",
+            badgeColor: "bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800",
+            textColor: "text-blue-700 dark:text-blue-300",
+            trendIcon: IconTrendingUp,
+            statusIcon: IconChartBar
+        },
+        courses: {
+            icon: IconSchool,
+            bgLight: "bg-gradient-to-br from-purple-50 to-purple-100/50 dark:from-purple-950/20 dark:to-purple-900/10",
+            iconColor: "text-purple-600 dark:text-purple-400",
+            badgeColor: "bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-800",
+            textColor: "text-purple-700 dark:text-purple-300",
+            trendIcon: IconTrendingUp,
+            statusIcon: IconSchool
+        },
+        renewals: {
+            icon: IconClock,
+            bgLight: "bg-gradient-to-br from-orange-50 to-orange-100/50 dark:from-orange-950/20 dark:to-orange-900/10",
+            iconColor: "text-orange-600 dark:text-orange-400",
+            badgeColor: "bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-900/30 dark:text-orange-300 dark:border-orange-800",
+            textColor: "text-orange-700 dark:text-orange-300",
+            trendIcon: IconTrendingDown,
+            statusIcon: IconAlertCircle
+        },
+        support: {
+            icon: IconShoppingCart,
+            bgLight: "bg-gradient-to-br from-red-50 to-red-100/50 dark:from-red-950/20 dark:to-red-900/10",
+            iconColor: "text-red-600 dark:text-red-400",
+            badgeColor: "bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800",
+            textColor: "text-red-700 dark:text-red-300",
+            trendIcon: IconTrendingDown,
+            statusIcon: IconAlertCircle
+        },
+        orders: {
+            icon: IconShoppingCart,
+            bgLight: "bg-gradient-to-br from-cyan-50 to-cyan-100/50 dark:from-cyan-950/20 dark:to-cyan-900/10",
+            iconColor: "text-cyan-600 dark:text-cyan-400",
+            badgeColor: "bg-cyan-100 text-cyan-700 border-cyan-200 dark:bg-cyan-900/30 dark:text-cyan-300 dark:border-cyan-800",
+            textColor: "text-cyan-700 dark:text-cyan-300",
+            trendIcon: IconTrendingUp,
+            statusIcon: IconChartBar
+        }
+    }
+
+    const StatCard = ({ type, title, stat, config }: any) => {
+        const IconComponent = config.icon;
+        const StatusIcon = config.statusIcon;
+        const trendIcon = stat.trend === 'up' ?
+            <IconTrendingUp className="h-3 w-3" /> :
+            stat.trend === 'down' ?
+                <IconTrendingDown className="h-3 w-3" /> :
+                <IconCheck className="h-3 w-3" />;
+
+        const statusText = stat.trend === 'up' ? 'Hausse récente' :
+            stat.trend === 'down' ? 'Attention requise' :
+                'Statut stable';
+
+        return (
+            <Card className={`@container/card ${config.bgLight} hover:shadow-xl transition-all duration-300 hover:scale-[1.02]`}>
+                <CardHeader className="pb-3">
+                    <CardDescription className="flex items-center gap-2">
+                        <IconComponent className={`h-5 w-5 ${config.iconColor}`} />
+                        <span className="font-medium text-gray-700 dark:text-gray-300">{title}</span>
+                    </CardDescription>
+                    <CardTitle className="text-3xl font-bold tabular-nums @[250px]/card:text-4xl text-gray-900 dark:text-white">
+                        {stat.total}
+                    </CardTitle>
+                    <CardAction>
+                        <Badge variant="outline" className={config.badgeColor}>
+                            {trendIcon}
+                            {stat.change}
+                        </Badge>
+                    </CardAction>
+                </CardHeader>
+                <CardFooter className="flex-col items-start gap-2 text-sm pt-0">
+                    <div className={`line-clamp-1 flex gap-2 font-semibold ${config.textColor}`}>
+                        <StatusIcon className="h-4 w-4" />
+                        {statusText}
+                    </div>
+                    <div className="text-gray-600 dark:text-gray-400 text-xs">
+                        {stat.description || 'Aucune activité récente'}
+                    </div>
+                </CardFooter>
+            </Card>
+        )
+    }
+
     return (
         <div className="grid grid-cols-1 gap-6 px-4 lg:px-10 @xl/main:grid-cols-2 @5xl/main:grid-cols-3">
-            {/* Mes Licences Actives */}
-            <Card className="@container/card border-l-4 border-l-green-500 hover:shadow-lg shadow-xl transition-shadow">
-                <CardHeader>
-                    <CardDescription className="flex items-center gap-2">
-                        <IconLicense className="h-4 w-4 text-green-500" />
-                        Licences Actives
-                    </CardDescription>
-                    <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-                        {stats.licenses.total}
-                    </CardTitle>
-                    <CardAction>
-                        <Badge variant="outline" className={
-                            stats.licenses.trend === 'up'
-                                ? "bg-green-50 text-green-700 border-green-200"
-                                : "bg-gray-50 text-gray-700 border-gray-200"
-                        }>
-                            {stats.licenses.trend === 'up' ? <IconTrendingUp className="h-3 w-3" /> : <IconCheck className="h-3 w-3" />}
-                            {stats.licenses.change}
-                        </Badge>
-                    </CardAction>
-                </CardHeader>
-                <CardFooter className="flex-col items-start gap-1.5 text-sm">
-                    <div className={`line-clamp-1 flex gap-2 font-medium ${stats.licenses.trend === 'up' ? 'text-green-700' : 'text-gray-700'
-                        }`}>
-                        {stats.licenses.trend === 'up' ? 'Nouvelle licence activée' : 'Statut stable'}
-                    </div>
-                    <div className="text-muted-foreground">
-                        {stats.licenses.description}
-                    </div>
-                </CardFooter>
-            </Card>
+            <StatCard
+                type="licenses"
+                title="Licences Actives"
+                stat={stats.licenses}
+                config={cardConfigs.licenses}
+            />
 
-            {/* Téléchargements */}
-            <Card className="@container/card border-l-4 border-l-blue-500 hover:shadow-lg shadow-xl  transition-shadow">
-                <CardHeader>
-                    <CardDescription className="flex items-center gap-2">
-                        <IconDownload className="h-4 w-4 text-blue-500" />
-                        Téléchargements
-                    </CardDescription>
-                    <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-                        {stats.downloads.total}
-                    </CardTitle>
-                    <CardAction>
-                        <Badge variant="outline" className={
-                            stats.downloads.trend === 'up'
-                                ? "bg-blue-50 text-blue-700 border-blue-200"
-                                : "bg-gray-50 text-gray-700 border-gray-200"
-                        }>
-                            {stats.downloads.trend === 'up' ? <IconTrendingUp className="h-3 w-3" /> : <IconCheck className="h-3 w-3" />}
-                            {stats.downloads.change}
-                        </Badge>
-                    </CardAction>
-                </CardHeader>
-                <CardFooter className="flex-col items-start gap-1.5 text-sm">
-                    <div className={`line-clamp-1 flex gap-2 font-medium ${stats.downloads.trend === 'up' ? 'text-blue-700' : 'text-gray-700'
-                        }`}>
-                        {stats.downloads.trend === 'up' ? 'Activité récente' : 'Aucun nouveau téléchargement'}
-                    </div>
-                    <div className="text-muted-foreground">
-                        {stats.downloads.description}
-                    </div>
-                </CardFooter>
-            </Card>
+            <StatCard
+                type="downloads"
+                title="Téléchargements"
+                stat={stats.downloads}
+                config={cardConfigs.downloads}
+            />
 
-            {/* Formations en Cours */}
-            <Card className="@container/card border-l-4 border-l-purple-500 hover:shadow-lg shadow-xl  transition-shadow">
-                <CardHeader>
-                    <CardDescription className="flex items-center gap-2">
-                        <IconSchool className="h-4 w-4 text-purple-500" />
-                        Formations en Cours
-                    </CardDescription>
-                    <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-                        {stats.courses.total}
-                    </CardTitle>
-                    <CardAction>
-                        <Badge variant="outline" className={
-                            stats.courses.trend === 'up'
-                                ? "bg-purple-50 text-purple-700 border-purple-200"
-                                : "bg-gray-50 text-gray-700 border-gray-200"
-                        }>
-                            <IconCheck className="h-3 w-3" />
-                            {stats.courses.change}
-                        </Badge>
-                    </CardAction>
-                </CardHeader>
-                <CardFooter className="flex-col items-start gap-1.5 text-sm">
-                    <div className={`line-clamp-1 flex gap-2 font-medium ${stats.courses.trend === 'up' ? 'text-purple-700' : 'text-gray-700'
-                        }`}>
-                        {stats.courses.trend === 'up' ? 'Formation active' : 'Aucune formation'}
-                    </div>
-                    <div className="text-muted-foreground">
-                        {stats.courses.description}
-                    </div>
-                </CardFooter>
-            </Card>
+            <StatCard
+                type="courses"
+                title="Formations en Cours"
+                stat={stats.courses}
+                config={cardConfigs.courses}
+            />
 
-            {/* Renouvellements en Attente */}
-            <Card className="@container/card border-l-4 border-l-orange-500 shadow-xl  hover:shadow-lg transition-shadow">
-                <CardHeader>
-                    <CardDescription className="flex items-center gap-2">
-                        <IconClock className="h-4 w-4 text-orange-500" />
-                        Renouvellements
-                    </CardDescription>
-                    <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-                        {stats.renewals.total}
-                    </CardTitle>
-                    <CardAction>
-                        <Badge variant="outline" className={
-                            stats.renewals.trend === 'down'
-                                ? "bg-orange-50 text-orange-700 border-orange-200"
-                                : "bg-green-50 text-green-700 border-green-200"
-                        }>
-                            {stats.renewals.trend === 'down' ? <IconClock className="h-3 w-3" /> : <IconCheck className="h-3 w-3" />}
-                            {stats.renewals.change}
-                        </Badge>
-                    </CardAction>
-                </CardHeader>
-                <CardFooter className="flex-col items-start gap-1.5 text-sm">
-                    <div className={`line-clamp-1 flex gap-2 font-medium ${stats.renewals.trend === 'down' ? 'text-orange-700' : 'text-green-700'
-                        }`}>
-                        {stats.renewals.trend === 'down' ? 'Attention requise' : 'Tout est à jour'}
-                    </div>
-                    <div className="text-muted-foreground">
-                        {stats.renewals.description}
-                    </div>
-                </CardFooter>
-            </Card>
+            <StatCard
+                type="renewals"
+                title="Renouvellements"
+                stat={stats.renewals}
+                config={cardConfigs.renewals}
+            />
 
-            {/* Support & Tickets */}
-            <Card className="@container/card border-l-4 border-l-red-500 hover:shadow-lg shadow-xl  transition-shadow">
-                <CardHeader>
-                    <CardDescription className="flex items-center gap-2">
-                        <IconShoppingCart className="h-4 w-4 text-red-500" />
-                        Tickets Support
-                    </CardDescription>
-                    <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-                        {stats.support.total}
-                    </CardTitle>
-                    <CardAction>
-                        <Badge variant="outline" className={
-                            stats.support.trend === 'down'
-                                ? "bg-red-50 text-red-700 border-red-200"
-                                : "bg-green-50 text-green-700 border-green-200"
-                        }>
-                            {stats.support.trend === 'down' ? <IconClock className="h-3 w-3" /> : <IconCheck className="h-3 w-3" />}
-                            {stats.support.change}
-                        </Badge>
-                    </CardAction>
-                </CardHeader>
-                <CardFooter className="flex-col items-start gap-1.5 text-sm">
-                    <div className={`line-clamp-1 flex gap-2 font-medium ${stats.support.trend === 'down' ? 'text-red-700' : 'text-green-700'
-                        }`}>
-                        {stats.support.trend === 'down' ? 'En attente de réponse' : 'Tous résolus'}
-                    </div>
-                    <div className="text-muted-foreground">
-                        {stats.support.description}
-                    </div>
-                </CardFooter>
-            </Card>
+            <StatCard
+                type="support"
+                title="Tickets Support"
+                stat={stats.support}
+                config={cardConfigs.support}
+            />
 
-            {/* Historique Commandes */}
-            <Card className="@container/card border-l-4 shadow-xl  border-l-cyan-500 hover:shadow-lg transition-shadow">
-                <CardHeader>
-                    <CardDescription className="flex items-center gap-2">
-                        <IconShoppingCart className="h-4 w-4 text-cyan-500" />
-                        Total Commandes
-                    </CardDescription>
-                    <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-                        {stats.orders.total}
-                    </CardTitle>
-                    <CardAction>
-                        <Badge variant="outline" className="bg-cyan-50 text-cyan-700 border-cyan-200">
-                            <IconTrendingUp className="h-3 w-3" />
-                            {stats.orders.change}
-                        </Badge>
-                    </CardAction>
-                </CardHeader>
-                <CardFooter className="flex-col items-start gap-1.5 text-sm">
-                    <div className="line-clamp-1 flex gap-2 font-medium text-cyan-700">
-                        Historique complet
-                    </div>
-                    <div className="text-muted-foreground">
-                        {stats.orders.description}
-                    </div>
-                </CardFooter>
-            </Card>
+            <StatCard
+                type="orders"
+                title="Total Commandes"
+                stat={stats.orders}
+                config={cardConfigs.orders}
+            />
         </div>
     )
 }

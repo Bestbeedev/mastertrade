@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Inertia\Inertia;
 use App\Models\Course;
+use App\Models\Notification;
+use App\Models\User;
 use Inertia\Controller;
 use Illuminate\Http\Request;
 use App\Models\CourseModule;
@@ -20,31 +22,44 @@ class CourseController extends Controller
      */
     public function index()
     {
-        $courses = Course::withCount('lessons')
-            ->select([
-                'id',
-                'title',
-                'description',
-                'intro',
-                'what_you_will_learn',
-                'requirements',
-                'audience',
-                'level',
-                'tags',
-                'is_paid',
-                'price',
-                'cover_image',
-                'duration_seconds',
-                'created_at',
-            ])
-            ->latest()->get();
+        $userId = Auth::id();
 
-        $enrollments = CourseEnrollment::where('user_id', Auth::id())
-            ->get(['course_id', 'progress_percent'])
+        // Récupère les inscriptions de l'utilisateur
+        $enrollments = CourseEnrollment::where('user_id', $userId)
+            ->get(['course_id', 'progress_percent', 'started_at', 'completed_at'])
             ->keyBy('course_id');
 
+        $courseIds = $enrollments->keys();
+
+        if ($courseIds->isEmpty()) {
+            $courses = collect();
+        } else {
+            $courses = Course::withCount('lessons')
+                ->select([
+                    'id',
+                    'title',
+                    'description',
+                    'intro',
+                    'what_you_will_learn',
+                    'requirements',
+                    'audience',
+                    'level',
+                    'tags',
+                    'is_paid',
+                    'price',
+                    'cover_image',
+                    'duration_seconds',
+                    'created_at',
+                ])
+                ->whereIn('id', $courseIds)
+                ->latest()
+                ->get();
+        }
+
         $courses = $courses->map(function ($c) use ($enrollments) {
-            $progress = optional($enrollments->get($c->id))->progress_percent ?? 0;
+            $enrollment = $enrollments->get($c->id);
+            $progress = optional($enrollment)->progress_percent ?? 0;
+
             return [
                 'id' => $c->id,
                 'title' => $c->title,
@@ -61,6 +76,8 @@ class CourseController extends Controller
                 'duration_seconds' => $c->duration_seconds,
                 'lessons_count' => $c->lessons_count,
                 'progress_percent' => (int) $progress,
+                'started_at' => optional($enrollment)->started_at,
+                'completed_at' => optional($enrollment)->completed_at,
             ];
         });
 
@@ -71,7 +88,83 @@ class CourseController extends Controller
 
     public function allcourses()
     {
-        return Inertia::render('client/partials/formations');
+        $courses = Course::with(['modules.lessons'])
+            ->withCount('lessons')
+            ->select([
+                'id',
+                'title',
+                'description',
+                'intro',
+                'what_you_will_learn',
+                'requirements',
+                'audience',
+                'level',
+                'tags',
+                'is_paid',
+                'price',
+                'cover_image',
+                'duration_seconds',
+                'created_at',
+            ])
+            ->latest()
+            ->get();
+
+        $enrollments = CourseEnrollment::where('user_id', Auth::id())
+            ->get(['course_id', 'progress_percent', 'completed_at'])
+            ->keyBy('course_id');
+
+        $courses = $courses->map(function ($c) use ($enrollments) {
+            $videoCount = 0;
+            $pdfCount = 0;
+            foreach ($c->modules as $module) {
+                foreach ($module->lessons as $lesson) {
+                    if ($lesson->type === 'video') {
+                        $videoCount++;
+                    } elseif ($lesson->type === 'pdf') {
+                        $pdfCount++;
+                    }
+                }
+            }
+
+            if ($videoCount && $pdfCount) {
+                $primaryType = 'mixte';
+            } elseif ($videoCount) {
+                $primaryType = 'video';
+            } elseif ($pdfCount) {
+                $primaryType = 'pdf';
+            } else {
+                $primaryType = null;
+            }
+
+            $enrollment = $enrollments->get($c->id);
+            $progress = optional($enrollment)->progress_percent ?? 0;
+
+            return [
+                'id' => $c->id,
+                'title' => $c->title,
+                'description' => $c->description,
+                'intro' => $c->intro,
+                'what_you_will_learn' => $c->what_you_will_learn,
+                'requirements' => $c->requirements,
+                'audience' => $c->audience,
+                'level' => $c->level,
+                'tags' => $c->tags,
+                'is_paid' => (bool) $c->is_paid,
+                'price' => $c->price,
+                'cover_image' => $c->cover_image,
+                'duration_seconds' => $c->duration_seconds,
+                'lessons_count' => $c->lessons_count,
+                'primary_type' => $primaryType,
+                'progress_percent' => (int) $progress,
+                'is_enrolled' => $enrollment !== null,
+                'completed_at' => optional($enrollment)->completed_at,
+                'created_at' => $c->created_at,
+            ];
+        });
+
+        return Inertia::render('client/all-courses', [
+            'courses' => $courses,
+        ]);
     }
 
     /**
@@ -245,13 +338,51 @@ class CourseController extends Controller
     public function enroll(Request $request, Course $course)
     {
         $userId = Auth::id();
-        CourseEnrollment::firstOrCreate([
+        $enrollment = CourseEnrollment::firstOrCreate([
             'user_id' => $userId,
             'course_id' => $course->id,
         ], [
             'started_at' => now(),
             'progress_percent' => 0,
         ]);
+
+        $user = Auth::user();
+
+        // Notification pour l'utilisateur
+        if ($user) {
+            Notification::create([
+                'user_id' => $user->id,
+                'type' => 'course',
+                'data' => [
+                    'title' => 'Inscription à une formation',
+                    'message' => 'Vous êtes inscrit(e) à la formation « ' . ($course->title ?? 'Formation') . ' »',
+                    'course_id' => $course->id,
+                    'enrollment_id' => $enrollment->id ?? null,
+                    'important' => false,
+                ],
+            ]);
+        }
+
+        // Notifications pour les administrateurs
+        $adminUsers = User::whereHas('role', function ($q) {
+            $q->whereIn('name', ['admin', 'Admin', 'administrator', 'Administrator', 'superadmin', 'SuperAdmin']);
+        })->get(['id', 'name', 'email']);
+
+        foreach ($adminUsers as $admin) {
+            Notification::create([
+                'user_id' => $admin->id,
+                'type' => 'course',
+                'data' => [
+                    'title' => 'Nouvelle inscription à une formation',
+                    'message' => ($user->name ?? 'Un utilisateur') . ' s\'est inscrit(e) à « ' . ($course->title ?? 'Formation') . ' »',
+                    'course_id' => $course->id,
+                    'user_name' => $user->name ?? null,
+                    'user_email' => $user->email ?? null,
+                    'important' => false,
+                ],
+            ]);
+        }
+
         return back()->with('status', 'Inscription effectuée');
     }
 
@@ -295,10 +426,28 @@ class CourseController extends Controller
 
         // Recompute course progress
         $total = Lesson::where('course_id', $course->id)->count();
-        $completed = LessonProgress::where('user_id', $userId)->where('course_id', $course->id)->whereNotNull('completed_at')->count();
+        $completed = LessonProgress::where('user_id', $userId)
+            ->where('course_id', $course->id)
+            ->whereNotNull('completed_at')
+            ->count();
         $percent = $total > 0 ? (int) floor(($completed / $total) * 100) : 0;
-        CourseEnrollment::where('user_id', $userId)->where('course_id', $course->id)
-            ->update(['progress_percent' => $percent, 'last_lesson_id' => $data['lesson_id']]);
+
+        $enrollment = CourseEnrollment::where('user_id', $userId)
+            ->where('course_id', $course->id)
+            ->first();
+
+        if ($enrollment) {
+            $enrollment->progress_percent = $percent;
+            $enrollment->last_lesson_id = $data['lesson_id'];
+
+            if ($percent === 100 && !$enrollment->completed_at) {
+                $enrollment->completed_at = now();
+            } elseif ($percent < 100 && $enrollment->completed_at) {
+                $enrollment->completed_at = null;
+            }
+
+            $enrollment->save();
+        }
 
         return back()->with('progress_percent', $percent);
     }

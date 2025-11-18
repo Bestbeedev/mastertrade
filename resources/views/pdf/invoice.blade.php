@@ -65,13 +65,13 @@
           <td>{{ $product->name ?? 'Logiciel' }}</td>
           <td>{{ $product->sku ?? '—' }}</td>
           <td>{{ $product->version ?? '—' }}</td>
-          <td style="text-align:right">{{ number_format(($order->amount ?? 0)/100, 2, ',', ' ') }} €</td>
+          <td style="text-align:right">{{ number_format(($order->amount ?? 0)/100, 2, ',', ' ') }} FCFA</td>
         </tr>
       </tbody>
       <tfoot>
         <tr>
           <td colspan="3" style="text-align:right">Total</td>
-          <td style="text-align:right">{{ number_format(($order->amount ?? 0)/100, 2, ',', ' ') }} €</td>
+          <td style="text-align:right">{{ number_format(($order->amount ?? 0)/100, 2, ',', ' ') }} FCFA</td>
         </tr>
       </tfoot>
     </table>

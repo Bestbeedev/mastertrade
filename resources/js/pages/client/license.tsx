@@ -31,29 +31,13 @@ export default function License({ licenses: initialLicenses }: { licenses?: Lice
 
     const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
-    const fallback: LicenseItem[] = [
-        {
-            id: "1",
-            product: { name: "Application de Gestion Professionnelle", version: "2.1.0" },
-            key: "ABCD-EFGH-IJKL-MNOP-1234",
-            type: "Commercial",
-            seats: 5,
-            usedSeats: 3,
-            expires: "2024-12-31",
-            status: "active",
-        },
-        {
-            id: "2",
-            product: { name: "Outil de Productivité Avancée", version: "1.5.2" },
-            key: "WXYZ-1234-5678-90AB-CDEF",
-            type: "Standard",
-            seats: 1,
-            usedSeats: 1,
-            expires: "2024-06-30",
-            status: "active",
-        },
-    ];
-    const licenses: LicenseItem[] = (initialLicenses && initialLicenses.length ? initialLicenses : fallback);
+    const licenses: LicenseItem[] = (initialLicenses && initialLicenses.length ? initialLicenses : []);
+
+    const expiringSoonCount = licenses.filter(l =>
+        l.expires &&
+        (new Date(l.expires).getTime() - Date.now()) / 86400000 <= 30 &&
+        (new Date(l.expires).getTime() - Date.now()) > 0
+    ).length;
 
     const stats = [
         {
@@ -65,7 +49,7 @@ export default function License({ licenses: initialLicenses }: { licenses?: Lice
         },
         {
             title: "Expirent bientôt",
-            value: `${licenses.filter(l => l.expires && (new Date(l.expires).getTime() - Date.now())/86400000 <= 30 && (new Date(l.expires).getTime() - Date.now()) > 0).length}`,
+            value: `${expiringSoonCount}`,
             description: "Dans 30 jours",
             icon: Calendar,
             trend: "neutral"
@@ -118,6 +102,25 @@ export default function License({ licenses: initialLicenses }: { licenses?: Lice
     const [openPreview, setOpenPreview] = useState(false);
     const [previewLicense, setPreviewLicense] = useState<LicenseItem | null>(null);
 
+    // Helpers: jours restants avant expiration
+    const getDaysRemaining = (dateStr?: string | null) => {
+        if (!dateStr) return null;
+        const today = new Date();
+        const start = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+        const end = new Date(dateStr);
+        const endDate = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+        const MS = 24 * 60 * 60 * 1000;
+        return Math.round((endDate.getTime() - start.getTime()) / MS);
+    };
+    const DaysRemaining: React.FC<{ date?: string | null }> = ({ date }) => {
+        const d = getDaysRemaining(date);
+        if (d === null) return null;
+        if (d < 0) return <span className="text-xs text-destructive">Expirée il y a {Math.abs(d)} j</span>;
+        if (d === 0) return <span className="text-xs text-amber-600">Expire aujourd’hui</span>;
+        if (d <= 30) return <span className="text-xs text-amber-600">Reste {d} j</span>;
+        return <span className="text-xs text-emerald-600">Reste {d} j</span>;
+    };
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Mes Licenses" />
@@ -143,23 +146,27 @@ export default function License({ licenses: initialLicenses }: { licenses?: Lice
             {/* Contenu principal */}
             <div className="w-full px-4 sm:px-6 lg:px-8 py-8">
                 {/* Alertes */}
-                <div className="mb-8">
-                    <Card className="bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800">
-                        <CardContent className="p-4">
-                            <div className="flex items-start gap-3">
-                                <AlertCircle className="h-5 w-5 text-orange-600 dark:text-orange-400 mt-0.5" />
-                                <div>
-                                    <h3 className="font-medium text-orange-900 dark:text-orange-100">
-                                        Licences expirant bientôt
-                                    </h3>
-                                    <p className="text-orange-700 dark:text-orange-300 text-sm mt-1">
-                                        Une de vos licences expire dans moins de 30 jours. Pensez à la renouveler.
-                                    </p>
+                {expiringSoonCount > 0 && (
+                    <div className="mb-8">
+                        <Card className="bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800">
+                            <CardContent className="p-4">
+                                <div className="flex items-start gap-3">
+                                    <AlertCircle className="h-5 w-5 text-orange-600 dark:text-orange-400 mt-0.5" />
+                                    <div>
+                                        <h3 className="font-medium text-orange-900 dark:text-orange-100">
+                                            Licences expirant bientôt
+                                        </h3>
+                                        <p className="text-orange-700 dark:text-orange-300 text-sm mt-1">
+                                            {expiringSoonCount === 1
+                                                ? "Une de vos licences expire dans moins de 30 jours. Pensez à la renouveler."
+                                                : `${expiringSoonCount} licences expirent dans moins de 30 jours. Pensez à les renouveler.`}
+                                        </p>
+                                    </div>
                                 </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+                )}
 
                 {/* Statistiques */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -187,12 +194,22 @@ export default function License({ licenses: initialLicenses }: { licenses?: Lice
 
                 {/* Liste des licences */}
                 <div className="space-y-6">
+                    {licenses.length === 0 && (
+                        <Card className="border-dashed">
+                            <CardContent className="py-8 flex flex-col items-center justify-center text-center gap-2">
+                                <Key className="h-8 w-8 text-muted-foreground mb-1" />
+                                <p className="text-sm text-muted-foreground max-w-md">
+                                    Vous n'avez encore aucune licence associée à votre compte. Lorsque vous achèterez un produit avec licence, il apparaîtra ici.
+                                </p>
+                            </CardContent>
+                        </Card>
+                    )}
                     {licenses.map((license) => {
                         const statusConfig = getStatusConfig(license.status as Status);
                         const supportConfig = getSupportConfig(license.support as Support);
                         const usagePercentage = (license.usedSeats / license.seats) * 100;
 
-                        const daysLeft = license.expires ? Math.ceil((new Date(license.expires).getTime() - Date.now()) / 86400000) : null;
+                        const daysLeft = license.expires ? getDaysRemaining(license.expires) : null;
                         return (
                             <Card key={license.id} className="hover:shadow-lg transition-all">
                                 <CardContent className="p-6">
@@ -219,7 +236,9 @@ export default function License({ licenses: initialLicenses }: { licenses?: Lice
                                                             {statusConfig.text}
                                                         </Badge>
                                                         <p className="text-sm text-muted-foreground mt-1">
-                                                            Expire le: {license.expires}{daysLeft !== null ? ` (${daysLeft} jours)` : ''}
+                                                            Expire le: {license.expires ? new Date(license.expires).toLocaleDateString('fr-FR') : '—'}{" "}
+                                                            {license.expires ? <span className="mx-1">•</span> : null}
+                                                            {license.expires ? <DaysRemaining date={license.expires} /> : null}
                                                         </p>
                                                     </div>
                                                 </div>
@@ -261,7 +280,7 @@ export default function License({ licenses: initialLicenses }: { licenses?: Lice
                                                 <Download className="h-4 w-4 mr-2" /> Certificat
                                             </Button>
                                             <Button variant="outline" className="w-full">Renouveler</Button>
-                                            <Button variant="ghost" className="w-full">Gérer les sièges</Button>
+                                            <Button variant="secondary" className="w-full">Gérer les sièges</Button>
                                         </div>
                                     </div>
                                 </CardContent>

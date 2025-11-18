@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 import { route } from "ziggy-js";
 import { toast } from "sonner";
-import { BookOpen, Plus, Trash2, Info } from "lucide-react";
+import { BookOpen, Plus, Trash2, Info, Image } from "lucide-react";
 import Dropzone from "@/components/ui/dropzone";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
@@ -118,10 +118,16 @@ export default function AdminCourses({ courses = [], products = [] as { id: stri
     };
 
     const { delete: destroy, processing: deleting } = useForm({});
-    const onDelete = (id: string) => {
+    const [courseToDelete, setCourseToDelete] = React.useState<any | null>(null);
+
+    const handleDelete = () => {
+        if (!courseToDelete) return;
         const t = toast.loading('Suppression en cours...');
-        destroy(route("admin.courses.destroy", { course: id }), {
-            onSuccess: () => toast.success('Formation supprimée', { id: t }),
+        destroy(route("admin.courses.destroy", { course: courseToDelete.id }), {
+            onSuccess: () => {
+                toast.success('Formation supprimée', { id: t });
+                setCourseToDelete(null);
+            },
             onError: () => toast.error('Erreur lors de la suppression', { id: t }),
         });
     };
@@ -171,7 +177,7 @@ export default function AdminCourses({ courses = [], products = [] as { id: stri
                                                         />
                                                     ) : (
                                                         <div className="h-16 w-24 rounded-md bg-muted flex items-center justify-center text-xs text-muted-foreground flex-shrink-0">
-                                                            Pas de cover
+                                                            <Image />
                                                         </div>
                                                     )}
                                                     <div className="space-y-2 min-w-0">
@@ -179,7 +185,7 @@ export default function AdminCourses({ courses = [], products = [] as { id: stri
                                                             <div className="font-bold truncate">{c.title}</div>
                                                             {c.is_paid ? (
                                                                 <span className="text-xs px-2 py-0.5 rounded-md bg-orange-50 text-orange-700 border border-orange-200">
-                                                                    Payante{c.price ? ` • ${(Number(c.price) || 0).toFixed(2)} €` : ""}
+                                                                    Payante{c.price ? ` ${(Number(c.price) || 0).toFixed(2)} FCFA` : ""}
                                                                 </span>
                                                             ) : (
                                                                 <span className="text-xs px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200">
@@ -217,7 +223,13 @@ export default function AdminCourses({ courses = [], products = [] as { id: stri
                                                     <Button asChild variant="outline" size="sm">
                                                         <Link href={route('admin.courses.edit', c.id)}>Éditer</Link>
                                                     </Button>
-                                                    <Button variant="destructive" size="sm" onClick={() => onDelete(c.id)} disabled={deleting}>
+                                                    <Button
+                                                        variant="destructive"
+                                                        size="sm"
+                                                        type="button"
+                                                        onClick={() => setCourseToDelete(c)}
+                                                        disabled={deleting}
+                                                    >
                                                         <Trash2 className="h-4 w-4" />
                                                     </Button>
                                                 </div>
@@ -487,6 +499,34 @@ export default function AdminCourses({ courses = [], products = [] as { id: stri
                                 )}
                             </div>
                         )}
+                    </DialogContent>
+                </Dialog>
+                <Dialog open={!!courseToDelete} onOpenChange={(open) => { if (!open) setCourseToDelete(null); }}>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Confirmer la suppression</DialogTitle>
+                            <DialogDescription>
+                                Êtes-vous sûr de vouloir supprimer cette formation&nbsp;?
+                                Cette action est définitive et supprimera également les modules, leçons et inscriptions associées.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="flex justify-end gap-2 mt-4">
+                            <Button
+                                variant="outline"
+                                type="button"
+                                onClick={() => setCourseToDelete(null)}
+                            >
+                                Annuler
+                            </Button>
+                            <Button
+                                variant="destructive"
+                                type="button"
+                                onClick={handleDelete}
+                                disabled={deleting}
+                            >
+                                Supprimer
+                            </Button>
+                        </div>
                     </DialogContent>
                 </Dialog>
             </div>

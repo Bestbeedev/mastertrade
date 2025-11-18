@@ -10,9 +10,9 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
-import {route} from "ziggy-js";
+import { route } from "ziggy-js";
 import { Download, ShieldCheck, CreditCard, BookOpen, BarChart3, Settings, Users, Star, Check, ArrowRight, Play, Zap, Lock, Globe, Cpu, Building, TrendingUp, Package, ArrowLeft, GraduationCap, ChevronLeft, ChevronRight, Bell, Menu, X, MessageCircle, AlertTriangle } from "lucide-react";
-import {Button} from '@/components/ui/button'
+import { Button } from '@/components/ui/button'
 import { toast } from "sonner";
 interface software {
     name: string,
@@ -72,7 +72,7 @@ export default function Welcome() {
         }, 800);
     };
     // Logiciels data
-    const softwareData:software[] = [
+    const softwareData: software[] = [
         {
             name: "Ecosoft",
             icon: <GraduationCap className="w-8 h-8 text-white" />,
@@ -1217,7 +1217,7 @@ export default function Welcome() {
                                 },
                                 {
                                     plan: "Professionnel",
-                                    price: "49€",
+                                    price: "49 FCFA",
                                     period: "par mois",
                                     description: "Solution complète pour professionnels",
                                     popular: true,
@@ -1237,7 +1237,7 @@ export default function Welcome() {
                                 },
                                 {
                                     plan: "Enterprise",
-                                    price: "99€",
+                                    price: "99 FCFA",
                                     period: "par mois",
                                     description: "Pour les organisations et équipes",
                                     popular: false,

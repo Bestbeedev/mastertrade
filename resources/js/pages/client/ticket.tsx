@@ -2,14 +2,13 @@ import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
 import { Head, Link, usePage, router } from '@inertiajs/react';
 import { route } from 'ziggy-js';
-import { Plus, Search, Filter, MessageCircle, Clock, CheckCircle, AlertCircle, ChevronRight } from 'lucide-react';
+import { Plus, Search, Filter, MessageCircle, Clock, CheckCircle, AlertCircle, ChevronRight, HelpCircle, Phone, Mail } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export default function Ticket() {
     const breadcrumbs: BreadcrumbItem[] = [
@@ -29,46 +28,7 @@ export default function Ticket() {
 
     const { tickets: ticketsProp = [], ticketsCounts = null } = usePage().props as any;
     const paginated = Array.isArray(ticketsProp) ? null : (ticketsProp ?? null);
-    const realTickets = Array.isArray(ticketsProp) ? ticketsProp : (ticketsProp?.data ?? []);
-
-    const tickets = realTickets.length ? realTickets : [
-        {
-            id: 'TKT-2024-001',
-            subject: "Problème d'installation du logiciel",
-            description: "Impossible d'installer la dernière version sur Windows 11, erreur système",
-            status: "open",
-            priority: "high",
-            date: "15 Jan 2024",
-            lastUpdate: "Il y a 2 heures",
-            messages: 3,
-            agent: "Jean Dupont",
-            category: "Installation"
-        },
-        {
-            id: 'TKT-2024-002',
-            subject: "Question sur la facturation",
-            description: "Comprendre les frais supplémentaires sur ma dernière facture de renouvellement",
-            status: "pending",
-            priority: "medium",
-            date: "14 Jan 2024",
-            lastUpdate: "Il y a 1 jour",
-            messages: 5,
-            agent: "Marie Martin",
-            category: "Facturation"
-        },
-        {
-            id: 'TKT-2024-003',
-            subject: "Fonctionnalité manquante",
-            description: "La fonction d'export PDF ne fonctionne pas correctement dans le module rapports",
-            status: "closed",
-            priority: "medium",
-            date: "10 Jan 2024",
-            lastUpdate: "Il y a 5 jours",
-            messages: 8,
-            agent: "Pierre Lambert",
-            category: "Fonctionnalité"
-        },
-    ];
+    const tickets = Array.isArray(ticketsProp) ? ticketsProp : (ticketsProp?.data ?? []);
 
     const normalizeStatus = (s: string) => s === 'in_progress' ? 'pending' : (s === 'resolved' ? 'closed' : (['open', 'pending', 'closed'].includes(s) ? s : 'open'));
 
@@ -109,7 +69,6 @@ export default function Ticket() {
     type TicketStatus = "open" | "pending" | "closed";
     type TicketPriority = "high" | "medium" | "low";
 
-
     const statusConfig: Record<TicketStatus, { variant: "destructive" | "default" | "secondary"; text: string; icon: any }> = {
         open: { variant: "destructive", text: "Ouvert", icon: AlertCircle },
         pending: { variant: "default", text: "En cours", icon: Clock },
@@ -122,24 +81,50 @@ export default function Ticket() {
         low: { color: "text-blue-600", bg: "bg-blue-100 dark:bg-blue-900/20", text: "Basse" }
     };
 
-
-    const stats = [
+    const supportStats = [
         {
-            title: "Taux de satisfaction",
-            value: "98%",
-            description: "Clients satisfaits",
-            color: "text-green-600"
+            title: "Tickets ouverts",
+            value: computedCounts.open.toString(),
+            description: "En attente de traitement",
+            color: "text-orange-600",
+            icon: AlertCircle
         },
         {
-            title: "Temps de réponse moyen",
+            title: "Taux de résolution",
+            value: computedCounts.all > 0 ? `${Math.round((computedCounts.closed / computedCounts.all) * 100)}%` : "0%",
+            description: "Tickets fermés",
+            color: "text-green-600",
+            icon: CheckCircle
+        },
+        {
+            title: "Temps moyen",
             value: "2h",
-            description: "Support réactif",
+            description: "Réponse support",
+            color: "text-blue-600",
+            icon: Clock
+        },
+    ];
+
+    const supportContacts = [
+        {
+            title: "Centre d'aide",
+            description: "Documentation et FAQ",
+            icon: HelpCircle,
+            href: "/client/help",
             color: "text-blue-600"
         },
         {
-            title: "Disponibilité",
-            value: "24/7",
-            description: "Support permanent",
+            title: "Support téléphonique",
+            description: "01 23 45 67 89",
+            icon: Phone,
+            href: "tel:+33123456789",
+            color: "text-green-600"
+        },
+        {
+            title: "Email support",
+            description: "support@votreentreprise.com",
+            icon: Mail,
+            href: "mailto:support@votreentreprise.com",
             color: "text-purple-600"
         },
     ];
@@ -171,11 +156,12 @@ export default function Ticket() {
 
             {/* Contenu principal */}
             <div className="w-full px-4 sm:px-6 lg:px-8 py-8">
-                <div className="flex flex-col lg:flex-row gap-8">
-                    {/* Sidebar avec filtres */}
-                    <div className="lg:w-64 flex-shrink-0">
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                    {/* Sidebar avec filtres et contacts */}
+                    <div className="lg:col-span-1 space-y-6">
+                        {/* Filtres */}
                         <Card>
-                            <CardHeader>
+                            <CardHeader className="pb-4">
                                 <CardTitle className="text-lg">Filtres</CardTitle>
                             </CardHeader>
                             <CardContent className="p-0">
@@ -196,7 +182,7 @@ export default function Ticket() {
                                                 : 'hover:bg-accent'
                                                 }`}
                                         >
-                                            <span>{filter.label}</span>
+                                            <span className="text-sm">{filter.label}</span>
                                             <Badge variant="secondary" className={
                                                 activeFilter === filter.id
                                                     ? 'bg-primary-foreground text-primary'
@@ -210,33 +196,58 @@ export default function Ticket() {
                             </CardContent>
                         </Card>
 
-                        {/* Informations support */}
-                        <Card className="mt-6">
-                            <CardHeader className="pb-3">
-                                <CardTitle className="text-lg">Support</CardTitle>
+                        {/* Contacts support */}
+                        <Card>
+                            <CardHeader className="pb-4">
+                                <CardTitle className="text-lg">Contact support</CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-4">
+                                {supportContacts.map((contact, index) => {
+                                    const IconComponent = contact.icon;
+                                    return (
+                                        <Button
+                                            key={index}
+                                            variant="outline"
+                                            className="w-full justify-start h-auto p-3"
+                                            asChild
+                                        >
+                                            <Link href={contact.href}>
+                                                <IconComponent className={`h-4 w-4 mr-3 ${contact.color}`} />
+                                                <div className="text-left">
+                                                    <div className="text-sm font-medium">{contact.title}</div>
+                                                    <div className="text-xs text-muted-foreground">{contact.description}</div>
+                                                </div>
+                                            </Link>
+                                        </Button>
+                                    );
+                                })}
+                            </CardContent>
+                        </Card>
+
+                        {/* Statut support */}
+                        <Card>
+                            <CardHeader className="pb-4">
+                                <CardTitle className="text-lg">Statut du support</CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-3">
                                 <div className="flex items-center gap-2 text-green-600">
                                     <CheckCircle className="h-4 w-4" />
-                                    <span className="text-sm">En ligne</span>
+                                    <span className="text-sm font-medium">En ligne</span>
                                 </div>
                                 <div className="text-sm text-muted-foreground">
-                                    Temps de réponse moyen: <strong>2 heures</strong>
+                                    <div>• Réponse sous 2h en moyenne</div>
+                                    <div>• Disponible 24h/24</div>
+                                    <div>• Priorité selon urgence</div>
                                 </div>
-                                <Button variant="outline" size="sm" asChild className="w-full">
-                                    <Link href="/client/help">
-                                        Centre d'aide
-                                    </Link>
-                                </Button>
                             </CardContent>
                         </Card>
                     </div>
 
                     {/* Contenu principal */}
-                    <div className="flex-1">
+                    <div className="lg:col-span-3 space-y-6">
                         {/* Barre de recherche et actions */}
-                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-                            <div className="relative flex-1">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                            <div className="relative flex-1 max-w-md">
                                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                 <Input
                                     placeholder="Rechercher dans les tickets..."
@@ -257,49 +268,75 @@ export default function Ticket() {
                                     setSortBy(v);
                                     if (ticketsCounts) goWithServer({ sort: v });
                                 }}>
-                                    <SelectTrigger className="w-32">
-                                        <SelectValue placeholder="Trier" />
+                                    <SelectTrigger className="w-40">
+                                        <SelectValue placeholder="Trier par" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="recent">Récent</SelectItem>
-                                        <SelectItem value="old">Ancien</SelectItem>
+                                        <SelectItem value="recent">Plus récent</SelectItem>
+                                        <SelectItem value="old">Plus ancien</SelectItem>
                                         <SelectItem value="priority">Priorité</SelectItem>
+                                        <SelectItem value="status">Statut</SelectItem>
                                     </SelectContent>
                                 </Select>
                                 <Button variant="outline" size="sm" className="flex items-center gap-2">
                                     <Filter className="h-4 w-4" />
-                                    Filtres
+                                    Filtres avancés
                                 </Button>
                             </div>
                         </div>
 
                         {/* Statistiques */}
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                            {stats.map((stat, index) => (
-                                <Card key={index}>
-                                    <CardContent className="p-6 text-center">
-                                        <div className={`text-3xl font-bold ${stat.color} mb-2`}>
-                                            {stat.value}
-                                        </div>
-                                        <div className="text-sm font-medium">{stat.title}</div>
-                                        <div className="text-xs text-muted-foreground">
-                                            {stat.description}
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            ))}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            {supportStats.map((stat, index) => {
+                                const IconComponent = stat.icon;
+                                return (
+                                    <Card key={index}>
+                                        <CardContent className="p-4">
+                                            <div className="flex items-center gap-3">
+                                                <div className={`p-2 rounded-lg bg-muted`}>
+                                                    <IconComponent className={`h-5 w-5 ${stat.color}`} />
+                                                </div>
+                                                <div>
+                                                    <div className={`text-2xl font-bold ${stat.color}`}>
+                                                        {stat.value}
+                                                    </div>
+                                                    <div className="text-sm font-medium">{stat.title}</div>
+                                                    <div className="text-xs text-muted-foreground">
+                                                        {stat.description}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                );
+                            })}
                         </div>
 
                         {/* Liste des tickets */}
                         <Card>
                             <CardHeader>
-                                <CardTitle>
-                                    {activeFilter === 'all' ? 'Tous les tickets' :
-                                        filters.find(f => f.id === activeFilter)?.label}
-                                </CardTitle>
-                                <CardDescription>
-                                    Suivez l'avancement de vos demandes
-                                </CardDescription>
+                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                                    <div>
+                                        <CardTitle>
+                                            {activeFilter === 'all' ? 'Tous les tickets' :
+                                                filters.find(f => f.id === activeFilter)?.label}
+                                            <span className="text-muted-foreground ml-2 font-normal">
+                                                ({filteredTickets.length})
+                                            </span>
+                                        </CardTitle>
+                                        <CardDescription>
+                                            Suivez l'avancement de vos demandes de support
+                                        </CardDescription>
+                                    </div>
+                                    {filteredTickets.length > 0 && (
+                                        <Button variant="outline" size="sm" asChild>
+                                            <Link href={route('supportsTickets.create')}>
+                                                <Plus className="h-4 w-4 mr-2" />
+                                                Nouveau ticket
+                                            </Link>
+                                        </Button>
+                                    )}
+                                </div>
                             </CardHeader>
                             <CardContent className="p-0">
                                 <div className="divide-y">
@@ -318,45 +355,51 @@ export default function Ticket() {
                                                 className="block p-6 hover:bg-accent/50 transition-colors group"
                                             >
                                                 <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
-                                                    <div className="flex items-start gap-4 flex-1">
-                                                        <div className={`p-2 rounded-lg ${priority.bg}`}>
+                                                    <div className="flex items-start gap-4 flex-1 min-w-0">
+                                                        <div className={`p-2 rounded-lg ${priority.bg} flex-shrink-0`}>
                                                             <StatusIcon className={`h-5 w-5 ${priority.color}`} />
                                                         </div>
-                                                        <div className="space-y-3 flex-1">
+                                                        <div className="space-y-2 flex-1 min-w-0">
                                                             <div className="flex flex-wrap items-start justify-between gap-2">
-                                                                <h3 className="font-semibold text-lg group-hover:text-primary transition-colors">
+                                                                <h3 className="font-semibold text-lg group-hover:text-primary transition-colors truncate">
                                                                     {ticket.subject}
                                                                 </h3>
-                                                                <div className="flex items-center gap-2">
-                                                                    <Badge variant={status.variant}>
+                                                                <div className="flex items-center gap-2 flex-shrink-0">
+                                                                    <Badge variant={status.variant} className="text-xs">
                                                                         {status.text}
                                                                     </Badge>
                                                                     <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:translate-x-1 transition-transform" />
                                                                 </div>
                                                             </div>
 
-                                                            <p className="text-muted-foreground line-clamp-2">
+                                                            <p className="text-muted-foreground line-clamp-2 text-sm">
                                                                 {ticket.description ?? ticket.message}
                                                             </p>
 
-                                                            <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-                                                                <span>#{ticket.id}</span>
-                                                                <span>Créé le: {ticket.date ?? (ticket.created_at ? new Date(ticket.created_at).toLocaleDateString('fr-FR') : '')}</span>
+                                                            <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+                                                                <span className="font-mono">#{ticket.id}</span>
+                                                                <span>•</span>
+                                                                <span>
+                                                                    Créé le: {ticket.date ?? (ticket.created_at ? new Date(ticket.created_at).toLocaleDateString('fr-FR') : 'N/A')}
+                                                                </span>
+                                                                <span>•</span>
                                                                 <span className="flex items-center gap-1">
                                                                     <MessageCircle className="h-3 w-3" />
-                                                                    {(ticket.messages ?? 1)} messages
+                                                                    {(ticket.messages_count ?? ticket.messages ?? 1)} messages
                                                                 </span>
-                                                                {ticket.category && <Badge variant="outline">{ticket.category}</Badge>}
-                                                                {ticket.agent && (
-                                                                    <span>Assigné à: {ticket.agent}</span>
+                                                                {ticket.category && (
+                                                                    <>
+                                                                        <span>•</span>
+                                                                        <Badge variant="outline" className="text-xs">{ticket.category}</Badge>
+                                                                    </>
                                                                 )}
                                                             </div>
                                                         </div>
                                                     </div>
 
-                                                    <div className="text-right">
+                                                    <div className="text-right flex-shrink-0">
                                                         <div className="text-sm text-muted-foreground mb-2">
-                                                            {ticket.lastUpdate}
+                                                            {ticket.lastUpdate || (ticket.updated_at ? `Modifié ${new Date(ticket.updated_at).toLocaleDateString('fr-FR')}` : '')}
                                                         </div>
                                                         <div className={`px-2 py-1 rounded text-xs font-medium ${priority.bg} ${priority.color}`}>
                                                             Priorité {priority.text}
@@ -371,16 +414,22 @@ export default function Ticket() {
                                 {/* Aucun ticket */}
                                 {filteredTickets.length === 0 && (
                                     <div className="p-12 text-center">
-                                        <MessageCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                                        <h3 className="text-lg font-semibold mb-2">Aucun ticket trouvé</h3>
-                                        <p className="text-muted-foreground mb-6">
+                                        <MessageCircle className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                                        <h3 className="text-lg font-semibold mb-2">
                                             {searchTerm || activeFilter !== 'all'
-                                                ? "Aucun ticket ne correspond à vos critères de recherche."
-                                                : "Vous n'avez pas encore créé de ticket."
+                                                ? "Aucun ticket trouvé"
+                                                : "Aucun ticket"
+                                            }
+                                        </h3>
+                                        <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                                            {searchTerm || activeFilter !== 'all'
+                                                ? "Aucun ticket ne correspond à vos critères de recherche. Essayez de modifier vos filtres."
+                                                : "Vous n'avez pas encore créé de ticket de support. Créez votre premier ticket pour obtenir de l'aide."
                                             }
                                         </p>
-                                        <Button asChild>
+                                        <Button asChild size="lg">
                                             <Link href={route('supportsTickets.create')}>
+                                                <Plus className="h-4 w-4 mr-2" />
                                                 Créer un ticket
                                             </Link>
                                         </Button>
@@ -390,8 +439,8 @@ export default function Ticket() {
                         </Card>
 
                         {/* Pagination */}
-                        {paginated?.links && (
-                            <div className="flex items-center justify-center gap-2 mt-4">
+                        {paginated?.links && paginated.links.length > 3 && (
+                            <div className="flex items-center justify-center gap-1">
                                 {paginated.links.map((ln: any, idx: number) => (
                                     <button
                                         key={idx}
@@ -399,7 +448,7 @@ export default function Ticket() {
                                         onClick={() => {
                                             if (ln.url) router.get(ln.url, {}, { preserveState: true, preserveScroll: true });
                                         }}
-                                        className={`px-3 py-1 rounded border text-sm ${ln.active ? 'bg-primary text-primary-foreground' : 'hover:bg-accent'} ${!ln.url ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                        className={`px-3 py-2 rounded border text-sm min-w-[40px] ${ln.active ? 'bg-primary text-primary-foreground border-primary' : 'hover:bg-accent border-border'} ${!ln.url ? 'opacity-50 cursor-not-allowed' : ''}`}
                                         dangerouslySetInnerHTML={{ __html: ln.label }}
                                     />
                                 ))}

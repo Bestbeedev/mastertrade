@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Calendar, Package, ArrowLeft, Download, Receipt, FileText } from "lucide-react";
 import { route } from "ziggy-js";
 import { toast } from "sonner";
+import { formatCFA } from "@/lib/utils";
 
 // Cette page utilise uniquement la commande réelle fournie par le serveur.
 
@@ -18,7 +19,7 @@ export default function OrderPage({ order }: { order?: any }) {
     } : null;
 
     const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(amount / 100);
+        return formatCFA(amount ?? 0);
     };
 
     const statusVariant = {

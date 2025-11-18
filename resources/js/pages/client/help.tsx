@@ -1,67 +1,57 @@
 import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, usePage, router } from '@inertiajs/react';
 import { Search, HelpCircle, BookOpen, MessageCircle, Phone, FileText, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { route } from 'ziggy-js';
 
 export default function Help() {
     const breadcrumbs: BreadcrumbItem[] = [
         {
             title: 'Aide',
-            href: '/client/help',
+            href: route('helps'),
         },
     ];
 
     const [searchQuery, setSearchQuery] = useState('');
+
+    const { popularArticles: serverPopular = [] } = usePage().props as any;
+    const popularArticles = Array.isArray(serverPopular) ? serverPopular : [];
 
     const helpCategories = [
         {
             icon: BookOpen,
             title: "Documentation",
             description: "Guides détaillés et manuels d'utilisation complets",
-            link: "/client/help/documentation",
+            link: route('helps.documentation'),
             color: "text-blue-600 dark:text-blue-400"
         },
         {
             icon: MessageCircle,
             title: "FAQ",
             description: "Réponses aux questions les plus fréquentes",
-            link: "/client/help/faq",
+            link: route('helps.faq'),
             color: "text-green-600 dark:text-green-400"
         },
         {
             icon: FileText,
             title: "Tutoriels",
             description: "Vidéos et guides pas à pas interactifs",
-            link: "/client/help/tutorials",
+            link: route('helps.tutorials'),
             color: "text-purple-600 dark:text-purple-400"
         },
     ];
 
-    const popularArticles = [
-        {
-            title: "Comment installer le logiciel",
-            category: "Installation",
-            views: "1.2k",
-            link: "#"
-        },
-        {
-            title: "Résolution des problèmes de connexion",
-            category: "Dépannage",
-            views: "856",
-            link: "#"
-        },
-        {
-            title: "Guide de migration des données",
-            category: "Migration",
-            views: "642",
-            link: "#"
-        },
-    ];
+    const categoryLabel = (category: string) => {
+        if (category === 'faq') return 'FAQ';
+        if (category === 'documentation') return 'Documentation';
+        if (category === 'tutorial') return 'Tutoriel';
+        return category || 'Général';
+    };
 
     const contactMethods = [
         {
@@ -69,7 +59,8 @@ export default function Help() {
             title: "Chat en direct",
             description: "Disponible 24h/24, 7j/7",
             action: "Démarrer une conversation",
-            color: "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400"
+            color: "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400",
+            
         },
         {
             icon: Phone,
@@ -99,7 +90,15 @@ export default function Help() {
                         Trouvez des réponses à vos questions dans notre base de connaissances complète
                     </p>
 
-                    <div className="relative max-w-2xl mx-auto">
+                    <form
+                        className="relative max-w-2xl mx-auto"
+                        onSubmit={(e) => {
+                            e.preventDefault();
+                            const q = searchQuery.trim();
+                            if (!q) return;
+                            router.get(route('helps.search'), { q });
+                        }}
+                    >
                         <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                         <Input
                             type="text"
@@ -108,7 +107,7 @@ export default function Help() {
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
-                    </div>
+                    </form>
                 </div>
             </div>
 
@@ -130,7 +129,7 @@ export default function Help() {
                                 </CardDescription>
                             </CardHeader>
                             <CardContent>
-                                <Button asChild variant="ghost" className="p-0 h-auto font-normal group">
+                                <Button asChild variant="ghost" className="font-normal group">
                                     <Link href={category.link}>
                                         Explorer
                                         <ChevronRight className="h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform" />
@@ -151,28 +150,36 @@ export default function Help() {
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="p-0">
-                            <div className="divide-y">
-                                {popularArticles.map((article, index) => (
-                                    <Link
-                                        key={index}
-                                        href={article.link}
-                                        className="block p-6 hover:bg-accent/50 transition-colors group"
-                                    >
-                                        <div className="flex justify-between items-start">
-                                            <div>
-                                                <h3 className="font-medium group-hover:text-primary transition-colors mb-2">
-                                                    {article.title}
-                                                </h3>
-                                                <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                                                    <Badge variant="outline">{article.category}</Badge>
-                                                    <span>{article.views} vues</span>
+                            {popularArticles.length === 0 ? (
+                                <div className="p-6 text-sm text-muted-foreground">
+                                    Aucun article n'est disponible pour le moment. Les contenus apparaîtront ici dès que des articles seront publiés.
+                                </div>
+                            ) : (
+                                <div className="divide-y">
+                                    {popularArticles.map((article: any) => (
+                                        <Link
+                                            key={article.id}
+                                            href={route('helps.article', article.slug)}
+                                            className="block p-6 hover:bg-accent/50 transition-colors group"
+                                        >
+                                            <div className="flex justify-between items-start">
+                                                <div>
+                                                    <h3 className="font-medium group-hover:text-primary transition-colors mb-2">
+                                                        {article.title}
+                                                    </h3>
+                                                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                                                        <Badge variant="outline">{categoryLabel(article.category)}</Badge>
+                                                        {typeof article.views === 'number' && (
+                                                            <span>{article.views} vues</span>
+                                                        )}
+                                                    </div>
                                                 </div>
+                                                <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:translate-x-1 transition-transform" />
                                             </div>
-                                            <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:translate-x-1 transition-transform" />
-                                        </div>
-                                    </Link>
-                                ))}
-                            </div>
+                                        </Link>
+                                    ))}
+                                </div>
+                            )}
                         </CardContent>
                     </Card>
 
@@ -214,12 +221,12 @@ export default function Help() {
                     </p>
                     <div className="flex flex-col sm:flex-row gap-4 justify-center">
                         <Button asChild size="lg">
-                            <Link href="/client/ticket">
+                            <Link href={route('supportsTickets')}>
                                 Contacter le support
                             </Link>
                         </Button>
                         <Button asChild variant="outline" size="lg">
-                            <Link href="/client/formation">
+                            <Link href={route('courses')}>
                                 Explorer les formations
                             </Link>
                         </Button>

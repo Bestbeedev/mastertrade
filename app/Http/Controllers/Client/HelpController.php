@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Client;
 use Inertia\Inertia;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Models\HelpArticle;
 
 class HelpController extends Controller
 {
@@ -13,54 +14,94 @@ class HelpController extends Controller
      */
     public function index()
     {
-        return Inertia::render('client/help');
+        $popular = HelpArticle::where('is_published', true)
+            ->orderByDesc('is_popular')
+            ->orderByDesc('views')
+            ->latest()
+            ->take(5)
+            ->get(['id', 'title', 'slug', 'category', 'summary', 'views']);
+
+        return Inertia::render('client/help', [
+            'popularArticles' => $popular,
+        ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function faq()
     {
-        //
+        $articles = HelpArticle::where('category', 'faq')
+            ->where('is_published', true)
+            ->orderBy('title')
+            ->get();
+
+        return Inertia::render('client/help-faq', [
+            'articles' => $articles,
+        ]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function documentation()
     {
-        //
+        $articles = HelpArticle::where('category', 'documentation')
+            ->where('is_published', true)
+            ->orderBy('title')
+            ->get();
+
+        return Inertia::render('client/help-documentation', [
+            'articles' => $articles,
+        ]);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    public function tutorials()
     {
-        //
+        $articles = HelpArticle::where('category', 'tutorial')
+            ->where('is_published', true)
+            ->orderBy('title')
+            ->get();
+
+        return Inertia::render('client/help-tutorials', [
+            'articles' => $articles,
+        ]);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
+    public function article(HelpArticle $article)
     {
-        //
+        if ($article->is_published) {
+            $article->increment('views');
+        }
+
+        $related = HelpArticle::where('category', $article->category)
+            ->where('is_published', true)
+            ->where('id', '!=', $article->id)
+            ->latest()
+            ->take(5)
+            ->get(['id', 'title', 'slug', 'category', 'summary']);
+
+        return Inertia::render('client/help-article', [
+            'article' => $article,
+            'related' => $related,
+        ]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+    public function search(Request $request)
     {
-        //
-    }
+        $q = trim((string) $request->input('q', ''));
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        $results = collect();
+        if ($q !== '') {
+            $results = HelpArticle::where('is_published', true)
+                ->where(function ($query) use ($q) {
+                    $query->where('title', 'like', "%{$q}%")
+                        ->orWhere('summary', 'like', "%{$q}%")
+                        ->orWhere('content', 'like', "%{$q}%")
+                        ->orWhere('tags', 'like', "%{$q}%");
+                })
+                ->latest()
+                ->take(50)
+                ->get(['id', 'title', 'slug', 'category', 'summary', 'views']);
+        }
+
+        return Inertia::render('client/help-search', [
+            'results' => $results,
+            'q' => $q,
+        ]);
     }
 }

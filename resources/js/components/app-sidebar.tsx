@@ -67,7 +67,7 @@ const data = {
             icon: IconDownload,
         },
         {
-            title: "Formations",
+            title: "Mes Formations",
             url: "/courses",
             icon: IconSchool,
             badge: "Nouveau",
@@ -120,7 +120,7 @@ function SidebarHeaderContent() {
                 </TooltipTrigger>
                 <TooltipContent side="right">
                     <div className="text-sm font-bold">MASTERTRADE</div>
-                    <div className="text-xs text-muted-foreground">Espace { isAdmin ? 'Admin' : 'Client'}</div>
+                    <div className="text-xs text-muted-foreground">Espace {isAdmin ? 'Admin' : 'Client'}</div>
                 </TooltipContent>
             </Tooltip>
         );
@@ -136,7 +136,7 @@ function SidebarHeaderContent() {
             </div>
             <div className="flex flex-col items-start">
                 <span className="text-base font-bold text-gray-100">MASTERTRADE</span>
-                <span className="text-xs text-gray-200">Espace { isAdmin ? 'Admin' : 'Client'}</span>
+                <span className="text-xs text-gray-200">Espace {isAdmin ? 'Admin' : 'Client'}</span>
             </div>
         </a>
     );
@@ -169,6 +169,11 @@ export function AppSidebar({ user, ...props }: { user: User; } & React.Component
             title: "Gérer les licences",
             url: "/admin/licenses",
             icon: IconLicense,
+        },
+        {
+            title: "Centre d'aide",
+            url: "/admin/help-articles",
+            icon: IconHelp,
         },
     ];
 
