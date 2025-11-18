@@ -15,18 +15,20 @@ import { Download, ShieldCheck, CreditCard, BookOpen, BarChart3, Settings, Users
 import { Button } from '@/components/ui/button'
 import { toast } from "sonner";
 interface software {
-    name: string,
-    icon: React.ReactNode,
-    category: string,
-    description: string,
-    features: string[],
-    version: string,
-    size: string,
-    rating: number,
-    reviews: number,
-    requirements: string,
-    lastUpdate: string,
-    changelog: string[],
+    name: string;
+    icon: React.ReactNode;
+    category: string;
+    description: string;
+    features: string[];
+    version: string;
+    size: string;
+    rating: number;
+    reviews: number;
+    requirements: string;
+    lastUpdate: string;
+    changelog: string[];
+    productId?: string;
+    downloadAvailable?: boolean;
 }
 
 export default function Welcome() {
@@ -37,6 +39,50 @@ export default function Welcome() {
     const [selectedSoftware, setSelectedSoftware] = useState<software | null>(null);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const user = page.props?.auth?.user || null;
+
+    const products = (page.props?.products || []) as any[];
+
+    const softwareData: software[] = products.map((p) => {
+        const changelogLines = p.changelog ? String(p.changelog).split(/\r?\n/).filter((line: string) => line.trim().length > 0) : [];
+
+        const sizeLabel = typeof p.size === 'number' && p.size > 0
+            ? `${Math.max(1, Math.round(p.size / (1024 * 1024)))} MB`
+            : 'N/A';
+
+        const lastUpdate = p.updated_at
+            ? new Date(p.updated_at).toLocaleDateString('fr-FR')
+            : (p.created_at ? new Date(p.created_at).toLocaleDateString('fr-FR') : '');
+
+        let iconNode: React.ReactNode = <Package className="w-8 h-8 text-white" />;
+        if (p.name === 'Ecosoft') {
+            iconNode = <GraduationCap className="w-8 h-8 text-white" />;
+        } else if (p.name === 'MasterTrade') {
+            iconNode = <TrendingUp className="w-8 h-8 text-white" />;
+        } else if (p.name === 'MasterStock') {
+            iconNode = <Package className="w-8 h-8 text-white" />;
+        } else if (p.name === 'MasterAdogbe') {
+            iconNode = <Users className="w-8 h-8 text-white" />;
+        } else if (p.name === 'MasterImmo') {
+            iconNode = <Building className="w-8 h-8 text-white" />;
+        }
+
+        return {
+            name: p.name,
+            icon: iconNode,
+            category: p.category || 'Logiciel',
+            description: p.description || '',
+            features: changelogLines.length > 0 ? changelogLines.slice(0, 4) : [(p.description as string) || ''],
+            version: p.version ? `v${p.version}` : 'v1.0.0',
+            size: sizeLabel,
+            rating: 4.8,
+            reviews: 120,
+            requirements: 'Windows 10/11, 4GB RAM, 2GB espace libre',
+            lastUpdate,
+            changelog: changelogLines,
+            productId: p.id,
+            downloadAvailable: !!p.download_url,
+        };
+    });
 
     const gradientsMap: Record<string, string> = {
         MasterAdogbe: "from-green-500 to-emerald-600",
@@ -61,114 +107,21 @@ export default function Welcome() {
     };
 
     const handleDownload = (soft: software) => {
+        if (!soft.productId || !soft.downloadAvailable) {
+            toast.error("Fichier de téléchargement non disponible pour ce logiciel.");
+            return;
+        }
+
         if (!user) {
             router.visit('/login');
             return;
         }
+
         toast.success(`Téléchargement de ${soft.name} démarré`);
         setIsDialogOpen(false);
-        setTimeout(() => {
-            router.get(route('dashboard'))
-        }, 800);
+
+        window.location.href = route('downloads.start', soft.productId);
     };
-    // Logiciels data
-    const softwareData: software[] = [
-        {
-            name: "Ecosoft",
-            icon: <GraduationCap className="w-8 h-8 text-white" />,
-            category: "Éducation & Scolarité",
-            description: "Solution complète de gestion scolaire pour établissements d'enseignement et centres de formation",
-            features: [
-                "Gestion des élèves et enseignants",
-                "Planning et emplois du temps",
-                "Notes et bulletins scolaires",
-                "Communication parents-école"
-            ],
-            version: "v1.8.3",
-            size: "720 MB",
-            rating: 4.8,
-            reviews: 124,
-            requirements: "Windows 10/11, 4GB RAM, 2GB espace libre",
-            lastUpdate: "15 Jan 2024",
-            changelog: [
-                "Nouveau module de communication",
-                "Amélioration des performances",
-                "Correction de bugs mineurs"
-            ]
-        },
-        {
-            name: "MasterTrade",
-            icon: <TrendingUp className="w-8 h-8 text-white" />,
-            category: "Gestion Commerciale",
-            description: "Logiciel de gestion commerciale intégrée pour optimiser vos ventes et relations clients",
-            features: ["CRM avancé", "Devis et facturation", "Suivi des commandes", "Analytics commercial"],
-            version: "v3.2.1",
-            size: "1.1 GB",
-            rating: 4.9,
-            reviews: 256,
-            requirements: "Windows 10/11, 8GB RAM, 5GB espace libre",
-            lastUpdate: "20 Jan 2024",
-            changelog: [
-                "Nouveau tableau de bord analytics",
-                "Intégration API améliorée",
-                "Rapports personnalisables"
-            ]
-        },
-        {
-            name: "MasterStock",
-            icon: <Package className="w-8 h-8 text-white" />,
-            category: "Gestion de Stock",
-            description: "Solution de gestion d'inventaire et d'optimisation des stocks en temps réel",
-            features: ["Contrôle des inventaires", "Alertes de réapprovisionnement", "Traçabilité des produits", "Rapports stock/valeur"],
-            version: "v2.0.3",
-            size: "750 MB",
-            rating: 4.7,
-            reviews: 89,
-            requirements: "Windows 10/11, 4GB RAM, 2GB espace libre",
-            lastUpdate: "10 Jan 2024",
-            changelog: [
-                "Scanner code-barres amélioré",
-                "Nouvelles alertes intelligentes",
-                "Interface utilisateur optimisée"
-            ]
-        },
-        {
-            name: "MasterAdogbe",
-            icon: <Users className="w-8 h-8 text-white" />,
-            category: "Gestion de Tontines",
-            description: "Solution complète de gestion numérique des tontines et systèmes d'épargne collective",
-            features: ["Gestion des cotisations", "Calcul automatique des tours", "Alertes de rappel", "Rapports financiers détaillés"],
-            version: "v1.5.2",
-            size: "680 MB",
-            rating: 4.6,
-            reviews: 167,
-            requirements: "Windows 10/11, 2GB RAM, 1GB espace libre",
-            lastUpdate: "5 Jan 2024",
-            changelog: [
-                "Calcul des intérêts amélioré",
-                "Nouveaux modèles de rapports",
-                "Synchronisation cloud"
-            ]
-        },
-        {
-            name: "MasterImmo",
-            icon: <Building className="w-8 h-8 text-white" />,
-            category: "Immobilier & Bail",
-            description: "Plateforme de gestion immobilière complète pour propriétaires et agents immobiliers",
-            features: ["Gestion des baux et loyers", "Suivi des charges", "Maintenance prédictive", "État des lieux numérique"],
-            version: "v2.1.0",
-            size: "890 MB",
-            rating: 4.8,
-            reviews: 203,
-            requirements: "Windows 10/11, 4GB RAM, 3GB espace libre",
-            lastUpdate: "18 Jan 2024",
-            changelog: [
-                "Nouveau module de maintenance",
-                "Gestion des documents numériques",
-                "Calculs automatiques des charges"
-            ]
-        },
-    ];
 
     // Calcul du nombre de cartes visibles selon l'écran
     useEffect(() => {
@@ -660,7 +613,7 @@ export default function Welcome() {
 
                             {/* Dialog global Détails */}
                             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                                <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                                <DialogContent className="w-[95vw] md:w-[80vw] lg:w-[70vw] max-w-5xl max-h-[90vh] overflow-y-auto">
                                     {selectedSoftware ? (
                                         <>
                                             <DialogHeader>

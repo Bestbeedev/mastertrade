@@ -29,7 +29,25 @@ use App\Models\Download as DownloadModel;
 use Illuminate\Support\Carbon;
 
 Route::get('/', function () {
-    return Inertia::render('welcome');
+    $products = Product::select([
+        'id',
+        'name',
+        'version',
+        'category',
+        'description',
+        'size',
+        'changelog',
+        'created_at',
+        'updated_at',
+        'download_url',
+    ])
+        ->latest()
+        ->take(10)
+        ->get();
+
+    return Inertia::render('welcome', [
+        'products' => $products,
+    ]);
 })->name('home');
 
 // Routes Dashboard protégées, accessibles uniquement aux utilisateurs authentifiés et vérifiés
