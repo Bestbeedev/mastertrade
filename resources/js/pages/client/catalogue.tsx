@@ -31,7 +31,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { useIsAdmin } from "@/hooks/use-is-admin";
 
-export default function Catalogue({ products = [] as { id: string; name: string; description?: string; category?: string; version?: string; sku?: string }[] }: { products?: { id: string; name: string; description?: string; category?: string; version?: string; sku?: string }[] }) {
+export default function Catalogue({ products = [] as { id: string; name: string; description?: string; category?: string; version?: string; sku?: string; features?: string[] }[] }: { products?: { id: string; name: string; description?: string; category?: string; version?: string; sku?: string; features?: string[] }[] }) {
     const isAdmin = useIsAdmin();
     const breadcrumbs: BreadcrumbItem[] = [
         {
@@ -65,7 +65,7 @@ export default function Catalogue({ products = [] as { id: string; name: string;
         rating: 0,
         reviewCount: 0,
         tags: [] as string[],
-        features: [] as string[],
+        features: Array.isArray(p.features) ? p.features.filter((f) => typeof f === 'string' && f.trim().length > 0) : [],
         price: undefined as unknown as string | undefined,
         originalPrice: undefined as unknown as string | undefined,
     }));

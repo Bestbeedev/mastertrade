@@ -38,6 +38,9 @@ class LicenseAdminController extends Controller
             ->take(150);
 
         $columns = ['id', 'key', 'status', 'type', 'expiry_date', 'max_activations', 'activations_count', 'product_id', 'user_id', 'created_at'];
+        if (Schema::hasColumn('licenses', 'devices')) {
+            $columns[] = 'devices';
+        }
         foreach (['last_device_id', 'last_machine', 'last_mac_address', 'last_activated_at'] as $col) {
             if (Schema::hasColumn('licenses', $col)) {
                 $columns[] = $col;

@@ -43,6 +43,7 @@ export default function Welcome() {
     const products = (page.props?.products || []) as any[];
 
     const softwareData: software[] = products.map((p) => {
+        const featuresArray = Array.isArray(p.features) ? (p.features as string[]).filter((s) => typeof s === 'string' && s.trim().length > 0) : [];
         const changelogLines = p.changelog ? String(p.changelog).split(/\r?\n/).filter((line: string) => line.trim().length > 0) : [];
 
         const sizeLabel = typeof p.size === 'number' && p.size > 0
@@ -71,7 +72,9 @@ export default function Welcome() {
             icon: iconNode,
             category: p.category || 'Logiciel',
             description: p.description || '',
-            features: changelogLines.length > 0 ? changelogLines.slice(0, 4) : [(p.description as string) || ''],
+            features: featuresArray.length > 0
+                ? featuresArray.slice(0, 4)
+                : (changelogLines.length > 0 ? changelogLines.slice(0, 4) : [(p.description as string) || '']),
             version: p.version ? `v${p.version}` : 'v1.0.0',
             size: sizeLabel,
             rating: 4.8,

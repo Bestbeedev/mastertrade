@@ -318,7 +318,7 @@ export default function License({ licenses: initialLicenses }: { licenses?: Lice
 
                 {/* Modal de prévisualisation du certificat */}
                 <Dialog open={openPreview} onOpenChange={setOpenPreview}>
-                    <DialogContent className="sm:max-w-4xl">
+                    <DialogContent className="max-w-4xl lg:max-w-6xl xl:max-w-7xl max-h-[90vh] overflow-y-auto">
                         <DialogHeader>
                             <DialogTitle>Certificat de licence</DialogTitle>
                         </DialogHeader>

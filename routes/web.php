@@ -37,6 +37,7 @@ Route::get('/', function () {
         'description',
         'size',
         'changelog',
+        'features',
         'created_at',
         'updated_at',
         'download_url',
@@ -329,6 +330,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             'size',
             'checksum',
             'changelog',
+            'features',
             'created_at',
         ])
             ->latest()
