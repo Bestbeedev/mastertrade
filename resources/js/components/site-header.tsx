@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { SidebarTrigger } from "@/components/ui/sidebar"
-import { Moon, Sun, Monitor } from "lucide-react"
+import { RefreshCw, Moon, Sun, Monitor } from "lucide-react"
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -49,6 +49,9 @@ export function SiteHeader() {
                 />
                 <h1 className="text-base font-medium">Dashboard</h1>
                 <div className="ml-auto flex items-center gap-2">
+                    <Button size="sm" onClick={() => window.location.reload()} className="bg-green-600 hover:bg-green-700 text-white">
+                        <RefreshCw/>
+                    </Button>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button variant="outline" size="sm" className="flex items-center gap-2">

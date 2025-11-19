@@ -8,7 +8,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Moon, Sun, Monitor } from 'lucide-react';
+import { Moon, Sun, Monitor ,RefreshCw} from 'lucide-react';
 import { useAppearance, type Appearance } from '@/hooks/use-appearance';
 
 export function AppSidebarHeader({
@@ -50,7 +50,9 @@ export function AppSidebarHeader({
                 <SidebarTrigger className="-ml-1" />
                 <Breadcrumbs breadcrumbs={breadcrumbs} />
             </div>
-
+            <Button size="sm" onClick={() => window.location.reload()} className="bg-green-600 hover:bg-green-700 text-white">
+                <RefreshCw />
+            </Button>
             {/* Sélecteur de thème */}
             <div className="flex items-center">
                 <DropdownMenu>
