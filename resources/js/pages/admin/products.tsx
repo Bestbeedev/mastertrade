@@ -497,7 +497,7 @@ export default function AdminProducts({ products = [] as any[] }: { products?: a
                                                         <p className="text-xs text-muted-foreground">Collez un lien Google Drive public. Les téléchargements seront servis via l’application.</p>
                                                     </div>
                                                     <div className="space-y-2">
-                                                        <Label htmlFor="file">Fichier du produit</Label>
+                                                        <Label htmlFor="file">Fichier du produit (optionnel)</Label>
                                                         <div className="flex items-center gap-2">
                                                             <label
                                                                 htmlFor="file-upload"
@@ -570,7 +570,7 @@ export default function AdminProducts({ products = [] as any[] }: { products?: a
                                                         <Label>Vérification d'intégrité</Label>
                                                         <div className="space-y-2">
                                                             <div className="space-y-2">
-                                                                <Label htmlFor="checksum" className="text-sm">Empreinte numérique (SHA-256)</Label>
+                                                                <Label htmlFor="checksum" className="text-sm">Empreinte numérique (SHA-256) - (optionnel)</Label>
                                                                 <div className="flex items-center gap-2">
                                                                     <div className="relative flex-1">
                                                                         <Input
