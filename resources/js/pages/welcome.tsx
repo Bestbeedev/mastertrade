@@ -297,7 +297,7 @@ export default function Welcome() {
                                     href="/register"
                                     className="px-4 py-2 sm:px-6 sm:py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all hover:scale-105 text-sm sm:text-base"
                                 >
-                                    Essai Gratuit
+                                    S'inscrire
                                 </Link>
                             </>
                         )}
@@ -396,7 +396,7 @@ export default function Welcome() {
                                                     className="block w-full text-center py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all"
                                                     onClick={() => setIsMobileMenuOpen(false)}
                                                 >
-                                                    Essai Gratuit
+                                                    Creer un compte
                                                 </Link>
                                             </>
                                         )
@@ -471,7 +471,7 @@ export default function Welcome() {
                                 href="/register"
                                 className="group px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all hover:scale-105 flex items-center gap-2"
                             >
-                                Essai gratuit 30 jours
+                                Rejoignez-nous
                                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                             </Link>
 
@@ -1642,7 +1642,7 @@ export default function Welcome() {
                                 {/* Effet de brillance */}
                                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
 
-                                <span className="relative z-10">Essai gratuit 30 jours</span>
+                                <span className="relative z-10">Rejoignez-nous</span>
                                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform relative z-10" />
                             </Link>
 

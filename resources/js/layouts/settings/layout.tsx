@@ -12,22 +12,22 @@ import { type PropsWithChildren } from 'react';
 
 const sidebarNavItems: NavItem[] = [
     {
-        title: 'Profile',
+        title: 'Profil',
         href: edit(),
         icon: null,
     },
     {
-        title: 'Password',
+        title: 'Mot de passe',
         href: editPassword(),
         icon: null,
     },
     {
-        title: 'Two-Factor Auth',
+        title: 'Authentification 2FA',
         href: show(),
         icon: null,
     },
     {
-        title: 'Appearance',
+        title: 'Apparence',
         href: editAppearance(),
         icon: null,
     },

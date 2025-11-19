@@ -19,7 +19,7 @@ interface TwoFactorProps {
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Two-Factor Authentication',
+        title: 'Authentification 2FA',
         href: show.url(),
     },
 ];
@@ -42,21 +42,18 @@ export default function TwoFactor({
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Two-Factor Authentication" />
+            <Head title="Authentification 2FA" />
             <SettingsLayout>
                 <div className="space-y-6">
                     <HeadingSmall
-                        title="Two-Factor Authentication"
-                        description="Manage your two-factor authentication settings"
+                        title="Authentification 2FA"
+                        description="Gestion de votre authentification 2FA"
                     />
                     {twoFactorEnabled ? (
                         <div className="flex flex-col items-start justify-start space-y-4">
-                            <Badge variant="default">Enabled</Badge>
+                            <Badge variant="default">Activé</Badge>
                             <p className="text-muted-foreground">
-                                With two-factor authentication enabled, you will
-                                be prompted for a secure, random pin during
-                                login, which you can retrieve from the
-                                TOTP-supported application on your phone.
+                                Avec l'authentification 2FA activée, vous serez invité à entrer un code sécurisé et aléatoire lors de la connexion, que vous pouvez récupérer depuis une application TOTP sur votre téléphone.
                             </p>
 
                             <TwoFactorRecoveryCodes
@@ -73,7 +70,7 @@ export default function TwoFactor({
                                             type="submit"
                                             disabled={processing}
                                         >
-                                            <ShieldBan /> Disable 2FA
+                                            <ShieldBan /> Désactiver 2FA
                                         </Button>
                                     )}
                                 </Form>
@@ -81,12 +78,9 @@ export default function TwoFactor({
                         </div>
                     ) : (
                         <div className="flex flex-col items-start justify-start space-y-4">
-                            <Badge variant="destructive">Disabled</Badge>
+                            <Badge variant="destructive">Désactivé</Badge>
                             <p className="text-muted-foreground">
-                                When you enable two-factor authentication, you
-                                will be prompted for a secure pin during login.
-                                This pin can be retrieved from a TOTP-supported
-                                application on your phone.
+                                Quand vous activez l'authentification 2FA, vous serez invité à entrer un code sécurisé et aléatoire lors de la connexion.
                             </p>
 
                             <div>
@@ -95,7 +89,7 @@ export default function TwoFactor({
                                         onClick={() => setShowSetupModal(true)}
                                     >
                                         <ShieldCheck />
-                                        Continue Setup
+                                        Continuer le Setup
                                     </Button>
                                 ) : (
                                     <Form
@@ -110,7 +104,7 @@ export default function TwoFactor({
                                                 disabled={processing}
                                             >
                                                 <ShieldCheck />
-                                                Enable 2FA
+                                                Activer 2FA
                                             </Button>
                                         )}
                                     </Form>

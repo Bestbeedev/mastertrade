@@ -1,5 +1,4 @@
 import RegisteredUserController from '@/actions/App/Http/Controllers/Auth/RegisteredUserController';
-import { login } from '@/routes';
 import { Form, Head } from '@inertiajs/react';
 import { LoaderCircle } from 'lucide-react';
 
@@ -57,6 +56,32 @@ export default function Register() {
                                     placeholder="email@exemple.com"
                                 />
                                 <InputError message={errors.email} />
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="country">Pays (optionnel)</Label>
+                                <Input
+                                    id="country"
+                                    type="text"
+                                    name="country"
+                                    placeholder="Ex : Bénin, France, USA"
+                                    autoComplete="country"
+                                    tabIndex={1}
+                                />
+                                <InputError message={errors.country} />
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="phone">Téléphone (optionnel)</Label>
+                                <Input
+                                    id="phone"
+                                    type="tel"
+                                    name="phone"
+                                    placeholder="Ex : +229 9000 5959"
+                                    autoComplete="tel"
+                                    tabIndex={2}
+                                />
+                                <InputError message={errors.phone} />
                             </div>
 
                             <div className="grid gap-2">

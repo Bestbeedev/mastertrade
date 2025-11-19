@@ -218,7 +218,7 @@ export default function Catalogue({ products = [] as { id: string; name: string;
                             </div>
 
                             {/* Filtre prix */}
-                            <div className="space-y-4">
+                            {/* <div className="space-y-4">
                                 <h3 className="font-semibold text-lg flex items-center gap-2">
                                     <DollarSign className="h-5 w-5" />
                                     Prix
@@ -242,10 +242,10 @@ export default function Catalogue({ products = [] as { id: string; name: string;
                                         </label>
                                     ))}
                                 </div>
-                            </div>
+                            </div> */}
 
                             {/* Filtre évaluations */}
-                            <div className="space-y-4">
+                            {/* <div className="space-y-4">
                                 <h3 className="font-semibold text-lg flex items-center gap-2">
                                     <Star className="h-5 w-5" />
                                     Évaluations
@@ -270,13 +270,13 @@ export default function Catalogue({ products = [] as { id: string; name: string;
                                         </label>
                                     ))}
                                 </div>
-                            </div>
+                            </div> */}
 
                             {/* Bouton appliquer les filtres */}
-                            <Button className="w-full" size="lg">
+                            {/* <Button className="w-full" size="lg">
                                 <Filter className="h-4 w-4 mr-2" />
                                 Appliquer les filtres
-                            </Button>
+                            </Button> */}
                         </div>
                     </div>
 

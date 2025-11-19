@@ -106,7 +106,7 @@ export default function Formation() {
             <Head title="Formation" />
 
             {/* En-tête */}
-            <div className="border-b flex flex-1 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+            <div className="border-b flex bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
                 <div className="w-full px-4 sm:px-6 lg:px-8 py-6">
                     <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                         <div>

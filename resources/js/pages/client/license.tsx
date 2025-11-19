@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { route } from "ziggy-js";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { IconPackage } from "@tabler/icons-react";
 
 type LicenseItem = {
     id: string;
@@ -65,7 +66,7 @@ export default function License({ licenses: initialLicenses }: { licenses?: Lice
             title: "Produits",
             value: `${new Set(licenses.map(l => l.product?.name)).size}`,
             description: "Sous licence",
-            icon: "📦",
+            icon: IconPackage,
             trend: "stable"
         }
     ];
