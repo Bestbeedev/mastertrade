@@ -27,6 +27,7 @@ export default function Ticket() {
     const [sortBy, setSortBy] = useState<string>(initialSort);
 
     const { tickets: ticketsProp = [], ticketsCounts = null } = usePage().props as any;
+    const isAdmin = !!(usePage().props as any)?.isAdmin;
     const paginated = Array.isArray(ticketsProp) ? null : (ticketsProp ?? null);
     const tickets = Array.isArray(ticketsProp) ? ticketsProp : (ticketsProp?.data ?? []);
 
@@ -377,6 +378,18 @@ export default function Ticket() {
                                                             </p>
 
                                                             <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+                                                                {isAdmin && (ticket.user?.name || ticket.user?.email) ? (
+                                                                    <>
+                                                                        <span className="font-medium">{ticket.user?.name ?? 'Utilisateur'}</span>
+                                                                        {ticket.user?.email ? (
+                                                                            <>
+                                                                                <span>•</span>
+                                                                                <span className="font-mono">{ticket.user.email}</span>
+                                                                            </>
+                                                                        ) : null}
+                                                                        <span>•</span>
+                                                                    </>
+                                                                ) : null}
                                                                 <span className="font-mono">#{ticket.id}</span>
                                                                 <span>•</span>
                                                                 <span>

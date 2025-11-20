@@ -89,9 +89,9 @@ export default function Product({ product }: { product?: any }) {
                                 <CardHeader>
                                     <CardTitle className="text-lg">Licence & Sécurité</CardTitle>
                                 </CardHeader>
-                                <CardContent className="space-y-3">
+                                <CardContent className="space-y-2">
                                     <div className="flex items-center gap-3 p-3 rounded-lg border">
-                                        <Shield className="h-4 w-4 text-base" /> Téléchargement sécurisé via Google Drive
+                                        <Shield className="h-4 w-4 text-base" /> Téléchargement sécurisé
                                     </div>
                                 </CardContent>
                             </Card>
@@ -113,7 +113,7 @@ export default function Product({ product }: { product?: any }) {
                         <Card>
                             <CardContent className="flex flex-col items-start p-6">
                                 <div className="space-y-1">
-                                    <div className="text-base text-muted-foreground">Téléchargement du logiciel</div>
+                                    <div className="text-lg font-semibold">Téléchargement du logiciel</div>
                                     <div className="text-xs text-muted-foreground">Inclus avec votre licence existante</div>
                                     <div className="text-xs text-muted-foreground">Taille : {sizeLabel}</div>
                                 </div>
