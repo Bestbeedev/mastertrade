@@ -14,7 +14,8 @@ import { BreadcrumbItem } from "@/types";
 
 export default function TicketShow() {
     const { ticket } = usePage().props as any;
-
+    const isAdmin = !!(usePage().props as any)?.isAdmin;
+    const currentUserId = (usePage().props as any)?.auth?.user?.id;
     const breadcrumbs: BreadcrumbItem[] = [
         { title: "Tickets", href: "/client/ticket" },
         { title: ticket?.subject || "Ticket", href: route('supportsTickets.show', ticket?.id) },
@@ -87,7 +88,7 @@ export default function TicketShow() {
                     <CardHeader>
                         <div className="flex items-start justify-between gap-4">
                             <div>
-                                <CardTitle>{ticket?.subject}</CardTitle>
+                                <CardTitle className="mb-2">{ticket?.subject}</CardTitle>
                                 <CardDescription>Ticket #{ticket?.id}</CardDescription>
                             </div>
                             <Badge variant={statusConfig[statusKey].variant} className="flex items-center gap-1">
@@ -120,32 +121,50 @@ export default function TicketShow() {
                                     ticket.messages
                                         .slice()
                                         .sort((a: any, b: any) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
-                                        .map((msg: any) => (
-                                            <div key={msg.id} className="rounded-lg border p-3">
-                                                <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
-                                                    <span>{msg.user?.name ?? 'Utilisateur'}</span>
-                                                    <span>{msg.created_at ? new Date(msg.created_at).toLocaleString('fr-FR') : ''}</span>
-                                                </div>
-                                                <div className="whitespace-pre-wrap text-sm">
-                                                    {msg.message}
-                                                </div>
-                                                {Array.isArray(msg.attachments) && msg.attachments.length > 0 && (
-                                                    <div className="mt-2 flex flex-wrap gap-2">
-                                                        {msg.attachments.map((att: any) => (
-                                                            <a
-                                                                key={att.id}
-                                                                href={`/storage/${att.path}`}
-                                                                target="_blank"
-                                                                rel="noopener noreferrer"
-                                                                className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded border hover:bg-accent"
-                                                            >
-                                                                <Paperclip className="h-3 w-3" /> {att.original_name}
-                                                            </a>
-                                                        ))}
+                                        .map((msg: any) => {
+                                            const roleName = (msg?.user?.role?.name || '').toLowerCase();
+                                            const isAdminMsg = roleName.includes('admin');
+                                            const isMine = msg?.user_id === currentUserId;
+                                            return (
+                                                <div key={msg.id} className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
+                                                    <div className={`max-w-[85%] rounded-lg border p-3 ${isAdminMsg ? 'bg-emerald-50 border-emerald-200' : 'bg-muted border-border'}`}>
+                                                        <div className="flex items-center justify-between text-[11px] text-muted-foreground mb-1">
+                                                            <span className="truncate mr-2">{msg.user?.name ?? (isAdminMsg ? 'Support' : 'Utilisateur')}</span>
+                                                            <span>{msg.created_at ? new Date(msg.created_at).toLocaleString('fr-FR') : ''}</span>
+                                                        </div>
+                                                        <div className="whitespace-pre-wrap text-sm">
+                                                            {msg.message}
+                                                        </div>
+                                                        {Array.isArray(msg.attachments) && msg.attachments.length > 0 && (
+                                                            <div className="mt-2 flex flex-col gap-2">
+                                                                {msg.attachments.map((att: any) => {
+                                                                    const isImage = typeof att.mime_type === 'string' && att.mime_type.startsWith('image/');
+                                                                    return (
+                                                                        <div key={att.id} className="group">
+                                                                            {isImage ? (
+                                                                                <a href={`/storage/${att.path}`} target="_blank" rel="noopener noreferrer">
+                                                                                    <img src={`/storage/${att.path}`} alt={att.original_name}
+                                                                                        className="max-h-64 rounded border object-contain" />
+                                                                                </a>
+                                                                            ) : (
+                                                                                <a
+                                                                                    href={`/storage/${att.path}`}
+                                                                                    target="_blank"
+                                                                                    rel="noopener noreferrer"
+                                                                                    className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded border hover:bg-accent"
+                                                                                >
+                                                                                    <Paperclip className="h-3 w-3" /> {att.original_name}
+                                                                                </a>
+                                                                            )}
+                                                                        </div>
+                                                                    );
+                                                                })}
+                                                            </div>
+                                                        )}
                                                     </div>
-                                                )}
-                                            </div>
-                                        ))
+                                                </div>
+                                            );
+                                        })
                                 ) : (
                                     <div className="rounded-lg border p-3">
                                         <div className="text-xs text-muted-foreground mb-1">Message initial</div>
@@ -166,7 +185,7 @@ export default function TicketShow() {
                                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                             />
                             <div>
-                                <Label htmlFor="reply_attachments">Pièces jointes (optionnel)</Label>
+                                <Label className="mb-2" htmlFor="reply_attachments">Pièces jointes (optionnel)</Label>
                                 <Dropzone
                                     multiple
                                     accept="image/*,application/pdf,text/plain,application/zip"

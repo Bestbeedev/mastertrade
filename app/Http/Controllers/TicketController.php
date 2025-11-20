@@ -184,11 +184,13 @@ class TicketController extends Controller
             'license:id,product_id,expiry_date',
             'license.product:id,name',
             'messages:id,ticket_id,user_id,message,created_at',
-            'messages.user:id,name',
+            'messages.user:id,name,role_id',
+            'messages.user.role:id,name',
             'messages.attachments:id,ticket_message_id,path,original_name,mime_type,size'
         ]);
         return Inertia::render('client/ticket-show', [
             'ticket' => $ticket,
+            'isAdmin' => (bool) $isAdmin,
         ]);
     }
 
@@ -265,6 +267,36 @@ class TicketController extends Controller
         // Mettre à jour le statut avec des valeurs autorisées
         $ticket->status = $ticket->status === 'closed' ? 'open' : 'pending';
         $ticket->save();
+
+        // Notifications: prévenir la partie opposée
+        if ($isAdmin) {
+            // Notifier le client
+            Notification::create([
+                'user_id' => $ticket->user_id,
+                'type' => 'ticket',
+                'data' => [
+                    'title' => 'Réponse du support',
+                    'message' => mb_strimwidth($data['message'], 0, 120, '…'),
+                    'ticket_id' => $ticket->id,
+                ],
+            ]);
+        } else {
+            // Notifier les administrateurs
+            $adminUsers = User::whereHas('role', function ($q) {
+                $q->whereIn('name', ['admin', 'Admin', 'administrator', 'Administrator', 'superadmin', 'SuperAdmin']);
+            })->get(['id']);
+            foreach ($adminUsers as $admin) {
+                Notification::create([
+                    'user_id' => $admin->id,
+                    'type' => 'ticket',
+                    'data' => [
+                        'title' => 'Nouvelle réponse ticket',
+                        'message' => mb_strimwidth($data['message'], 0, 120, '…'),
+                        'ticket_id' => $ticket->id,
+                    ],
+                ]);
+            }
+        }
         return back();
     }
 

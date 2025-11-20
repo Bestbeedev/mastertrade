@@ -78,7 +78,6 @@ const data = {
             title: "Notifications",
             url: "/notifications",
             icon: IconBell,
-            badge: "3",
         },
         {
             title: "Support | Tickets",
@@ -149,6 +148,34 @@ export function AppSidebar({ user, ...props }: { user: User; } & React.Component
         avatar: "/avatars/user.jpg",
     };
     const isAdmin = !!(usePage().props as any)?.auth?.isAdmin;
+
+    // état du nombre de notifications non lues
+    const [unread, setUnread] = React.useState<number>(0);
+
+    React.useEffect(() => {
+        let mounted = true;
+        fetch("/api/notifications/unread-count")
+            .then((r) => r.json())
+            .then((d) => {
+                if (mounted) setUnread(Number(d?.unread || 0));
+            })
+            .catch(() => { });
+        return () => {
+            mounted = false;
+        };
+    }, []);
+
+    // items secondaires avec badge dynamique
+    const secondaryItems = React.useMemo(() => {
+        return data.navSecondary.map((it) => {
+            if (it.url === "/notifications") {
+                const badge = unread > 0 ? String(unread) : undefined;
+                return { ...it, badge };
+            }
+            return it;
+        });
+    }, [unread]);
+
     const adminItems = [
         {
             title: "Admin Panels",
@@ -197,7 +224,7 @@ export function AppSidebar({ user, ...props }: { user: User; } & React.Component
                         {isAdmin && <NavMain items={adminItems} />}
                     </div>
                     {/* Navigation secondaire */}
-                    <NavSecondary items={data.navSecondary} className="mt-auto" />
+                    <NavSecondary items={secondaryItems} className="mt-auto" />
                 </SidebarContent>
 
                 <SidebarFooter>
