@@ -110,7 +110,7 @@ export default function AdminFinance({ chartData = [], totals = { revenue_cents_
                                     <span>{name === "revenue" ? `${(Number(value) || 0).toLocaleString()} CFA` : `${value}`}</span>
                                 )} />
                                 <ChartLegend content={<ChartLegendContent />} />
-                                <Bar dataKey="orders" yAxisId="right" fill="var(--color-orders)" radius={[4, 4, 0, 0]} />
+                                <Bar dataKey="orders" yAxisId="right" className="fill-green-400" fill="var(--color-orders)" radius={[4, 4, 0, 0]} />
                                 <Line dataKey="revenue" yAxisId="left" type="monotone" stroke="var(--color-revenue)" strokeWidth={2} dot={false} />
                             </ComposedChart>
                         </ChartContainer>
@@ -136,7 +136,7 @@ export default function AdminFinance({ chartData = [], totals = { revenue_cents_
                                             <ChartTooltip cursor={false} content={<ChartTooltipContent />} formatter={(value: any) => (
                                                 <span>{`${(Number(value) || 0).toLocaleString()} CFA`}</span>
                                             )} />
-                                            <Bar dataKey="revenue" fill="var(--color-revenue)" radius={[4, 4, 0, 0]} />
+                                            <Bar dataKey="revenue" fill="var(--color-revenue)" className="fill-green-500" radius={[4, 4, 0, 0]} />
                                         </BarChart>
                                     </ChartContainer>
                                 </div>

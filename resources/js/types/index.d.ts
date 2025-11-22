@@ -30,6 +30,8 @@ export interface SharedData {
     [key: string]: unknown;
 }
 
+
+export { User };
 // export interface User {
 //     id: number;
 //     name: string;

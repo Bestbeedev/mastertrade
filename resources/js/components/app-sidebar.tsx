@@ -92,11 +92,11 @@ const data = {
             url: "/supportsTickets",
             icon: IconHeadset,
         },
-        {
-            title: "Paramètres",
-            url: "/settings",
-            icon: IconSettings,
-        },
+        // {
+        //     title: "Paramètres",
+        //     url: "/settings",
+        //     icon: IconSettings,
+        // },
         {
             title: "Centre d'aide",
             url: "/helps",
@@ -216,7 +216,7 @@ export function AppSidebar({ user, ...props }: { user: User; } & React.Component
             icon: IconFileCertificate,
         },
         {
-            title: "Documentation",
+            title: "Publier articles",
             url: "/admin/help-articles",
             icon: IconHelp,
         },

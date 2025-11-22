@@ -158,7 +158,7 @@ export default function Product({ product, canDownload = false, hasActiveLicense
                                                 {(isPaid || requiresLicense) && (
                                                     <Button asChild>
                                                         <Link href={route('catalogs.purchase', data.id)} method="post">
-                                                            Procéder au paiement 
+                                                            Payer
                                                         </Link>
                                                     </Button>
                                                 )}
