@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { AlertCircle, CheckCircle, Clock, ArrowLeft, Paperclip } from "lucide-react";
 import Dropzone from "@/components/ui/dropzone";
 import { BreadcrumbItem } from "@/types";
+import { Separator } from "@/components/ui/separator";
 
 export default function TicketShow() {
     const { ticket } = usePage().props as any;
@@ -128,11 +129,16 @@ export default function TicketShow() {
                                             return (
                                                 <div key={msg.id} className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
                                                     <div className={`max-w-[85%] rounded-lg border p-3 ${isAdminMsg ? 'bg-emerald-50 border-emerald-200' : 'bg-muted border-border'}`}>
-                                                        <div className="flex items-center justify-between text-[11px] text-muted-foreground mb-1">
-                                                            <span className="truncate mr-2">{msg.user?.name ?? (isAdminMsg ? 'Support' : 'Utilisateur')}</span>
+                                                        <div className="flex items-center justify-between text-[11px] text-muted-foreground mb-2">
+                                                            {isAdminMsg ? (
+                                                                <Badge variant="outline" className="truncate mr-2">Support Client</Badge>
+                                                            ) : (
+                                                                    <span className="truncate mr-2">{msg.user?.name} - { msg.user?.email}</span>
+                                                            )}
                                                             <span>{msg.created_at ? new Date(msg.created_at).toLocaleString('fr-FR') : ''}</span>
                                                         </div>
-                                                        <div className="whitespace-pre-wrap text-sm">
+                                                        <Separator/>
+                                                        <div className="whitespace-pre-wrap mt-2 text-sm">
                                                             {msg.message}
                                                         </div>
                                                         {Array.isArray(msg.attachments) && msg.attachments.length > 0 && (

@@ -49,7 +49,7 @@ export function SiteHeader() {
                 />
                 <h1 className="text-base font-medium">Dashboard</h1>
                 <div className="ml-auto flex items-center gap-2">
-                    <Button size="sm" onClick={() => window.location.reload()} className="bg-green-600 hover:bg-green-700 text-white">
+                    <Button size="sm" onClick={() => window.location.reload()} className="bg-blue-600 hover:bg-blue-700 text-white">
                         <RefreshCw/>
                     </Button>
                     <DropdownMenu>

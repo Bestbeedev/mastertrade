@@ -45,6 +45,9 @@ export interface Product {
     description: string;
     category: string;
     features?: string[] | null;
+    price_cents?: number;
+    requires_license?: boolean;
+    is_active?: boolean;
     created_at: string;
     updated_at: string;
     licenses?: License[];

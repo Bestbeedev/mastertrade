@@ -5,8 +5,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Package, Shield, Download, ArrowLeft } from "lucide-react";
 import { route } from "ziggy-js";
+import { formatCFA } from "@/lib/utils";
 
-export default function Product({ product }: { product?: any }) {
+export default function Product({ product, canDownload = false, hasActiveLicense = false, hasPaidOrder = false }: { product?: any; canDownload?: boolean; hasActiveLicense?: boolean; hasPaidOrder?: boolean }) {
     if (!product) {
         return (
             <AppLayout breadcrumbs={[{ title: "Catalogue", href: route('catalogs') }, { title: "Produit", href: "" }]}>
@@ -28,6 +29,18 @@ export default function Product({ product }: { product?: any }) {
         );
     }
     const data = product;
+    const categoryLabel = (cat?: string) => {
+        const c = (cat || '').toLowerCase();
+        if (c === 'software') return 'Logiciel';
+        if (c === 'plugin') return 'Extension';
+        if (c === 'template') return 'Modèle';
+        if (c === 'addon') return 'Module';
+        if (c === 'bundle') return 'Pack';
+        return cat || 'Logiciels';
+    };
+    const priceCents = typeof data.price_cents === 'number' ? data.price_cents : 0;
+    const isPaid = priceCents > 0;
+    const requiresLicense = !!data.requires_license;
 
     const sizeLabel = data.size ? `${Math.round((data.size / (1024 * 1024)) * 10) / 10} Mo` : "—";
 
@@ -50,7 +63,7 @@ export default function Product({ product }: { product?: any }) {
                             <CardTitle className="text-2xl">{data.name}</CardTitle>
                             <CardDescription>{data.description}</CardDescription>
                             <div className="mt-3 flex flex-wrap gap-3 text-xs text-muted-foreground">
-                                <span>Catégorie : <span className="font-medium">{data.category || '—'}</span></span>
+                                <span>Catégorie : <span className="font-medium">{categoryLabel(data.category) || '—'}</span></span>
                                 <span>Version : <span className="font-medium">{data.version || '—'}</span></span>
                                 {data.sku && <span>SKU : <span className="font-medium">{data.sku}</span></span>}
                                 <span>Taille : <span className="font-medium">{sizeLabel}</span></span>
@@ -62,7 +75,13 @@ export default function Product({ product }: { product?: any }) {
                             </div>
                             <div className="mt-6 flex flex-wrap items-center gap-3">
                                 <Badge variant="outline">Version {data.version}</Badge>
-                                <Badge variant="outline">{data.category}</Badge>
+                                <Badge variant="outline">{categoryLabel(data.category)}</Badge>
+                                {requiresLicense && <Badge variant="secondary">Nécessite une licence</Badge>}
+                                {isPaid ? (
+                                    <Badge variant="default">{formatCFA(priceCents)}</Badge>
+                                ) : (
+                                    <Badge variant="secondary">Gratuit</Badge>
+                                )}
                                 {data.tags?.map((t: string, i: number) => (
                                     <Badge key={i} variant="secondary">{t}</Badge>
                                 ))}
@@ -114,16 +133,37 @@ export default function Product({ product }: { product?: any }) {
                             <CardContent className="flex flex-col items-start p-6">
                                 <div className="space-y-1">
                                     <div className="text-lg font-semibold">Téléchargement du logiciel</div>
-                                    <div className="text-xs text-muted-foreground">Inclus avec votre licence existante</div>
+                                    {requiresLicense ? (
+                                        <div className="text-xs text-muted-foreground">Accès via une licence{isPaid ? ' (payante)' : ''}.</div>
+                                    ) : isPaid ? (
+                                        <div className="text-xs text-muted-foreground">Achat requis avant téléchargement.</div>
+                                    ) : (
+                                        <div className="text-xs text-muted-foreground">Téléchargement gratuit</div>
+                                    )}
                                     <div className="text-xs text-muted-foreground">Taille : {sizeLabel}</div>
                                 </div>
                                 <div className="flex mt-4 items-center gap-4">
                                     {data.download_url ? (
-                                        <Button variant="outline" className="gap-2" asChild>
-                                            <a href={route('downloads.start', data.id)}>
-                                                <Download className="h-4 w-4" /> Télécharger
-                                            </a>
-                                        </Button>
+                                        canDownload ? (
+                                            <Button variant="outline" className="gap-2" asChild>
+                                                <a href={route('downloads.start', data.id)}>
+                                                    <Download className="h-4 w-4" /> Télécharger
+                                                </a>
+                                            </Button>
+                                        ) : (
+                                            <>
+                                                <Button variant="outline" className="gap-2" disabled>
+                                                    <Download className="h-4 w-4" /> Télécharger
+                                                </Button>
+                                                {(isPaid || requiresLicense) && (
+                                                    <Button asChild>
+                                                        <Link href={route('catalogs.purchase', data.id)} method="post">
+                                                            Procéder au paiement 
+                                                        </Link>
+                                                    </Button>
+                                                )}
+                                            </>
+                                        )
                                     ) : (
                                         <Button variant="outline" className="gap-2" disabled>
                                             <Download className="h-4 w-4" /> Téléchargement non disponible

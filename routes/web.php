@@ -38,6 +38,9 @@ Route::get('/', function () {
         'size',
         'changelog',
         'features',
+        'price_cents',
+        'requires_license',
+        'is_active',
         'created_at',
         'updated_at',
         'download_url',
@@ -332,6 +335,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
             'checksum',
             'changelog',
             'features',
+            'price_cents',
+            'requires_license',
+            'is_active',
             'created_at',
         ])
             ->latest()
@@ -368,6 +374,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
             'logs' => $logs,
         ]);
     })->name('admin.downloads');
+
+    // Admin Orders Management
+    Route::get('admin/orders', [\App\Http\Controllers\Admin\OrderAdminController::class, 'index'])->name('admin.orders');
+    Route::get('admin/orders/{order}', [\App\Http\Controllers\Admin\OrderAdminController::class, 'show'])->name('admin.orders.show');
+    Route::get('admin/orders/export/csv', [\App\Http\Controllers\Admin\OrderAdminController::class, 'exportCsv'])->name('admin.orders.export');
+    Route::patch('admin/orders/{order}', [\App\Http\Controllers\Admin\OrderAdminController::class, 'update'])->name('admin.orders.update');
+
+    // Admin Finance Dashboard
+    Route::get('admin/finance', [\App\Http\Controllers\Admin\FinanceAdminController::class, 'index'])->name('admin.finance');
 });
 
 require __DIR__ . '/settings.php';

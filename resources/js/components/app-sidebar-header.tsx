@@ -50,7 +50,7 @@ export function AppSidebarHeader({
                 <SidebarTrigger className="-ml-1" />
                 <Breadcrumbs breadcrumbs={breadcrumbs} />
             </div>
-            <Button size="sm" onClick={() => window.location.reload()} className="bg-green-600 hover:bg-green-700 text-white">
+            <Button size="sm" onClick={() => window.location.reload()} className="bg-blue-600 hover:bg-blue-700 text-white">
                 <RefreshCw />
             </Button>
             {/* Sélecteur de thème */}
@@ -80,7 +80,7 @@ export function AppSidebarHeader({
                             className="flex items-center gap-2"
                         >
                             <Sun className="h-4 w-4" />
-                            <span>Claire</span>
+                            <span>Clair</span>
                         </DropdownMenuItem>
                         <DropdownMenuItem
                             onClick={() => handleThemeChange("dark")}

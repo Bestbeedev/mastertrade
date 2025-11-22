@@ -42,11 +42,21 @@ class ProductController extends Controller
             'category' => ['required', 'string', 'max:255'],
             'features' => ['nullable', 'array'],
             'features.*' => ['nullable', 'string', 'max:255'],
+            'price' => ['nullable', 'numeric', 'min:0'],
+            'requires_license' => ['nullable', 'boolean'],
+            'is_active' => ['nullable', 'boolean'],
         ]);
 
         if (empty($data['checksum'])) {
             $data['checksum'] = hash('sha256', ($data['name'] ?? '') . '@' . ($data['version'] ?? ''));
         }
+
+        // Normalize pricing fields
+        $priceValue = (float) ($data['price'] ?? 0);
+        unset($data['price']);
+        $data['price_cents'] = (int) round($priceValue * 100);
+        $data['requires_license'] = (bool) ($data['requires_license'] ?? false);
+        $data['is_active'] = array_key_exists('is_active', $data) ? (bool) $data['is_active'] : true;
 
         Product::create($data);
 
@@ -91,11 +101,21 @@ class ProductController extends Controller
             'category' => ['required', 'string', 'max:255'],
             'features' => ['nullable', 'array'],
             'features.*' => ['nullable', 'string', 'max:255'],
+            'price' => ['nullable', 'numeric', 'min:0'],
+            'requires_license' => ['nullable', 'boolean'],
+            'is_active' => ['nullable', 'boolean'],
         ]);
 
         if (empty($data['checksum'])) {
             $data['checksum'] = hash('sha256', ($data['name'] ?? '') . '@' . ($data['version'] ?? ''));
         }
+
+        // Normalize pricing fields
+        $priceValue = (float) ($data['price'] ?? ($product->price_cents ?? 0) / 100);
+        unset($data['price']);
+        $data['price_cents'] = (int) round($priceValue * 100);
+        $data['requires_license'] = (bool) ($data['requires_license'] ?? false);
+        $data['is_active'] = array_key_exists('is_active', $data) ? (bool) $data['is_active'] : (bool) ($product->is_active ?? true);
 
         $product->update($data);
 

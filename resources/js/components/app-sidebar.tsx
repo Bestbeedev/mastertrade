@@ -136,7 +136,7 @@ function SidebarHeaderContent() {
     return (
         <a
             href="/"
-            className="flex items-center gap-3 px-3 py-4 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 rounded-lg transition-colors"
+            className="flex items-center gap-3 px-3 py-4 mx-auto bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 rounded-lg transition-colors"
         >
             <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
                 <IconUser className="!size-4 text-gray-900" />
@@ -191,17 +191,27 @@ export function AppSidebar({ user, ...props }: { user: User; } & React.Component
             icon: IconShieldCog,
         },
         {
-            title: "Gérer les formations",
+            title: "Les Commandes",
+            url: "/admin/orders",
+            icon: IconShoppingCart,
+        },
+        {
+            title: "Les Finances",
+            url: "/admin/finance",
+            icon: SquareChevronUpIcon,
+        },
+        {
+            title: "Les formations",
             url: "/admin/courses",
             icon: IconBrandParsinta,
         },
         {
-            title: "Gérer les produits",
+            title: "Les produits",
             url: "/admin/products",
             icon: IconPackage,
         },
         {
-            title: "Gérer les licences",
+            title: "Les licences",
             url: "/admin/licenses",
             icon: IconFileCertificate,
         },

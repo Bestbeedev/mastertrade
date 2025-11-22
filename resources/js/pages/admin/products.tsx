@@ -29,6 +29,9 @@ export default function AdminProducts({ products = [] as any[] }: { products?: a
         description: "",
         category: "software",
         features: [""] as string[],
+        price: 0 as number,
+        requires_license: false,
+        is_active: true,
     });
 
     const openEdit = (product: any) => {
@@ -45,6 +48,9 @@ export default function AdminProducts({ products = [] as any[] }: { products?: a
             description: product.description ?? "",
             category: product.category ?? "software",
             features: Array.isArray(product.features) ? product.features : [],
+            price: typeof product.price_cents === 'number' ? Math.max(0, (product.price_cents || 0) / 100) : 0,
+            requires_license: !!product.requires_license,
+            is_active: product.is_active ?? true,
         });
     };
 
@@ -861,6 +867,44 @@ export default function AdminProducts({ products = [] as any[] }: { products?: a
                                         rows={4}
                                         className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                                     />
+                                </div>
+
+                                {/* Tarification & Options */}
+                                <div className="grid gap-4 md:grid-cols-2">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="edit_price">Prix (FCFA)</Label>
+                                        <Input
+                                            id="edit_price"
+                                            type="number"
+                                            min={0}
+                                            step="0.01"
+                                            value={editForm.data.price as any}
+                                            onChange={(e) => editForm.setData('price', parseFloat(e.target.value || '0') || 0)}
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label>Options</Label>
+                                        <div className="space-y-2">
+                                            <label className="flex items-center gap-2">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={!!editForm.data.requires_license}
+                                                    onChange={(e) => editForm.setData('requires_license', e.target.checked)}
+                                                    className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                                                />
+                                                <span className="text-sm">Nécessite une licence</span>
+                                            </label>
+                                            <label className="flex items-center gap-2">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={!!editForm.data.is_active}
+                                                    onChange={(e) => editForm.setData('is_active', e.target.checked)}
+                                                    className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                                                />
+                                                <span className="text-sm">Produit actif</span>
+                                            </label>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <div className="space-y-2">

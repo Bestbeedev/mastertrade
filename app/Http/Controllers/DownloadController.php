@@ -6,6 +6,7 @@ use Inertia\Inertia;
 use App\Models\Download;
 use App\Models\Product;
 use App\Models\License;
+use App\Models\Order;
 use App\Models\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -95,13 +96,38 @@ class DownloadController extends Controller
         }
 
         $userId = Auth::id();
-        $license = License::where('user_id', $userId)
+
+        // Eligibility rules
+        $requires = (bool) ($product->requires_license ?? false);
+        $isPaid = (int) ($product->price_cents ?? 0) > 0;
+        $hasActiveLicense = License::where('user_id', $userId)
             ->where('product_id', $product->id)
             ->where('status', 'active')
             ->where(function ($q) {
                 $q->whereNull('expiry_date')->orWhere('expiry_date', '>', now());
             })
-            ->first();
+            ->exists();
+        $hasPaidOrder = Order::where('user_id', $userId)
+            ->where('product_id', $product->id)
+            ->where('status', 'paid')
+            ->exists();
+
+        $eligible = ($requires && $hasActiveLicense)
+            || (!$requires && $isPaid && $hasPaidOrder)
+            || (!$requires && !$isPaid);
+
+        abort_unless($eligible, 403, 'Accès au téléchargement non autorisé pour ce produit.');
+
+        $license = null;
+        if ($hasActiveLicense) {
+            $license = License::where('user_id', $userId)
+                ->where('product_id', $product->id)
+                ->where('status', 'active')
+                ->where(function ($q) {
+                    $q->whereNull('expiry_date')->orWhere('expiry_date', '>', now());
+                })
+                ->first();
+        }
 
         // Log download
         $download = Download::create([

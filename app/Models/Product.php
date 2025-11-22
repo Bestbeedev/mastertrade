@@ -9,9 +9,12 @@ use App\Traits\UuidTrait;
 class Product extends Model
 {
     use HasFactory, UuidTrait;
-    protected $fillable = ['name', 'sku', 'version', 'download_url', 'checksum', 'size', 'changelog', 'description', 'category', 'features'];
+    protected $fillable = ['name', 'sku', 'version', 'download_url', 'checksum', 'size', 'changelog', 'description', 'category', 'features', 'price_cents', 'requires_license', 'is_active'];
     protected $casts = [
         'features' => 'array',
+        'price_cents' => 'integer',
+        'requires_license' => 'boolean',
+        'is_active' => 'boolean',
     ];
     public function licenses()
     {

@@ -1,0 +1,149 @@
+import AppLayout from "@/layouts/app-layout";
+import React from "react";
+import { Head, Link } from "@inertiajs/react";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { route } from "ziggy-js";
+import { formatCFA } from "@/lib/utils";
+import { ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { CartesianGrid, ComposedChart, Line, Bar, XAxis, YAxis } from "recharts";
+
+export default function AdminFinance({ chartData = [], totals = { revenue_cents_total: 0, revenue_cents_30d: 0, orders_30d: 0 }, statusCounts = {}, topProducts = [], recentOrders = [] as any[] }: { chartData?: Array<{ date: string; revenue: number; orders: number }>; totals?: any; statusCounts?: Record<string, number>; topProducts?: any[]; recentOrders?: any[] }) {
+    const cfg = {
+        revenue: {
+            label: "Revenus (CFA)",
+            color: "hsl(var(--primary))",
+        },
+        orders: {
+            label: "Commandes",
+            color: "hsl(var(--muted-foreground))",
+        },
+    } as const;
+
+    const statusLabel = (s: string) => ({
+        pending: "En attente",
+        paid: "Payée",
+        failed: "Échouée",
+        refunded: "Remboursée",
+    } as any)[s] || s;
+
+    return (
+        <AppLayout breadcrumbs={[{ title: "Admin", href: route("admin") }, { title: "Finances", href: route("admin.finance") }]}>
+            <Head title="Admin • Finances" />
+            <div className="w-full px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+                {/* KPIs */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <Card>
+                        <CardHeader className="pb-2">
+                            <CardDescription>Total revenus</CardDescription>
+                            <CardTitle className="text-2xl">{formatCFA(totals.revenue_cents_total || 0)}</CardTitle>
+                        </CardHeader>
+                    </Card>
+                    <Card>
+                        <CardHeader className="pb-2">
+                            <CardDescription>Revenus 30 derniers jours</CardDescription>
+                            <CardTitle className="text-2xl">{formatCFA(totals.revenue_cents_30d || 0)}</CardTitle>
+                        </CardHeader>
+                    </Card>
+                    <Card>
+                        <CardHeader className="pb-2">
+                            <CardDescription>Commandes 30 derniers jours</CardDescription>
+                            <CardTitle className="text-2xl">{totals.orders_30d || 0}</CardTitle>
+                        </CardHeader>
+                    </Card>
+                </div>
+
+                {/* Statuts */}
+                <Card>
+                    <CardHeader className="pb-2">
+                        <CardTitle className="text-base">Répartition des statuts des commandes</CardTitle>
+                        <CardDescription>Mises à jour en temps réel selon la base</CardDescription>
+                    </CardHeader>
+                    <CardContent className="flex flex-wrap gap-2">
+                        {(["paid", "pending", "failed", "refunded"] as const).map((s) => (
+                            <Badge key={s} variant={s === "paid" ? "default" : s === "pending" ? "secondary" : s === "failed" ? "destructive" : "outline"}>
+                                {statusLabel(s)}: {statusCounts?.[s] ?? 0}
+                            </Badge>
+                        ))}
+                    </CardContent>
+                </Card>
+
+                {/* Chart */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Revenus & Commandes (30 jours)</CardTitle>
+                        <CardDescription>Suivi quotidien</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <ChartContainer config={cfg} className="w-full">
+                            <ComposedChart data={chartData} margin={{ left: 12, right: 12 }}>
+                                <CartesianGrid vertical={false} strokeDasharray="3 3" />
+                                <XAxis dataKey="date" tickLine={false} axisLine={false} minTickGap={16} />
+                                <YAxis yAxisId="left" tickLine={false} axisLine={false} width={40} />
+                                <YAxis yAxisId="right" orientation="right" tickLine={false} axisLine={false} width={40} />
+                                <ChartTooltip cursor={false} content={<ChartTooltipContent />} formatter={(value: any, name: any) => (
+                                    <span>{name === "revenue" ? `${(Number(value) || 0).toLocaleString()} CFA` : `${value}`}</span>
+                                )} />
+                                <ChartLegend content={<ChartLegendContent />} />
+                                <Bar dataKey="orders" yAxisId="right" fill="var(--color-orders)" className="fill-green-500"  radius={[4, 4, 0, 0]} />
+                                <Line dataKey="revenue" yAxisId="left" type="monotone" stroke="var(--color-revenue)" strokeWidth={2} dot={false} />
+                            </ComposedChart>
+                        </ChartContainer>
+                    </CardContent>
+                </Card>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Top produits */}
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Top produits par revenus</CardTitle>
+                            <CardDescription>Basé sur les commandes payées</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="space-y-3">
+                                {Array.isArray(topProducts) && topProducts.length > 0 ? (
+                                    topProducts.map((p: any) => (
+                                        <div key={p.product_id} className="flex items-center justify-between border-b pb-2">
+                                            <div className="font-medium">{p.product?.name || "Produit"}</div>
+                                            <div className="text-sm text-muted-foreground">{formatCFA(p.revenue_cents || 0)} • {p.orders_count} cmd</div>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="text-sm text-muted-foreground">Aucune donnée</div>
+                                )}
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    {/* Commandes récentes */}
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Commandes récentes</CardTitle>
+                            <CardDescription>10 dernières</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="space-y-3">
+                                {Array.isArray(recentOrders) && recentOrders.length > 0 ? (
+                                    recentOrders.map((o: any) => (
+                                        <div key={o.id} className="flex items-center justify-between border-b pb-2">
+                                            <div>
+                                                <div className="font-medium">{o.user?.name || "Client"}</div>
+                                                <div className="text-xs text-muted-foreground">{o.product?.name || "Produit"}</div>
+                                            </div>
+                                            <div className="text-right">
+                                                <div className="text-sm font-medium">{formatCFA(o.amount || 0)}</div>
+                                                <div className="text-xs text-muted-foreground">{o.created_at ? new Date(o.created_at).toLocaleDateString('fr-FR') : ''}</div>
+                                            </div>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="text-sm text-muted-foreground">Aucune donnée</div>
+                                )}
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+            </div>
+        </AppLayout>
+    );
+}

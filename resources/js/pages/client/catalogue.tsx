@@ -30,8 +30,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { useIsAdmin } from "@/hooks/use-is-admin";
+import { formatCFA } from "@/lib/utils";
 
-export default function Catalogue({ products = [] as { id: string; name: string; description?: string; category?: string; version?: string; sku?: string; features?: string[] }[] }: { products?: { id: string; name: string; description?: string; category?: string; version?: string; sku?: string; features?: string[] }[] }) {
+export default function Catalogue({ products = [] as { id: string; name: string; description?: string; category?: string; version?: string; sku?: string; features?: string[]; price_cents?: number; requires_license?: boolean; is_active?: boolean }[] }: { products?: { id: string; name: string; description?: string; category?: string; version?: string; sku?: string; features?: string[]; price_cents?: number; requires_license?: boolean; is_active?: boolean }[] }) {
     const isAdmin = useIsAdmin();
     const breadcrumbs: BreadcrumbItem[] = [
         {
@@ -47,6 +48,15 @@ export default function Catalogue({ products = [] as { id: string; name: string;
     const [selectedRatings, setSelectedRatings] = useState<number[]>([]);
 
     const slugify = (s: string) => (s || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    const categoryLabel = (cat?: string) => {
+        const c = (cat || '').toLowerCase();
+        if (c === 'software') return 'Logiciel';
+        if (c === 'plugin') return 'Extension';
+        if (c === 'template') return 'Modèle';
+        if (c === 'addon') return 'Module';
+        if (c === 'bundle') return 'Pack';
+        return cat || 'Logiciels';
+    };
     const categoryIcon = (cat?: string) => {
         const c = (cat || '').toLowerCase();
         if (c.includes('éduc') || c.includes('ecole') || c.includes('scolar')) return GraduationCap;
@@ -59,14 +69,14 @@ export default function Catalogue({ products = [] as { id: string; name: string;
         id: p.id,
         name: p.name,
         description: p.description || '',
-        category: p.category || 'Logiciels',
+        category: categoryLabel(p.category),
         version: p.version || '',
         sku: p.sku || '',
         rating: 0,
         reviewCount: 0,
         tags: [] as string[],
         features: Array.isArray(p.features) ? p.features.filter((f) => typeof f === 'string' && f.trim().length > 0) : [],
-        price: undefined as unknown as string | undefined,
+        price: typeof p.price_cents === 'number' && p.price_cents > 0 ? formatCFA(p.price_cents) : 'Gratuit',
         originalPrice: undefined as unknown as string | undefined,
     }));
     const categories = [
