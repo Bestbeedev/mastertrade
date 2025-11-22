@@ -31,7 +31,7 @@ function EmailVerificationStatus({
     status
 }: {
     mustVerifyEmail: boolean;
-    emailVerified: boolean | null;
+    emailVerified: boolean | null | string;
     status?: string;
 }) {
     if (!mustVerifyEmail || emailVerified) return null;
@@ -146,6 +146,44 @@ function ProfileForm({
                     </div>
                 </div>
 
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Champ Pays*/}
+                    <div className="space-y-2">
+                        <Label htmlFor="country" className="text-sm font-medium">
+                            Pays
+                        </Label>
+                        <Input
+                            id="country"
+                            name="country"
+                            type="text"
+                            defaultValue={user.country}
+                            required
+                            autoComplete="country"
+                            placeholder="Votre pays"
+                            className="w-full"
+                        />
+                        <InputError message={errors.country} />
+                    </div>
+
+                    {/* Champ Telephone */}
+                    <div className="space-y-2">
+                        <Label htmlFor="phone" className="text-sm font-medium">
+                            Numero de telephone
+                        </Label>
+                        <Input
+                            id="phone"
+                            name="phone"
+                            type="tel"
+                            defaultValue={user.phone}
+                            required
+                            autoComplete="tel"
+                            placeholder="Votre numero de telephone"
+                            className="w-full"
+                        />
+                        <InputError message={errors.phone} />
+                    </div>
+                </div>
+
                 {/* Actions du formulaire */}
                 <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
                     <div className="flex items-center gap-4">
@@ -172,13 +210,15 @@ function ProfileForm({
                             </div>
                         </Transition>
                     </div>
+                    <Button variant='destructive'>
 
-                    <Link
-                        href="/profile"
-                        className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
-                    >
-                        Annuler
-                    </Link>
+                        <Link
+                            href="/profile"
+                            className="text-sm "
+                        >
+                            Annuler
+                        </Link>
+                    </Button>
                 </div>
             </CardContent>
         </Card>
@@ -235,13 +275,13 @@ export default function Profile({
                     />
 
                     {/* Section suppression de compte */}
-                    <div className="space-y-4">
+                    {/* <div className="space-y-4">
                         <HeadingSmall
                             title="Zone dangereuse"
                             description="Actions irréversibles concernant votre compte"
                         />
                         <DeleteUser />
-                    </div>
+                    </div> */}
                 </div>
             </SettingsLayout>
         </AppLayout>

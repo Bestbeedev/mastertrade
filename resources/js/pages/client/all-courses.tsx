@@ -300,7 +300,7 @@ export default function AllCoursesPage() {
                                             )}
                                             {type}
                                         </Badge>
-                                        <Badge  className="font-semibold bg-green-600 shadow-lg text-xs">
+                                        <Badge className="font-semibold bg-green-600 shadow-lg text-xs">
                                             {priceLabel(course)}
                                         </Badge>
                                     </div>
@@ -356,7 +356,7 @@ export default function AllCoursesPage() {
 
             {/* Paiement simulé pour les formations payantes */}
             <Dialog open={!!courseToJoin} onOpenChange={(open) => { if (!open) setCourseToJoin(null); }}>
-                <DialogContent>
+                <DialogContent className="max-w-4xl lg:max-w-6xl xl:max-w-7xl max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
                         <DialogTitle>Paiement simulé</DialogTitle>
                         <DialogDescription>

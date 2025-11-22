@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { route } from "ziggy-js";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { IconPackage } from "@tabler/icons-react";
 
 type LicenseItem = {
     id: string;
@@ -65,7 +66,7 @@ export default function License({ licenses: initialLicenses }: { licenses?: Lice
             title: "Produits",
             value: `${new Set(licenses.map(l => l.product?.name)).size}`,
             description: "Sous licence",
-            icon: "📦",
+            icon: IconPackage,
             trend: "stable"
         }
     ];
@@ -317,7 +318,7 @@ export default function License({ licenses: initialLicenses }: { licenses?: Lice
 
                 {/* Modal de prévisualisation du certificat */}
                 <Dialog open={openPreview} onOpenChange={setOpenPreview}>
-                    <DialogContent className="sm:max-w-4xl">
+                    <DialogContent className="max-w-4xl lg:max-w-6xl xl:max-w-7xl max-h-[90vh] overflow-y-auto">
                         <DialogHeader>
                             <DialogTitle>Certificat de licence</DialogTitle>
                         </DialogHeader>

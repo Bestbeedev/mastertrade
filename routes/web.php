@@ -37,6 +37,7 @@ Route::get('/', function () {
         'description',
         'size',
         'changelog',
+        'features',
         'created_at',
         'updated_at',
         'download_url',
@@ -135,6 +136,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 // Routes pour les tickets de support
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('supportsTickets', [TicketController::class, 'index'])->name('supportsTickets');
+    Route::get('client/ticket', [TicketController::class, 'index'])->name('supportsTickets');
     Route::get('supportsTickets/create', [TicketController::class, 'create'])->name('supportsTickets.create');
     Route::post('supportsTickets', [TicketController::class, 'store'])->name('supportsTickets.store');
     Route::get('supportsTickets/{ticket}', [TicketController::class, 'show'])->name('supportsTickets.show');
@@ -329,6 +331,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             'size',
             'checksum',
             'changelog',
+            'features',
             'created_at',
         ])
             ->latest()

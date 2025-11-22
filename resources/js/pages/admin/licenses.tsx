@@ -178,7 +178,7 @@ export default function AdminLicenses({ licenses = [], products = [], users = []
                                                 <TableHead>Activations</TableHead>
                                                 <TableHead>Device ID</TableHead>
                                                 <TableHead>Machine</TableHead>
-                                                <TableHead>Adresse MAC</TableHead>
+                                                <TableHead>Adresses MAC</TableHead>
                                                 <TableHead>Dernière activation</TableHead>
                                                 <TableHead>Actions</TableHead>
                                             </TableRow>
@@ -202,7 +202,11 @@ export default function AdminLicenses({ licenses = [], products = [], users = []
                                                     <TableCell>{(l.activations_count ?? 0)}/{(l.max_activations ?? 1)}</TableCell>
                                                     <TableCell className="font-mono text-xs">{l.last_device_id ?? "—"}</TableCell>
                                                     <TableCell>{l.last_machine ?? "—"}</TableCell>
-                                                    <TableCell className="font-mono text-xs">{l.last_mac_address ?? "—"}</TableCell>
+                                                    <TableCell className="font-mono text-xs">
+                                                        {Array.isArray(l.devices) && l.devices.length > 0
+                                                            ? l.devices.slice(0, 3).map((d: any) => (d?.mac_address || d?.device_id || "—")).filter(Boolean).join(" , ")
+                                                            : (l.last_mac_address ?? "—")}
+                                                    </TableCell>
                                                     <TableCell>{l.last_activated_at ? new Date(l.last_activated_at).toLocaleString('fr-FR') : "—"}</TableCell>
                                                     <TableCell className="space-x-2">
                                                         <Button size="sm" variant="outline" onClick={() => startEdit(l)}>Éditer</Button>
@@ -215,8 +219,24 @@ export default function AdminLicenses({ licenses = [], products = [], users = []
                                     </Table>
                                 </div>
 
-                                <Dialog open={!!editing} onOpenChange={(open) => { if (!open) setEditing(null); }}>
+                                <Dialog open={!!licenseToDelete} onOpenChange={(open) => { if (!open) setLicenseToDelete(null); }}>
                                     <DialogContent>
+                                        <DialogHeader>
+                                            <DialogTitle>Confirmer la suppression</DialogTitle>
+                                            <DialogDescription>Êtes-vous sûr de vouloir supprimer cette licence ?</DialogDescription>
+                                        </DialogHeader>
+                                        <div className="space-y-3">
+                                            <p>Vous êtes sur le point de supprimer la licence {licenseToDelete?.key}.</p>
+                                            <div className="flex gap-2 justify-end">
+                                                <Button type="button" variant="ghost" onClick={() => setLicenseToDelete(null)}>Annuler</Button>
+                                                <Button type="button" variant="destructive" onClick={onDelete}>Supprimer</Button>
+                                            </div>
+                                        </div>
+                                    </DialogContent>
+                                </Dialog>
+
+                                <Dialog open={!!editing} onOpenChange={(open) => { if (!open) setEditing(null); }}>
+                                    <DialogContent className="max-w-4xl lg:max-w-6xl xl:max-w-7xl max-h-[90vh] overflow-y-auto">
                                         <DialogHeader>
                                             <DialogTitle>Modifier la licence</DialogTitle>
                                             <DialogDescription>Mettre à jour les informations de la licence sélectionnée.</DialogDescription>
@@ -304,6 +324,21 @@ export default function AdminLicenses({ licenses = [], products = [], users = []
                                                     <div className="space-y-2">
                                                         <Label>Dernière activation (lecture seule)</Label>
                                                         <Input value={editing.last_activated_at ? new Date(editing.last_activated_at).toLocaleString('fr-FR') : "—"} disabled />
+                                                    </div>
+                                                    <div className="space-y-2 md:col-span-2">
+                                                        <Label>Appareils enregistrés (lecture seule)</Label>
+                                                        <div className="text-xs space-y-1">
+                                                            {(Array.isArray((editing as any).devices) ? (editing as any).devices : []).slice(0, 3).map((d: any, idx: number) => (
+                                                                <div key={idx} className="flex flex-wrap gap-2">
+                                                                    <span className="font-mono">{d?.mac_address || '—'}</span>
+                                                                    <span className="text-muted-foreground">({d?.device_id || '—'})</span>
+                                                                    <span className="text-muted-foreground">• {d?.machine || '—'}</span>
+                                                                </div>
+                                                            ))}
+                                                            {(!Array.isArray((editing as any).devices) || (editing as any).devices.length === 0) ? (
+                                                                <div className="text-muted-foreground">—</div>
+                                                            ) : null}
+                                                        </div>
                                                     </div>
                                                 </div>
                                                 <div className="flex items-center gap-2">

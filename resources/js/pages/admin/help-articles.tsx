@@ -261,7 +261,7 @@ export default function AdminHelpArticles({ articles = [], filters = {} as any }
                         </Card>
 
                         <Dialog open={!!editing} onOpenChange={(open) => { if (!open) setEditing(null); }}>
-                            <DialogContent>
+                            <DialogContent className="max-w-4xl lg:max-w-6xl xl:max-w-7xl max-h-[90vh] overflow-y-auto">
                                 <DialogHeader>
                                     <DialogTitle>Modifier l'article d'aide</DialogTitle>
                                     <DialogDescription>
@@ -364,7 +364,7 @@ export default function AdminHelpArticles({ articles = [], filters = {} as any }
                         </Dialog>
 
                         <Dialog open={!!articleToDelete} onOpenChange={(open) => { if (!open) setArticleToDelete(null); }}>
-                            <DialogContent>
+                            <DialogContent className="max-w-4xl lg:max-w-6xl xl:max-w-7xl max-h-[90vh] overflow-y-auto">
                                 <DialogHeader>
                                     <DialogTitle>Confirmer la suppression</DialogTitle>
                                     <DialogDescription>

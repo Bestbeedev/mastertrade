@@ -28,6 +28,7 @@ export default function AdminProducts({ products = [] as any[] }: { products?: a
         changelog: "",
         description: "",
         category: "software",
+        features: [""] as string[],
     });
 
     const openEdit = (product: any) => {
@@ -43,6 +44,7 @@ export default function AdminProducts({ products = [] as any[] }: { products?: a
             changelog: product.changelog ?? "",
             description: product.description ?? "",
             category: product.category ?? "software",
+            features: Array.isArray(product.features) ? product.features : [],
         });
     };
 
@@ -136,6 +138,24 @@ export default function AdminProducts({ products = [] as any[] }: { products?: a
         if (e.target.files && e.target.files[0]) {
             form.setData('changelog_file', e.target.files[0]);
         }
+    };
+
+    // Edition des fonctionnalités (modal)
+    const handleEditAddFeature = () => {
+        const current = (editForm.data as any).features || [];
+        editForm.setData('features', [...current, '']);
+    };
+
+    const handleEditRemoveFeature = (index: number) => {
+        const cur = [...((editForm.data as any).features || [])];
+        cur.splice(index, 1);
+        editForm.setData('features', cur);
+    };
+
+    const handleEditFeatureChange = (index: number, value: string) => {
+        const cur = [...((editForm.data as any).features || [])];
+        cur[index] = value;
+        editForm.setData('features', cur);
     };
 
     const { delete: destroy, processing: deleting } = useForm({});
@@ -243,7 +263,7 @@ export default function AdminProducts({ products = [] as any[] }: { products?: a
 
                     {/* Confirmation de suppression */}
                     <Dialog open={!!productToDelete} onOpenChange={(open) => { if (!open) setProductToDelete(null); }}>
-                        <DialogContent>
+                        <DialogContent className="max-w-4xl lg:max-w-6xl xl:max-w-7xl max-h-[90vh] overflow-y-auto">
                             <DialogHeader>
                                 <DialogTitle>Confirmer la suppression</DialogTitle>
                                 <DialogDescription>
@@ -497,7 +517,7 @@ export default function AdminProducts({ products = [] as any[] }: { products?: a
                                                         <p className="text-xs text-muted-foreground">Collez un lien Google Drive public. Les téléchargements seront servis via l’application.</p>
                                                     </div>
                                                     <div className="space-y-2">
-                                                        <Label htmlFor="file">Fichier du produit</Label>
+                                                        <Label htmlFor="file">Fichier du produit (optionnel)</Label>
                                                         <div className="flex items-center gap-2">
                                                             <label
                                                                 htmlFor="file-upload"
@@ -570,7 +590,7 @@ export default function AdminProducts({ products = [] as any[] }: { products?: a
                                                         <Label>Vérification d'intégrité</Label>
                                                         <div className="space-y-2">
                                                             <div className="space-y-2">
-                                                                <Label htmlFor="checksum" className="text-sm">Empreinte numérique (SHA-256)</Label>
+                                                                <Label htmlFor="checksum" className="text-sm">Empreinte numérique (SHA-256) - (optionnel)</Label>
                                                                 <div className="flex items-center gap-2">
                                                                     <div className="relative flex-1">
                                                                         <Input
@@ -743,7 +763,7 @@ export default function AdminProducts({ products = [] as any[] }: { products?: a
                 </Tabs>
                 {/* Modal détails / édition produit */}
                 <Dialog open={!!selectedProduct} onOpenChange={(open) => !open && setSelectedProduct(null)}>
-                    <DialogContent className="max-w-2xl">
+                    <DialogContent className="max-w-4xl lg:max-w-6xl xl:max-w-7xl max-h-[90vh] overflow-y-auto">
                         <DialogHeader>
                             <DialogTitle>Détails du produit</DialogTitle>
                             <DialogDescription>
@@ -841,6 +861,39 @@ export default function AdminProducts({ products = [] as any[] }: { products?: a
                                         rows={4}
                                         className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                                     />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label>Fonctionnalités</Label>
+                                    <div className="space-y-2">
+                                        {(editForm.data as any).features?.map((feature: string, index: number) => (
+                                            <div key={index} className="flex gap-2">
+                                                <Input
+                                                    value={feature}
+                                                    onChange={(e) => handleEditFeatureChange(index, e.target.value)}
+                                                    placeholder="Fonctionnalité"
+                                                />
+                                                <Button
+                                                    type="button"
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    onClick={() => handleEditRemoveFeature(index)}
+                                                >
+                                                    <Trash2 className="h-4 w-4 text-destructive" />
+                                                </Button>
+                                            </div>
+                                        ))}
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="sm"
+                                            className="mt-2"
+                                            onClick={handleEditAddFeature}
+                                        >
+                                            <Plus className="h-4 w-4 mr-2" />
+                                            Ajouter une fonctionnalité
+                                        </Button>
+                                    </div>
                                 </div>
 
                                 <div className="space-y-2">

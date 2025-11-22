@@ -43,6 +43,7 @@ export default function Welcome() {
     const products = (page.props?.products || []) as any[];
 
     const softwareData: software[] = products.map((p) => {
+        const featuresArray = Array.isArray(p.features) ? (p.features as string[]).filter((s) => typeof s === 'string' && s.trim().length > 0) : [];
         const changelogLines = p.changelog ? String(p.changelog).split(/\r?\n/).filter((line: string) => line.trim().length > 0) : [];
 
         const sizeLabel = typeof p.size === 'number' && p.size > 0
@@ -71,7 +72,9 @@ export default function Welcome() {
             icon: iconNode,
             category: p.category || 'Logiciel',
             description: p.description || '',
-            features: changelogLines.length > 0 ? changelogLines.slice(0, 4) : [(p.description as string) || ''],
+            features: featuresArray.length > 0
+                ? featuresArray.slice(0, 4)
+                : (changelogLines.length > 0 ? changelogLines.slice(0, 4) : [(p.description as string) || '']),
             version: p.version ? `v${p.version}` : 'v1.0.0',
             size: sizeLabel,
             rating: 4.8,
@@ -297,7 +300,7 @@ export default function Welcome() {
                                     href="/register"
                                     className="px-4 py-2 sm:px-6 sm:py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all hover:scale-105 text-sm sm:text-base"
                                 >
-                                    Essai Gratuit
+                                    S'inscrire
                                 </Link>
                             </>
                         )}
@@ -396,7 +399,7 @@ export default function Welcome() {
                                                     className="block w-full text-center py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all"
                                                     onClick={() => setIsMobileMenuOpen(false)}
                                                 >
-                                                    Essai Gratuit
+                                                    Creer un compte
                                                 </Link>
                                             </>
                                         )
@@ -471,7 +474,7 @@ export default function Welcome() {
                                 href="/register"
                                 className="group px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all hover:scale-105 flex items-center gap-2"
                             >
-                                Essai gratuit 30 jours
+                                Rejoignez-nous
                                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                             </Link>
 
@@ -611,148 +614,148 @@ export default function Welcome() {
                                 </AnimatePresence>
                             </div>
 
-{/* Dialog global Détails */}
-<Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-    <DialogContent className="max-w-4xl lg:max-w-6xl xl:max-w-7xl max-h-[90vh] overflow-y-auto bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
-        {selectedSoftware ? (
-            <>
-                <DialogHeader>
-                    <div className="flex items-center gap-4 mb-4">
-                        <div className={`p-3 rounded-xl bg-gradient-to-r ${getGradient(selectedSoftware.name)}`}>
-                            {selectedSoftware.icon}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                            <DialogTitle className="text-2xl font-bold break-words text-gray-900 dark:text-white">
-                                {selectedSoftware.name}
-                            </DialogTitle>
-                            <DialogDescription className="text-lg break-words text-gray-600 dark:text-gray-300">
-                                {selectedSoftware.description}
-                            </DialogDescription>
-                        </div>
-                    </div>
-                </DialogHeader>
+                            {/* Dialog global Détails */}
+                            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                                <DialogContent className="max-w-4xl lg:max-w-6xl xl:max-w-7xl max-h-[90vh] overflow-y-auto bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+                                    {selectedSoftware ? (
+                                        <>
+                                            <DialogHeader>
+                                                <div className="flex items-center gap-4 mb-4">
+                                                    <div className={`p-3 rounded-xl bg-gradient-to-r ${getGradient(selectedSoftware.name)}`}>
+                                                        {selectedSoftware.icon}
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <DialogTitle className="text-2xl font-bold break-words text-gray-900 dark:text-white">
+                                                            {selectedSoftware.name}
+                                                        </DialogTitle>
+                                                        <DialogDescription className="text-lg break-words text-gray-600 dark:text-gray-300">
+                                                            {selectedSoftware.description}
+                                                        </DialogDescription>
+                                                    </div>
+                                                </div>
+                                            </DialogHeader>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    {/* Colonne principale */}
-                    <div className="lg:col-span-2 space-y-6 min-w-0">
-                        <div className="flex-1 min-w-0">
-                            <h3 className="text-lg font-semibold mb-3 text-gray-900 dark:text-white">
-                                Caractéristiques principales
-                            </h3>
-                            <div className="grid gap-3">
-                                {selectedSoftware.features.map((feature, index) => (
-                                    <div key={index} className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg min-w-0 border border-gray-200 dark:border-gray-700">
-                                        <Check className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
-                                        <span className="text-gray-700 dark:text-gray-300 break-words flex-1">
-                                            {feature}
-                                        </span>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                        
-                        <div className="flex-1 min-w-0">
-                            <h3 className="text-lg font-semibold mb-3 text-gray-900 dark:text-white">
-                                Nouveautés de la version {selectedSoftware.version}
-                            </h3>
-                            <div className="space-y-2">
-                                {selectedSoftware.changelog.map((change, index) => (
-                                    <div key={index} className="flex items-start gap-3 text-sm text-gray-600 dark:text-gray-400 min-w-0">
-                                        <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 mt-2"></div>
-                                        <span className="break-words flex-1">{change}</span>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                    
-                    {/* Sidebar */}
-                    <div className="space-y-6 min-w-0">
-                        <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 min-w-0 border border-gray-200 dark:border-gray-700">
-                            <h3 className="font-semibold mb-3 text-gray-900 dark:text-white">
-                                Informations techniques
-                            </h3>
-                            <div className="space-y-3">
-                                <div className="flex justify-between min-w-0">
-                                    <span className="text-gray-600 dark:text-gray-400 truncate">Version:</span>
-                                    <span className="font-medium text-gray-900 dark:text-white truncate ml-2">
-                                        {selectedSoftware.version}
-                                    </span>
-                                </div>
-                                <div className="flex justify-between min-w-0">
-                                    <span className="text-gray-600 dark:text-gray-400 truncate">Taille:</span>
-                                    <span className="font-medium text-gray-900 dark:text-white truncate ml-2">
-                                        {selectedSoftware.size}
-                                    </span>
-                                </div>
-                                <div className="flex justify-between min-w-0">
-                                    <span className="text-gray-600 dark:text-gray-400 truncate">Dernière mise à jour:</span>
-                                    <span className="font-medium text-gray-900 dark:text-white truncate ml-2">
-                                        {selectedSoftware.lastUpdate}
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 min-w-0 border border-gray-200 dark:border-gray-700">
-                            <h3 className="font-semibold mb-3 text-gray-900 dark:text-white">
-                                Configuration requise
-                            </h3>
-                            <p className="text-sm text-gray-600 dark:text-gray-400 break-words">
-                                {selectedSoftware.requirements}
-                            </p>
-                        </div>
-                        
-                        <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 min-w-0 border border-gray-200 dark:border-gray-700">
-                            <h3 className="font-semibold mb-3 text-gray-900 dark:text-white">
-                                Avis utilisateurs
-                            </h3>
-                            <div className="flex items-center gap-2 mb-2 min-w-0">
-                                <div className="flex items-center gap-1 flex-shrink-0">
-                                    <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                                    <span className="font-semibold text-gray-900 dark:text-white">
-                                        {selectedSoftware.rating}
-                                    </span>
-                                </div>
-                                <span className="text-gray-600 dark:text-gray-400 truncate">
-                                    ({selectedSoftware.reviews} avis)
-                                </span>
-                            </div>
-                            <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400 min-w-0">
-                                <div className="flex items-center gap-1 flex-shrink-0">
-                                    <Users className="w-4 h-4" />
-                                    <span>+10K téléchargements</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                                                {/* Colonne principale */}
+                                                <div className="lg:col-span-2 space-y-6 min-w-0">
+                                                    <div className="flex-1 min-w-0">
+                                                        <h3 className="text-lg font-semibold mb-3 text-gray-900 dark:text-white">
+                                                            Caractéristiques principales
+                                                        </h3>
+                                                        <div className="grid gap-3">
+                                                            {selectedSoftware.features.map((feature, index) => (
+                                                                <div key={index} className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg min-w-0 border border-gray-200 dark:border-gray-700">
+                                                                    <Check className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                                                                    <span className="text-gray-700 dark:text-gray-300 break-words flex-1">
+                                                                        {feature}
+                                                                    </span>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
 
-                <div className="flex gap-3 pt-6 border-t border-gray-200 dark:border-gray-700 flex-wrap sm:flex-nowrap">
-                    <Button 
-                        onClick={() => handleDownload(selectedSoftware)} 
-                        className="flex-1 min-w-[200px] h-12 text-lg bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white" 
-                        size="lg"
-                    >
-                        <Download className="w-5 h-5 mr-2" />
-                        Télécharger {selectedSoftware.name}
-                    </Button>
-                    <Button 
-                        variant="outline" 
-                        onClick={() => setIsDialogOpen(false)} 
-                        className="h-12 flex-shrink-0 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
-                    >
-                        Fermer
-                    </Button>
-                </div>
-            </>
-        ) : (
-            <div className="text-center py-8">
-                <p className="text-gray-500 dark:text-gray-400">Chargement des détails...</p>
-            </div>
-        )}
-    </DialogContent>
-</Dialog>
+                                                    <div className="flex-1 min-w-0">
+                                                        <h3 className="text-lg font-semibold mb-3 text-gray-900 dark:text-white">
+                                                            Nouveautés de la version {selectedSoftware.version}
+                                                        </h3>
+                                                        <div className="space-y-2">
+                                                            {selectedSoftware.changelog.map((change, index) => (
+                                                                <div key={index} className="flex items-start gap-3 text-sm text-gray-600 dark:text-gray-400 min-w-0">
+                                                                    <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 mt-2"></div>
+                                                                    <span className="break-words flex-1">{change}</span>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {/* Sidebar */}
+                                                <div className="space-y-6 min-w-0">
+                                                    <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 min-w-0 border border-gray-200 dark:border-gray-700">
+                                                        <h3 className="font-semibold mb-3 text-gray-900 dark:text-white">
+                                                            Informations techniques
+                                                        </h3>
+                                                        <div className="space-y-3">
+                                                            <div className="flex justify-between min-w-0">
+                                                                <span className="text-gray-600 dark:text-gray-400 truncate">Version:</span>
+                                                                <span className="font-medium text-gray-900 dark:text-white truncate ml-2">
+                                                                    {selectedSoftware.version}
+                                                                </span>
+                                                            </div>
+                                                            <div className="flex justify-between min-w-0">
+                                                                <span className="text-gray-600 dark:text-gray-400 truncate">Taille:</span>
+                                                                <span className="font-medium text-gray-900 dark:text-white truncate ml-2">
+                                                                    {selectedSoftware.size}
+                                                                </span>
+                                                            </div>
+                                                            <div className="flex justify-between min-w-0">
+                                                                <span className="text-gray-600 dark:text-gray-400 truncate">Dernière mise à jour:</span>
+                                                                <span className="font-medium text-gray-900 dark:text-white truncate ml-2">
+                                                                    {selectedSoftware.lastUpdate}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 min-w-0 border border-gray-200 dark:border-gray-700">
+                                                        <h3 className="font-semibold mb-3 text-gray-900 dark:text-white">
+                                                            Configuration requise
+                                                        </h3>
+                                                        <p className="text-sm text-gray-600 dark:text-gray-400 break-words">
+                                                            {selectedSoftware.requirements}
+                                                        </p>
+                                                    </div>
+
+                                                    <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 min-w-0 border border-gray-200 dark:border-gray-700">
+                                                        <h3 className="font-semibold mb-3 text-gray-900 dark:text-white">
+                                                            Avis utilisateurs
+                                                        </h3>
+                                                        <div className="flex items-center gap-2 mb-2 min-w-0">
+                                                            <div className="flex items-center gap-1 flex-shrink-0">
+                                                                <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                                                                <span className="font-semibold text-gray-900 dark:text-white">
+                                                                    {selectedSoftware.rating}
+                                                                </span>
+                                                            </div>
+                                                            <span className="text-gray-600 dark:text-gray-400 truncate">
+                                                                ({selectedSoftware.reviews} avis)
+                                                            </span>
+                                                        </div>
+                                                        <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400 min-w-0">
+                                                            <div className="flex items-center gap-1 flex-shrink-0">
+                                                                <Users className="w-4 h-4" />
+                                                                <span>+10K téléchargements</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex gap-3 pt-6 border-t border-gray-200 dark:border-gray-700 flex-wrap sm:flex-nowrap">
+                                                <Button
+                                                    onClick={() => handleDownload(selectedSoftware)}
+                                                    className="flex-1 min-w-[200px] h-12 text-lg bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white"
+                                                    size="lg"
+                                                >
+                                                    <Download className="w-5 h-5 mr-2" />
+                                                    Télécharger {selectedSoftware.name}
+                                                </Button>
+                                                <Button
+                                                    variant="outline"
+                                                    onClick={() => setIsDialogOpen(false)}
+                                                    className="h-12 flex-shrink-0 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
+                                                >
+                                                    Fermer
+                                                </Button>
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <div className="text-center py-8">
+                                            <p className="text-gray-500 dark:text-gray-400">Chargement des détails...</p>
+                                        </div>
+                                    )}
+                                </DialogContent>
+                            </Dialog>
 
                             {/* Flèche droite */}
                             <button
@@ -792,7 +795,7 @@ export default function Welcome() {
                             className="text-center mt-12"
                         >
                             <Link
-                                href="/software"
+                                href="/catalogs"
                                 className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all hover:scale-105"
                             >
                                 Voir tous nos logiciels
@@ -1642,7 +1645,7 @@ export default function Welcome() {
                                 {/* Effet de brillance */}
                                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
 
-                                <span className="relative z-10">Essai gratuit 30 jours</span>
+                                <span className="relative z-10">Rejoignez-nous</span>
                                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform relative z-10" />
                             </Link>
 

@@ -8,7 +8,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Moon, Sun, Monitor } from 'lucide-react';
+import { Moon, Sun, Monitor ,RefreshCw} from 'lucide-react';
 import { useAppearance, type Appearance } from '@/hooks/use-appearance';
 
 export function AppSidebarHeader({
@@ -45,12 +45,14 @@ export function AppSidebarHeader({
     };
 
     return (
-        <header className="flex h-16 shrink-0 items-center gap-2 border-b border-sidebar-border/50 px-6 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 md:px-4">
+        <header className="flex h-16 shrink-0 items-center  gap-2 border-b border-sidebar-border/50 px-6 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 md:px-4">
             <div className="flex items-center gap-2 flex-1">
                 <SidebarTrigger className="-ml-1" />
                 <Breadcrumbs breadcrumbs={breadcrumbs} />
             </div>
-
+            <Button size="sm" onClick={() => window.location.reload()} className="bg-green-600 hover:bg-green-700 text-white">
+                <RefreshCw />
+            </Button>
             {/* Sélecteur de thème */}
             <div className="flex items-center">
                 <DropdownMenu>
@@ -78,7 +80,7 @@ export function AppSidebarHeader({
                             className="flex items-center gap-2"
                         >
                             <Sun className="h-4 w-4" />
-                            <span>Clair</span>
+                            <span>Claire</span>
                         </DropdownMenuItem>
                         <DropdownMenuItem
                             onClick={() => handleThemeChange("dark")}

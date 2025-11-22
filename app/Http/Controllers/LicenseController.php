@@ -176,6 +176,62 @@ class LicenseController extends Controller
         $isValid = $license && $expiresAt && $expiresAt->isFuture();
         $daysLeft = $expiresAt ? $now->diffInDays($expiresAt, false) : null;
 
+        // Update last seen device info and devices list if license exists
+        if ($license && Schema::hasColumn('licenses', 'devices')) {
+            $limit = $license->max_activations ?: 3;
+            $devices = is_array($license->devices) ? $license->devices : [];
+            $nowIso = Carbon::now()->toIso8601String();
+            $incoming = [
+                'device_id' => (string) ($deviceId ?? ''),
+                'mac_address' => (string) ($macAddress ?? ''),
+                'machine' => (string) ($machine ?? ''),
+            ];
+            $found = false;
+            foreach ($devices as $idx => $d) {
+                $sameId = ($incoming['device_id'] !== '' && isset($d['device_id']) && $d['device_id'] === $incoming['device_id']);
+                $sameMac = ($incoming['mac_address'] !== '' && isset($d['mac_address']) && strcasecmp($d['mac_address'], $incoming['mac_address']) === 0);
+                if ($sameId || $sameMac) {
+                    $devices[$idx]['last_seen_at'] = $nowIso;
+                    $devices[$idx]['count'] = isset($d['count']) ? ((int) $d['count'] + 1) : 1;
+                    $found = true;
+                    break;
+                }
+            }
+            if (!$found) {
+                $entry = [
+                    'device_id' => $incoming['device_id'],
+                    'mac_address' => $incoming['mac_address'],
+                    'machine' => $incoming['machine'],
+                    'first_seen_at' => $nowIso,
+                    'last_seen_at' => $nowIso,
+                    'count' => 1,
+                ];
+                // Only add if at least one identifier provided
+                if ($entry['device_id'] !== '' || $entry['mac_address'] !== '' || $entry['machine'] !== '') {
+                    // Keep up to the limit (default 3)
+                    if (count($devices) < $limit) {
+                        $devices[] = $entry;
+                    }
+                }
+            }
+            $license->devices = array_values($devices);
+            if (Schema::hasColumn('licenses', 'last_device_id')) {
+                $license->last_device_id = (string) ($deviceId ?? '');
+            }
+            if (Schema::hasColumn('licenses', 'last_machine')) {
+                $license->last_machine = (string) ($machine ?? '');
+            }
+            if (Schema::hasColumn('licenses', 'last_mac_address')) {
+                $license->last_mac_address = (string) ($macAddress ?? '');
+            }
+            if (Schema::hasColumn('licenses', 'last_activated_at')) {
+                $license->last_activated_at = Carbon::now();
+            }
+            // Sync activations_count with unique devices tracked
+            $license->activations_count = is_array($license->devices) ? count($license->devices) : ($license->activations_count ?? 0);
+            $license->save();
+        }
+
         return response()->json([
             'valid' => (bool) $isValid,
             'license_key' => $key,
@@ -231,6 +287,61 @@ class LicenseController extends Controller
             ->first();
 
         if ($license) {
+            // If device info present, persist it immediately (for existing licenses)
+            if (($deviceId || $macAddress || $machine) && Schema::hasColumn('licenses', 'last_activated_at')) {
+                $nowIso = Carbon::now()->toIso8601String();
+                if (Schema::hasColumn('licenses', 'devices')) {
+                    $limit = $license->max_activations ?: 3;
+                    $devices = is_array($license->devices) ? $license->devices : [];
+                    $incoming = [
+                        'device_id' => (string) ($deviceId ?? ''),
+                        'mac_address' => (string) ($macAddress ?? ''),
+                        'machine' => (string) ($machine ?? ''),
+                    ];
+                    $found = false;
+                    foreach ($devices as $idx => $d) {
+                        $sameId = ($incoming['device_id'] !== '' && isset($d['device_id']) && $d['device_id'] === $incoming['device_id']);
+                        $sameMac = ($incoming['mac_address'] !== '' && isset($d['mac_address']) && strcasecmp($d['mac_address'], $incoming['mac_address']) === 0);
+                        if ($sameId || $sameMac) {
+                            $devices[$idx]['last_seen_at'] = $nowIso;
+                            $devices[$idx]['count'] = isset($d['count']) ? ((int) $d['count'] + 1) : 1;
+                            $found = true;
+                            break;
+                        }
+                    }
+                    if (!$found) {
+                        $entry = [
+                            'device_id' => $incoming['device_id'],
+                            'mac_address' => $incoming['mac_address'],
+                            'machine' => $incoming['machine'],
+                            'first_seen_at' => $nowIso,
+                            'last_seen_at' => $nowIso,
+                            'count' => 1,
+                        ];
+                        if ($entry['device_id'] !== '' || $entry['mac_address'] !== '' || $entry['machine'] !== '') {
+                            if (count($devices) < $limit) {
+                                $devices[] = $entry;
+                            }
+                        }
+                    }
+                    $license->devices = array_values($devices);
+                }
+                if (Schema::hasColumn('licenses', 'last_device_id')) {
+                    $license->last_device_id = (string) ($deviceId ?? '');
+                }
+                if (Schema::hasColumn('licenses', 'last_machine')) {
+                    $license->last_machine = (string) ($machine ?? '');
+                }
+                if (Schema::hasColumn('licenses', 'last_mac_address')) {
+                    $license->last_mac_address = (string) ($macAddress ?? '');
+                }
+                $license->last_activated_at = Carbon::now();
+                // Sync activations_count with unique devices tracked if available
+                if (Schema::hasColumn('licenses', 'devices')) {
+                    $license->activations_count = is_array($license->devices) ? count($license->devices) : ($license->activations_count ?? 0);
+                }
+                $license->save();
+            }
             return Inertia::render('client/license-activate', [
                 'product' => [
                     'id' => $product->id,
@@ -294,6 +405,22 @@ class LicenseController extends Controller
         }
         if (Schema::hasColumn('licenses', 'last_activated_at')) {
             $license->last_activated_at = Carbon::now();
+        }
+        // Initialize devices array with first device if provided
+        if (Schema::hasColumn('licenses', 'devices')) {
+            $deviceEntry = [
+                'device_id' => (string) $request->input('device_id', ''),
+                'mac_address' => (string) $request->input('mac_address', ''),
+                'machine' => (string) $request->input('machine', ''),
+                'first_seen_at' => Carbon::now()->toIso8601String(),
+                'last_seen_at' => Carbon::now()->toIso8601String(),
+                'count' => 1,
+            ];
+            // Only set if at least one field is provided
+            if (($deviceEntry['device_id'] !== '') || ($deviceEntry['mac_address'] !== '') || ($deviceEntry['machine'] !== '')) {
+                $license->devices = [$deviceEntry];
+                $license->activations_count = 1;
+            }
         }
         $license->save();
 

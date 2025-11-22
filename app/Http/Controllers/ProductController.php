@@ -13,7 +13,7 @@ class ProductController extends Controller
      */
     public function index()
     {
-        $products = Product::query()->select(['id', 'name', 'sku', 'version', 'category', 'description'])->limit(20)->get();
+        $products = Product::query()->select(['id', 'name', 'sku', 'version', 'category', 'description', 'features'])->limit(20)->get();
         return response()->json($products);
     }
 
@@ -40,6 +40,8 @@ class ProductController extends Controller
             'changelog' => ['nullable', 'string'],
             'description' => ['required', 'string'],
             'category' => ['required', 'string', 'max:255'],
+            'features' => ['nullable', 'array'],
+            'features.*' => ['nullable', 'string', 'max:255'],
         ]);
 
         if (empty($data['checksum'])) {
@@ -87,6 +89,8 @@ class ProductController extends Controller
             'changelog' => ['nullable', 'string'],
             'description' => ['required', 'string'],
             'category' => ['required', 'string', 'max:255'],
+            'features' => ['nullable', 'array'],
+            'features.*' => ['nullable', 'string', 'max:255'],
         ]);
 
         if (empty($data['checksum'])) {

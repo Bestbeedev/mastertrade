@@ -44,6 +44,7 @@ export interface Product {
     changelog?: string | null;
     description: string;
     category: string;
+    features?: string[] | null;
     created_at: string;
     updated_at: string;
     licenses?: License[];

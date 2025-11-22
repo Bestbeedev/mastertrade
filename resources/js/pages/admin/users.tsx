@@ -156,7 +156,7 @@ export default function AdminUsers({ users = [], roles = [], filters = {} as any
                                 </div>
 
                                 <Dialog open={!!editing} onOpenChange={(open) => { if (!open) setEditing(null); }}>
-                                    <DialogContent>
+                                    <DialogContent className="max-w-4xl lg:max-w-6xl xl:max-w-7xl max-h-[90vh] overflow-y-auto">
                                         <DialogHeader>
                                             <DialogTitle>Modifier l'utilisateur</DialogTitle>
                                             <DialogDescription>Mettez à jour les informations de l'utilisateur sélectionné.</DialogDescription>

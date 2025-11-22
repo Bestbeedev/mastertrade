@@ -31,7 +31,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { useIsAdmin } from "@/hooks/use-is-admin";
 
-export default function Catalogue({ products = [] as { id: string; name: string; description?: string; category?: string; version?: string; sku?: string }[] }: { products?: { id: string; name: string; description?: string; category?: string; version?: string; sku?: string }[] }) {
+export default function Catalogue({ products = [] as { id: string; name: string; description?: string; category?: string; version?: string; sku?: string; features?: string[] }[] }: { products?: { id: string; name: string; description?: string; category?: string; version?: string; sku?: string; features?: string[] }[] }) {
     const isAdmin = useIsAdmin();
     const breadcrumbs: BreadcrumbItem[] = [
         {
@@ -65,7 +65,7 @@ export default function Catalogue({ products = [] as { id: string; name: string;
         rating: 0,
         reviewCount: 0,
         tags: [] as string[],
-        features: [] as string[],
+        features: Array.isArray(p.features) ? p.features.filter((f) => typeof f === 'string' && f.trim().length > 0) : [],
         price: undefined as unknown as string | undefined,
         originalPrice: undefined as unknown as string | undefined,
     }));
@@ -218,7 +218,7 @@ export default function Catalogue({ products = [] as { id: string; name: string;
                             </div>
 
                             {/* Filtre prix */}
-                            <div className="space-y-4">
+                            {/* <div className="space-y-4">
                                 <h3 className="font-semibold text-lg flex items-center gap-2">
                                     <DollarSign className="h-5 w-5" />
                                     Prix
@@ -242,10 +242,10 @@ export default function Catalogue({ products = [] as { id: string; name: string;
                                         </label>
                                     ))}
                                 </div>
-                            </div>
+                            </div> */}
 
                             {/* Filtre évaluations */}
-                            <div className="space-y-4">
+                            {/* <div className="space-y-4">
                                 <h3 className="font-semibold text-lg flex items-center gap-2">
                                     <Star className="h-5 w-5" />
                                     Évaluations
@@ -270,13 +270,13 @@ export default function Catalogue({ products = [] as { id: string; name: string;
                                         </label>
                                     ))}
                                 </div>
-                            </div>
+                            </div> */}
 
                             {/* Bouton appliquer les filtres */}
-                            <Button className="w-full" size="lg">
+                            {/* <Button className="w-full" size="lg">
                                 <Filter className="h-4 w-4 mr-2" />
                                 Appliquer les filtres
-                            </Button>
+                            </Button> */}
                         </div>
                     </div>
 

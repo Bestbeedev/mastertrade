@@ -2,14 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Role;
 use Inertia\Inertia;
-use App\Models\Ticket;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use App\Models\Order;
+use App\Models\Ticket;
 use App\Models\License;
+use Illuminate\Http\Request;
 use App\Models\TicketMessage;
 use App\Models\TicketAttachment;
+use Illuminate\Support\Facades\Auth;
+use App\Models\Notification;
+use App\Models\User;
 
 class TicketController extends Controller
 {
@@ -22,7 +25,12 @@ class TicketController extends Controller
         $search = trim((string) $request->query('search', ''));
         $sort = $request->query('sort', 'recent');
 
-        $query = Ticket::query()->where('user_id', Auth::id());
+        $user = Auth::user();
+        $isAdmin = $user && $user->role && in_array(strtolower($user->role->name), ['admin', 'administrator', 'superadmin']);
+        $query = $isAdmin ? Ticket::query() : Ticket::query()->where('user_id', Auth::id());
+        $query->with(['user:id,name,email']);
+        $query->withCount(['messages']);
+
 
         if (in_array($status, ['open', 'pending', 'closed'])) {
             $query->where('status', $status);
@@ -45,9 +53,9 @@ class TicketController extends Controller
             $query->orderBy('created_at', 'desc');
         }
 
-        $tickets = $query->paginate(10, ['id', 'subject', 'message', 'status', 'order_id', 'license_id', 'priority', 'category', 'created_at', 'updated_at'])->withQueryString();
+        $tickets = $query->paginate(10, ['id', 'user_id', 'subject', 'message', 'status', 'order_id', 'license_id', 'priority', 'category', 'created_at', 'updated_at'])->withQueryString();
 
-        $base = Ticket::where('user_id', Auth::id());
+        $base = $isAdmin ? Ticket::query() : Ticket::where('user_id', Auth::id());
         $counts = [
             'all' => (clone $base)->count(),
             'open' => (clone $base)->where('status', 'open')->count(),
@@ -63,6 +71,7 @@ class TicketController extends Controller
                 'search' => $search,
                 'sort' => $sort,
             ],
+            'isAdmin' => (bool) $isAdmin,
         ]);
     }
 
@@ -136,6 +145,26 @@ class TicketController extends Controller
             }
         }
 
+        // Notifications pour les administrateurs
+        $adminUsers = User::whereHas('role', function ($q) {
+            $q->whereIn('name', ['admin', 'Admin', 'administrator', 'Administrator', 'superadmin', 'SuperAdmin']);
+        })->get(['id', 'name', 'email']);
+        foreach ($adminUsers as $admin) {
+            Notification::create([
+                'user_id' => $admin->id,
+                'type' => 'ticket',
+                'data' => [
+                    'title' => 'Nouveau ticket support',
+                    'message' => ($ticket->subject ?? 'Ticket') . ' par ' . (Auth::user()->name ?? 'Utilisateur'),
+                    'ticket_id' => $ticket->id,
+                    'user_name' => Auth::user()->name ?? null,
+                    'user_email' => Auth::user()->email ?? null,
+                    'priority' => $ticket->priority ?? null,
+                    'category' => $ticket->category ?? null,
+                ],
+            ]);
+        }
+
         return redirect()->route('supportsTickets.show', $ticket);
     }
 
@@ -144,18 +173,24 @@ class TicketController extends Controller
      */
     public function show(Ticket $ticket)
     {
-        abort_unless($ticket->user_id === Auth::id(), 403);
+        $user = Auth::user();
+        $isAdmin = $user && $user->role && in_array(strtolower($user->role->name), ['admin', 'administrator', 'superadmin']);
+        if (!$isAdmin && $ticket->user_id !== Auth::id()) {
+            abort(403);
+        }
         $ticket->load([
             'order:id,product_id',
             'order.product:id,name',
             'license:id,product_id,expiry_date',
             'license.product:id,name',
             'messages:id,ticket_id,user_id,message,created_at',
-            'messages.user:id,name',
+            'messages.user:id,name,role_id',
+            'messages.user.role:id,name',
             'messages.attachments:id,ticket_message_id,path,original_name,mime_type,size'
         ]);
         return Inertia::render('client/ticket-show', [
             'ticket' => $ticket,
+            'isAdmin' => (bool) $isAdmin,
         ]);
     }
 
@@ -172,7 +207,11 @@ class TicketController extends Controller
      */
     public function update(Request $request, Ticket $ticket)
     {
-        abort_unless($ticket->user_id === Auth::id(), 403);
+        $user = Auth::user();
+        $isAdmin = $user && $user->role && in_array(strtolower($user->role->name), ['admin', 'administrator', 'superadmin']);
+        if (!$isAdmin && $ticket->user_id !== Auth::id()) {
+            abort(403);
+        }
         $data = $request->validate([
             'status' => ['required', 'in:open,pending,closed'],
         ]);
@@ -195,7 +234,11 @@ class TicketController extends Controller
      */
     public function reply(Request $request, Ticket $ticket)
     {
-        abort_unless($ticket->user_id === Auth::id(), 403);
+        $user = Auth::user();
+        $isAdmin = $user && $user->role && in_array(strtolower($user->role->name), ['admin', 'administrator', 'superadmin']);
+        if (!$isAdmin && $ticket->user_id !== Auth::id()) {
+            abort(403);
+        }
         $data = $request->validate([
             'message' => ['required', 'string', 'min:2'],
         ]);
@@ -224,19 +267,57 @@ class TicketController extends Controller
         // Mettre à jour le statut avec des valeurs autorisées
         $ticket->status = $ticket->status === 'closed' ? 'open' : 'pending';
         $ticket->save();
+
+        // Notifications: prévenir la partie opposée
+        if ($isAdmin) {
+            // Notifier le client
+            Notification::create([
+                'user_id' => $ticket->user_id,
+                'type' => 'ticket',
+                'data' => [
+                    'title' => 'Réponse du support',
+                    'message' => mb_strimwidth($data['message'], 0, 120, '…'),
+                    'ticket_id' => $ticket->id,
+                ],
+            ]);
+        } else {
+            // Notifier les administrateurs
+            $adminUsers = User::whereHas('role', function ($q) {
+                $q->whereIn('name', ['admin', 'Admin', 'administrator', 'Administrator', 'superadmin', 'SuperAdmin']);
+            })->get(['id']);
+            foreach ($adminUsers as $admin) {
+                Notification::create([
+                    'user_id' => $admin->id,
+                    'type' => 'ticket',
+                    'data' => [
+                        'title' => 'Nouvelle réponse ticket',
+                        'message' => mb_strimwidth($data['message'], 0, 120, '…'),
+                        'ticket_id' => $ticket->id,
+                    ],
+                ]);
+            }
+        }
         return back();
     }
 
     public function close(Ticket $ticket)
     {
-        abort_unless($ticket->user_id === Auth::id(), 403);
+        $user = Auth::user();
+        $isAdmin = $user && $user->role && in_array(strtolower($user->role->name), ['admin', 'administrator', 'superadmin']);
+        if (!$isAdmin && $ticket->user_id !== Auth::id()) {
+            abort(403);
+        }
         $ticket->update(['status' => 'closed']);
         return back();
     }
 
     public function reopen(Ticket $ticket)
     {
-        abort_unless($ticket->user_id === Auth::id(), 403);
+        $user = Auth::user();
+        $isAdmin = $user && $user->role && in_array(strtolower($user->role->name), ['admin', 'administrator', 'superadmin']);
+        if (!$isAdmin && $ticket->user_id !== Auth::id()) {
+            abort(403);
+        }
         $ticket->update(['status' => 'open']);
         return back();
     }
