@@ -12,8 +12,16 @@ import {
     IconHelp,
     IconUser,
     IconProps,
+    IconDatabaseCog,
+    IconLibrary,
+    IconFileCertificate,
+    IconShieldCog,
+    IconArticle,
+    IconRosetteDiscountCheck,
+    IconBrandParsinta
 } from "@tabler/icons-react"
 import { User } from "@/types/model";
+
 
 import { NavMain } from "@/components/nav-main"
 import { NavSecondary } from "@/components/nav-secondary"
@@ -49,12 +57,12 @@ const data = {
         {
             title: "Catalogue des produits",
             url: "/catalogs",
-            icon: IconPackage,
+            icon: IconLibrary,
         },
         {
             title: "Mes licences",
             url: "/licenses",
-            icon: IconLicense,
+            icon: IconRosetteDiscountCheck,
         },
         {
             title: "Mes commandes",
@@ -153,12 +161,12 @@ export function AppSidebar({ user, ...props }: { user: User; } & React.Component
         {
             title: "Admin Panels",
             url: "/admin",
-            icon: IconSettings,
+            icon: IconShieldCog,
         },
         {
             title: "Gérer les formations",
             url: "/admin/courses",
-            icon: IconSchool,
+            icon: IconBrandParsinta,
         },
         {
             title: "Gérer les produits",
@@ -168,7 +176,7 @@ export function AppSidebar({ user, ...props }: { user: User; } & React.Component
         {
             title: "Gérer les licences",
             url: "/admin/licenses",
-            icon: IconLicense,
+            icon: IconFileCertificate,
         },
         {
             title: "Documentation",
