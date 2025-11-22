@@ -377,8 +377,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Admin Orders Management
     Route::get('admin/orders', [\App\Http\Controllers\Admin\OrderAdminController::class, 'index'])->name('admin.orders');
-    Route::get('admin/orders/{order}', [\App\Http\Controllers\Admin\OrderAdminController::class, 'show'])->name('admin.orders.show');
     Route::get('admin/orders/export/csv', [\App\Http\Controllers\Admin\OrderAdminController::class, 'exportCsv'])->name('admin.orders.export');
+    Route::get('admin/orders/{order}', [\App\Http\Controllers\Admin\OrderAdminController::class, 'show'])->name('admin.orders.show');
     Route::patch('admin/orders/{order}', [\App\Http\Controllers\Admin\OrderAdminController::class, 'update'])->name('admin.orders.update');
 
     // Admin Finance Dashboard

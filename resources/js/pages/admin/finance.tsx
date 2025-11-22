@@ -6,9 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { route } from "ziggy-js";
 import { formatCFA } from "@/lib/utils";
 import { ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { CartesianGrid, ComposedChart, Line, Bar, XAxis, YAxis } from "recharts";
+import { CartesianGrid, ComposedChart, Line, Bar, XAxis, YAxis, BarChart } from "recharts";
 
-export default function AdminFinance({ chartData = [], totals = { revenue_cents_total: 0, revenue_cents_30d: 0, orders_30d: 0 }, statusCounts = {}, topProducts = [], recentOrders = [] as any[] }: { chartData?: Array<{ date: string; revenue: number; orders: number }>; totals?: any; statusCounts?: Record<string, number>; topProducts?: any[]; recentOrders?: any[] }) {
+export default function AdminFinance({ chartData = [], totals = { revenue_cents_total: 0, revenue_cents_range: 0, orders_range: 0 }, statusCounts = {}, topProducts = [], recentOrders = [] as any[], filters = { range: 30 } }: { chartData?: Array<{ date: string; revenue: number; orders: number }>; totals?: any; statusCounts?: Record<string, number>; topProducts?: any[]; recentOrders?: any[]; filters?: { range?: number } }) {
     const cfg = {
         revenue: {
             label: "Revenus (CFA)",
@@ -27,10 +27,35 @@ export default function AdminFinance({ chartData = [], totals = { revenue_cents_
         refunded: "Remboursée",
     } as any)[s] || s;
 
+    const currentRange = Number(filters?.range || 30);
+    const rangeOptions = [7, 30, 90] as const;
+    const topProductsChart = Array.isArray(topProducts)
+        ? topProducts.map((p: any) => ({ name: p.product?.name || "Produit", revenue: (p.revenue_cents || 0) / 100 }))
+        : [];
+
     return (
         <AppLayout breadcrumbs={[{ title: "Admin", href: route("admin") }, { title: "Finances", href: route("admin.finance") }]}>
             <Head title="Admin • Finances" />
             <div className="w-full px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+                {/* Filtres période */}
+                <Card>
+                    <CardHeader className="pb-3">
+                        <CardTitle className="text-base">Période</CardTitle>
+                        <CardDescription>Sélectionnez une période d'analyse</CardDescription>
+                    </CardHeader>
+                    <CardContent className="flex flex-wrap gap-2">
+                        {rangeOptions.map((r) => (
+                            <a
+                                key={r}
+                                href={route("admin.finance", { range: r })}
+                                className={`px-3 py-1.5 rounded-md border text-sm ${currentRange === r ? 'bg-primary text-primary-foreground' : 'bg-background hover:bg-accent'}`}
+                            >
+                                {r} jours
+                            </a>
+                        ))}
+                    </CardContent>
+                </Card>
+
                 {/* KPIs */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <Card>
@@ -41,14 +66,14 @@ export default function AdminFinance({ chartData = [], totals = { revenue_cents_
                     </Card>
                     <Card>
                         <CardHeader className="pb-2">
-                            <CardDescription>Revenus 30 derniers jours</CardDescription>
-                            <CardTitle className="text-2xl">{formatCFA(totals.revenue_cents_30d || 0)}</CardTitle>
+                            <CardDescription>Revenus période</CardDescription>
+                            <CardTitle className="text-2xl">{formatCFA(totals.revenue_cents_range || 0)}</CardTitle>
                         </CardHeader>
                     </Card>
                     <Card>
                         <CardHeader className="pb-2">
-                            <CardDescription>Commandes 30 derniers jours</CardDescription>
-                            <CardTitle className="text-2xl">{totals.orders_30d || 0}</CardTitle>
+                            <CardDescription>Commandes période</CardDescription>
+                            <CardTitle className="text-2xl">{totals.orders_range || 0}</CardTitle>
                         </CardHeader>
                     </Card>
                 </div>
@@ -71,7 +96,7 @@ export default function AdminFinance({ chartData = [], totals = { revenue_cents_
                 {/* Chart */}
                 <Card>
                     <CardHeader>
-                        <CardTitle>Revenus & Commandes (30 jours)</CardTitle>
+                        <CardTitle>Revenus & Commandes ({currentRange} jours)</CardTitle>
                         <CardDescription>Suivi quotidien</CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -85,7 +110,7 @@ export default function AdminFinance({ chartData = [], totals = { revenue_cents_
                                     <span>{name === "revenue" ? `${(Number(value) || 0).toLocaleString()} CFA` : `${value}`}</span>
                                 )} />
                                 <ChartLegend content={<ChartLegendContent />} />
-                                <Bar dataKey="orders" yAxisId="right" fill="var(--color-orders)" className="fill-green-500"  radius={[4, 4, 0, 0]} />
+                                <Bar dataKey="orders" yAxisId="right" fill="var(--color-orders)" radius={[4, 4, 0, 0]} />
                                 <Line dataKey="revenue" yAxisId="left" type="monotone" stroke="var(--color-revenue)" strokeWidth={2} dot={false} />
                             </ComposedChart>
                         </ChartContainer>
@@ -100,6 +125,22 @@ export default function AdminFinance({ chartData = [], totals = { revenue_cents_
                             <CardDescription>Basé sur les commandes payées</CardDescription>
                         </CardHeader>
                         <CardContent>
+                            {/* Mini bar chart top produits */}
+                            {topProductsChart.length > 0 && (
+                                <div className="mb-6">
+                                    <ChartContainer config={{ revenue: { label: "Revenus", color: "hsl(var(--primary))" } }} className="w-full">
+                                        <BarChart data={topProductsChart} margin={{ left: 12, right: 12 }}>
+                                            <CartesianGrid vertical={false} strokeDasharray="3 3" />
+                                            <XAxis dataKey="name" tickLine={false} axisLine={false} interval={0} angle={-20} textAnchor="end" height={50} />
+                                            <YAxis tickLine={false} axisLine={false} width={40} />
+                                            <ChartTooltip cursor={false} content={<ChartTooltipContent />} formatter={(value: any) => (
+                                                <span>{`${(Number(value) || 0).toLocaleString()} CFA`}</span>
+                                            )} />
+                                            <Bar dataKey="revenue" fill="var(--color-revenue)" radius={[4, 4, 0, 0]} />
+                                        </BarChart>
+                                    </ChartContainer>
+                                </div>
+                            )}
                             <div className="space-y-3">
                                 {Array.isArray(topProducts) && topProducts.length > 0 ? (
                                     topProducts.map((p: any) => (

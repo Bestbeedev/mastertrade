@@ -40,6 +40,13 @@ export default function AdminOrders({ orders, statusCounts = {}, filters = { sta
                         <h1 className="text-2xl font-bold tracking-tight">Gestion des commandes</h1>
                         <p className="text-muted-foreground">Consultez et mettez à jour les commandes.</p>
                     </div>
+                    <div>
+                        <Button asChild variant="outline" size="sm">
+                            <a href={route("admin.orders.export", filters.status ? { status: filters.status } : {})}>
+                                Exporter CSV
+                            </a>
+                        </Button>
+                    </div>
                 </div>
 
                 <Card>
@@ -119,7 +126,11 @@ function OrderRow({ order }: { order: any }) {
 
     return (
         <tr className="border-b align-top">
-            <td className="py-3 pr-4 font-mono text-xs">{order.id}</td>
+            <td className="py-3 pr-4 font-mono text-xs">
+                <Link href={route("admin.orders.show", order.id)} className="underline underline-offset-2">
+                    {order.id}
+                </Link>
+            </td>
             <td className="py-3 pr-4">
                 <div className="font-medium">{order.user?.name || "—"}</div>
                 <div className="text-muted-foreground text-xs">{order.user?.email}</div>
