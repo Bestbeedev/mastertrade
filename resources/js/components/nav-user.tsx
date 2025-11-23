@@ -39,6 +39,21 @@ export function NavUser({
 }) {
     const { isMobile } = useSidebar()
 
+    const getInitials = (name: string, email: string) => {
+        if (name.trim().length > 0) {
+            return name
+                .split(" ")
+                .map(n => n[0])
+                .join("")
+                .toUpperCase()
+                .slice(0, 2)
+        }
+        return email
+            .split("@")[0]
+            .slice(0, 2)
+            .toUpperCase()
+    }
+
     return (
         <SidebarMenu>
             <SidebarMenuItem>
@@ -46,69 +61,86 @@ export function NavUser({
                     <DropdownMenuTrigger asChild>
                         <SidebarMenuButton
                             size="lg"
-                            className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground dark:bg-neutral-800/50 border bg-neutral-100"
+                            className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground
+                                       hover:bg-accent/50 dark:hover:bg-accent/30
+                                       border border-border/50 dark:border-border/70
+                                       bg-background/95 dark:bg-background/95
+                                       backdrop-blur-sm transition-all duration-200
+                                       shadow-xl hover:shadow-xl"
                         >
-                            <Avatar className="h-8 w-8 rounded-lg grayscale">
-                                <AvatarImage src={user.avatar} alt={user.name} />
-                                <AvatarFallback className="rounded-lg border border-gray-300 dark:border-gray-700">
-                                    {
-                                        user.email.split(" ").map((n) => n[0]).join("").toUpperCase() + user.email.split(" ").map((n) => n[1]).join("").toUpperCase()
-                                    }
+                            <Avatar className="h-8 w-8 rounded-lg border-2 border-background shadow-sm">
+                                <AvatarImage
+                                    src={user.avatar}
+                                    alt={user.name}
+                                    className="object-cover"
+                                />
+                                <AvatarFallback className="rounded-lg bg-gradient-to-br from-primary/20 to-primary/10 text-primary font-semibold border border-primary/20">
+                                    {getInitials(user.name, user.email)}
                                 </AvatarFallback>
                             </Avatar>
                             <div className="grid flex-1 text-left text-sm leading-tight">
-                                <span className="truncate font-medium">{user.name.toUpperCase()}</span>
-                                <span className="text-muted-foreground truncate text-xs">
+                                <span className="truncate font-semibold text-foreground">
+                                    {user.name}
+                                </span>
+                                <span className="text-muted-foreground truncate text-xs font-normal">
                                     {user.email}
                                 </span>
                             </div>
-                            <IconDotsVertical className="ml-auto size-4" />
+                            <IconDotsVertical className="ml-auto size-4 text-muted-foreground" />
                         </SidebarMenuButton>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent
-                        className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
+                        className="w-(--radix-dropdown-menu-trigger-width) min-w-64 rounded-xl border bg-background/95 backdrop-blur-sm shadow-xl"
                         side={isMobile ? "bottom" : "right"}
                         align="end"
-                        sideOffset={4}
+                        sideOffset={8}
                     >
                         <DropdownMenuLabel className="p-0 font-normal">
-                            <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                                <Avatar className="h-8 w-8 rounded-lg">
+                            <div className="flex items-center gap-3 px-2 py-3 text-left">
+                                <Avatar className="h-10 w-10 rounded-lg border-2 border-background shadow-xl">
                                     <AvatarImage src={user.avatar} alt={user.name} />
-                                    <AvatarFallback className="rounded-lg">
-                                        {
-                                            user.email.split(" ").map((n) => n[0]).join("").toUpperCase() + user.email.split(" ").map((n) => n[1]).join("").toUpperCase()
-                                        }
+                                    <AvatarFallback className="rounded-lg bg-gradient-to-br from-primary/20 to-primary/10 text-primary font-semibold">
+                                        {getInitials(user.name, user.email)}
                                     </AvatarFallback>
                                 </Avatar>
-                                <div className="grid flex-1 text-left text-sm leading-tight">
-                                    <span className="truncate font-medium">{user.name.toUpperCase()}</span>
-                                    <span className="text-muted-foreground truncate text-xs">
+                                <div className="grid flex-1 text-left leading-tight">
+                                    <span className="truncate font-semibold text-foreground">
+                                        {user.name}
+                                    </span>
+                                    <span className="text-muted-foreground truncate text-sm">
                                         {user.email}
                                     </span>
                                 </div>
                             </div>
                         </DropdownMenuLabel>
-                        <DropdownMenuSeparator />
+                        <DropdownMenuSeparator className="bg-border/50" />
                         <DropdownMenuGroup>
-                            <DropdownMenuItem onClick={() => router.get(route('account.index'))}>
-                                <IconUserCircle />
-                                Mon profil
+                            <DropdownMenuItem
+                                onClick={() => router.get(route('account.index'))}
+                                className="cursor-pointer flex items-center gap-3 py-2 text-sm transition-colors hover:bg-accent/50 focus:bg-accent/50"
+                            >
+                                <IconUserCircle className="size-4 text-muted-foreground" />
+                                <span>Mon profil</span>
                             </DropdownMenuItem>
-                            <DropdownMenuItem>
-                                <IconCreditCard />
-                                Billing
+                            <DropdownMenuItem className="cursor-pointer flex items-center gap-3 py-2 text-sm transition-colors hover:bg-accent/50 focus:bg-accent/50">
+                                <IconCreditCard className="size-4 text-muted-foreground" />
+                                <span>Facturation</span>
                             </DropdownMenuItem>
-                            <DropdownMenuItem>
-                                <IconNotification />
-                                Notifications
+                            <DropdownMenuItem className="cursor-pointer flex items-center gap-3 py-2 text-sm transition-colors hover:bg-accent/50 focus:bg-accent/50">
+                                <IconNotification className="size-4 text-muted-foreground" />
+                                <span>Notifications</span>
                             </DropdownMenuItem>
                         </DropdownMenuGroup>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => router.post(route('logout'))} className="text-white bg-red-500  hover:bg-red-600!">
-                            <a className="flex  text-white items-center w-full gap-2">
-                                <IconLogout className="text-white"  />Se deconnecter
-                            </a>
+                        <DropdownMenuSeparator className="bg-border/50" />
+                        <DropdownMenuItem
+                            onClick={() => router.post(route('logout'))}
+                            className="cursor-pointer flex items-center gap-3 py-2 text-sm transition-colors
+                                       bg-destructive/15 hover:bg-destructive/25 focus:bg-destructive/25
+                                       text-destructive hover:text-destructive focus:text-destructive
+                                       font-medium mt-1 rounded-md"
+                        >
+                            <IconLogout className="size-4 text-white" />
+                            <span>Se déconnecter</span>
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>

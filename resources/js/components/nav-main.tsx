@@ -27,7 +27,7 @@ export function NavMain({
         return path === href || path.startsWith(href + "/")
     }
     return (
-        <SidebarGroup className="mt-6">
+        <SidebarGroup className="mt-4">
             <SidebarGroupContent>
                 <SidebarMenu>
                     {items.map((item) => (

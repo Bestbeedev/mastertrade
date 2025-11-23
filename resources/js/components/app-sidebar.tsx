@@ -38,7 +38,7 @@ import {
 } from "@/components/ui/sidebar"
 import { usePage } from "@inertiajs/react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { LayoutDashboard, SquareChevronUpIcon } from "lucide-react";
+import { DollarSignIcon, LayoutDashboard, SquareChevronUpIcon } from "lucide-react";
 import { Separator } from "./ui/separator";
 
 const data = {
@@ -198,10 +198,10 @@ export function AppSidebar({ user, ...props }: { user: User; } & React.Component
         {
             title: "Les Finances",
             url: "/admin/finance",
-            icon: SquareChevronUpIcon,
+            icon: DollarSignIcon,
         },
         {
-            title: "Les formations",
+            title: "Les Formations",
             url: "/admin/courses",
             icon: IconBrandParsinta,
         },
@@ -211,14 +211,14 @@ export function AppSidebar({ user, ...props }: { user: User; } & React.Component
             icon: IconPackage,
         },
         {
-            title: "Les licences",
+            title: "Les Licences",
             url: "/admin/licenses",
             icon: IconFileCertificate,
         },
         {
-            title: "Publier articles",
+            title: "Gestion des articles",
             url: "/admin/help-articles",
-            icon: IconHelp,
+            icon: IconArticle,
         },
     ];
 
@@ -235,7 +235,7 @@ export function AppSidebar({ user, ...props }: { user: User; } & React.Component
                     </SidebarMenu>
                 </SidebarHeader>
 
-                <SidebarContent>
+                <SidebarContent className="pt-0!">
                     {/* Navigation principale */}
                     <div className="flex-1 ">
                         <NavMain items={data.navMain} />
