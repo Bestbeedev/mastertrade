@@ -54,7 +54,7 @@ export function OrdersChart({ data }: { data?: ChartData }) {
                             <Bar
                                 dataKey="value"
                                 fill="currentColor"
-                                className="fill-primary"
+                                className="fill-blue-400"
                                 radius={[4, 4, 0, 0]}
                             />
                         </BarChart>
@@ -109,7 +109,7 @@ export function RevenueChart({ data }: { data?: ChartData }) {
                                 type="monotone"
                                 dataKey="value"
                                 stroke="currentColor"
-                                className="text-primary"
+                                className="text-green-400"
                                 strokeWidth={2}
                                 dot={false}
                             />
@@ -172,7 +172,7 @@ export function DownloadsChart({ data }: { data?: ChartData }) {
                             <Bar
                                 dataKey="value"
                                 fill="currentColor"
-                                className="fill-green-500"
+                                className="fill-red-500"
                                 radius={[4, 4, 0, 0]}
                             />
                         </BarChart>

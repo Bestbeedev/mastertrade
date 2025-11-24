@@ -69,9 +69,9 @@ export default function AdminIndex() {
                 )}
             </CardHeader>
             <CardContent>
-                <div className="flex items-center justify-between">
+                <div className="flex items-center  justify-between">
                     <div>
-                        <div className="text-2xl font-bold">{value}</div>
+                        <div className="text-2xl font-bold text-blue-500">{value}</div>
                         {secondaryValue && (
                             <div className="text-xs text-muted-foreground mt-1">{secondaryValue}</div>
                         )}

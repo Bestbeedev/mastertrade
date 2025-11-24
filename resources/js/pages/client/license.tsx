@@ -9,7 +9,8 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { route } from "ziggy-js";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { IconPackage } from "@tabler/icons-react";
+import { IconCheck, IconPackage } from "@tabler/icons-react";
+import { toast } from "sonner";
 
 type LicenseItem = {
     id: string;
@@ -20,6 +21,7 @@ type LicenseItem = {
     usedSeats: number;
     expires: string | null;
     status: string;
+
 };
 
 export default function License({ licenses: initialLicenses }: { licenses?: LicenseItem[] }) {
@@ -73,6 +75,7 @@ export default function License({ licenses: initialLicenses }: { licenses?: Lice
 
     const copyToClipboard = (text: string, key: string) => {
         navigator.clipboard.writeText(text);
+        toast.success("License copiée dans le presse-papiers...");
         setCopiedKey(key);
         setTimeout(() => setCopiedKey(null), 2000);
     };
@@ -207,7 +210,6 @@ export default function License({ licenses: initialLicenses }: { licenses?: Lice
                     )}
                     {licenses.map((license) => {
                         const statusConfig = getStatusConfig(license.status as Status);
-                        const supportConfig = getSupportConfig(license.support as Support);
                         const usagePercentage = (license.usedSeats / license.seats) * 100;
 
                         const daysLeft = license.expires ? getDaysRemaining(license.expires) : null;
@@ -262,15 +264,23 @@ export default function License({ licenses: initialLicenses }: { licenses?: Lice
                                                         <code className="bg-muted px-3 py-2 rounded text-sm font-mono flex-1 border">
                                                             {license.key}
                                                         </code>
-                                                        <Button
-                                                            variant="outline"
+                                                        {copiedKey === license.key ? <Button
                                                             size="sm"
                                                             onClick={() => copyToClipboard(license.key, license.key)}
-                                                            className="flex items-center gap-2"
+                                                            className="flex items-center  gap-2 bg-green-400"
+                                                        >
+                                                            <IconCheck className="h-4 w-4 " />
+                                                            Copié!
+                                                        </Button> : <Button
+                                                            variant="default"
+                                                            size="sm"
+                                                            onClick={() => copyToClipboard(license.key, license.key)}
+                                                            className="flex items-center gap-2 "
                                                         >
                                                             <Copy className="h-4 w-4" />
-                                                            {copiedKey === license.key ? 'Copié!' : 'Copier'}
-                                                        </Button>
+                                                            Copier
+                                                        </Button>}
+
                                                     </div>
                                                 </div>
                                             </div>

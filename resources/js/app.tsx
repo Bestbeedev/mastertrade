@@ -15,7 +15,7 @@ function InertiaRoot({ App, props }: any) {
     return (
         <>
             <App {...props} />
-            <Toaster richColors position="top-right" />
+            <Toaster richColors theme='light' position="top-right" />
             <SplashScreen visible={visible} onHide={hide} />
         </>
     );
@@ -41,4 +41,3 @@ createInertiaApp({
         color: '#4B5563',
     },
 });
-
