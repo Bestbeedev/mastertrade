@@ -66,7 +66,7 @@ export function NavUser({
                                        border border-border/50 dark:border-border/70
                                        bg-background/95 dark:bg-background/95
                                        backdrop-blur-sm transition-all duration-200
-                                       shadow-xl hover:shadow-xl"
+                                       shadow-xl hover:shadow-xl dark:bg-neutral-800/50"
                         >
                             <Avatar className="h-8 w-8 rounded-lg border-2 border-background shadow-sm">
                                 <AvatarImage
@@ -135,12 +135,12 @@ export function NavUser({
                         <DropdownMenuItem
                             onClick={() => router.post(route('logout'))}
                             className="cursor-pointer flex items-center gap-3 py-2 text-sm transition-colors
-                                       bg-destructive/15 hover:bg-destructive/25 focus:bg-destructive/25
-                                       text-destructive hover:text-destructive focus:text-destructive
+                                       bg-destructive/80 hover:bg-destructive focus:bg-destructive/95
+                                       text-white hover:text-white
                                        font-medium mt-1 rounded-md"
                         >
-                            <IconLogout className="size-4 text-white" />
-                            <span>Se déconnecter</span>
+                            <IconLogout className="size-4 text-white " />
+                            <span className="text-white">Se déconnecter</span>
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>

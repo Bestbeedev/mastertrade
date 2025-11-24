@@ -128,38 +128,84 @@ export default function TicketShow() {
                                             const isMine = msg?.user_id === currentUserId;
                                             return (
                                                 <div key={msg.id} className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
-                                                    <div className={`max-w-[85%] rounded-lg border p-3 ${isAdminMsg ? 'bg-emerald-50 border-emerald-200' : 'bg-muted border-border'}`}>
-                                                        <div className="flex items-center justify-between text-[11px] text-muted-foreground mb-2">
+                                                    <div className={`max-w-[85%] rounded-xl border p-4 shadow-sm transition-all duration-200 ${isAdminMsg
+                                                            ? 'bg-gradient-to-r from-emerald-50 to-green-50 border-emerald-200 dark:from-emerald-950/40 dark:to-green-950/40 dark:border-emerald-600/30'
+                                                            : isMine
+                                                                ? 'bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200 dark:from-blue-950/40 dark:to-indigo-950/40 dark:border-blue-600/30'
+                                                                : 'bg-gradient-to-r from-slate-50 to-gray-50 border-border dark:from-slate-800 dark:to-gray-800 dark:border-slate-600'
+                                                        }`}>
+                                                        {/* En-tête du message */}
+                                                        <div className="flex items-center justify-between text-[11px] mb-2">
                                                             {isAdminMsg ? (
-                                                                <Badge variant="outline" className="truncate mr-2">Support Client</Badge>
+                                                                <Badge variant="outline" className="bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-600 truncate mr-2">
+                                                                    👨‍💻 Support Client
+                                                                </Badge>
                                                             ) : (
-                                                                    <span className="truncate mr-2">{msg.user?.name} - { msg.user?.email}</span>
+                                                                <span className={`truncate mr-2 font-medium ${isMine
+                                                                        ? 'text-blue-700 dark:text-blue-300'
+                                                                        : 'text-slate-700 dark:text-slate-300'
+                                                                    }`}>
+                                                                    {msg.user?.name} - {msg.user?.email}
+                                                                </span>
                                                             )}
-                                                            <span>{msg.created_at ? new Date(msg.created_at).toLocaleString('fr-FR') : ''}</span>
+                                                            <span className={`text-xs ${isAdminMsg
+                                                                    ? 'text-emerald-600 dark:text-emerald-400'
+                                                                    : isMine
+                                                                        ? 'text-blue-600 dark:text-blue-400'
+                                                                        : 'text-slate-500 dark:text-slate-400'
+                                                                }`}>
+                                                                {msg.created_at ? new Date(msg.created_at).toLocaleString('fr-FR') : ''}
+                                                            </span>
                                                         </div>
-                                                        <Separator/>
-                                                        <div className="whitespace-pre-wrap mt-2 text-sm">
+
+                                                        {/* Séparateur */}
+                                                        <Separator className={
+                                                            isAdminMsg
+                                                                ? 'bg-emerald-200 dark:bg-emerald-600/30'
+                                                                : isMine
+                                                                    ? 'bg-blue-200 dark:bg-blue-600/30'
+                                                                    : 'bg-slate-200 dark:bg-slate-600'
+                                                        } />
+
+                                                        {/* Contenu du message */}
+                                                        <div className={`whitespace-pre-wrap mt-3 text-sm font-medium ${isAdminMsg
+                                                                ? 'text-emerald-900 dark:text-emerald-100'
+                                                                : isMine
+                                                                    ? 'text-blue-900 dark:text-blue-100'
+                                                                    : 'text-slate-900 dark:text-slate-100'
+                                                            }`}>
                                                             {msg.message}
                                                         </div>
+
+                                                        {/* Pièces jointes */}
                                                         {Array.isArray(msg.attachments) && msg.attachments.length > 0 && (
-                                                            <div className="mt-2 flex flex-col gap-2">
+                                                            <div className="mt-3 flex flex-col gap-2">
                                                                 {msg.attachments.map((att: any) => {
                                                                     const isImage = typeof att.mime_type === 'string' && att.mime_type.startsWith('image/');
                                                                     return (
                                                                         <div key={att.id} className="group">
                                                                             {isImage ? (
-                                                                                <a href={`/storage/${att.path}`} target="_blank" rel="noopener noreferrer">
-                                                                                    <img src={`/storage/${att.path}`} alt={att.original_name}
-                                                                                        className="max-h-64 rounded border object-contain" />
+                                                                                <a href={`/storage/${att.path}`} target="_blank" rel="noopener noreferrer" className="block overflow-hidden rounded-lg border-2 border-transparent hover:border-current transition-all duration-200">
+                                                                                    <img
+                                                                                        src={`/storage/${att.path}`}
+                                                                                        alt={att.original_name}
+                                                                                        className="max-h-64 w-auto rounded-lg object-contain transition-transform duration-200 hover:scale-105"
+                                                                                    />
                                                                                 </a>
                                                                             ) : (
                                                                                 <a
                                                                                     href={`/storage/${att.path}`}
                                                                                     target="_blank"
                                                                                     rel="noopener noreferrer"
-                                                                                    className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded border hover:bg-accent"
+                                                                                    className={`inline-flex items-center gap-2 text-xs px-3 py-2 rounded-lg border transition-all duration-200 hover:shadow-md ${isAdminMsg
+                                                                                            ? 'bg-emerald-100 text-emerald-700 border-emerald-300 hover:bg-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-300 dark:border-emerald-600'
+                                                                                            : isMine
+                                                                                                ? 'bg-blue-100 text-blue-700 border-blue-300 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-600'
+                                                                                                : 'bg-slate-100 text-slate-700 border-slate-300 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-300 dark:border-slate-600'
+                                                                                        }`}
                                                                                 >
-                                                                                    <Paperclip className="h-3 w-3" /> {att.original_name}
+                                                                                    <Paperclip className="h-3 w-3" />
+                                                                                    <span className="max-w-32 truncate">{att.original_name}</span>
                                                                                 </a>
                                                                             )}
                                                                         </div>

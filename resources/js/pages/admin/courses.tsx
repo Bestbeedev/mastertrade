@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 import { route } from "ziggy-js";
 import { toast } from "sonner";
-import { BookOpen, Plus, Trash2, Info, Image } from "lucide-react";
+import { BookOpen, Plus, Trash2, Info, Image, Tag, FileText } from "lucide-react";
 import Dropzone from "@/components/ui/dropzone";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
@@ -49,6 +49,7 @@ type CourseForm = {
 export default function AdminCourses({ courses = [], products = [] as { id: string; name: string }[] }: { courses?: any[]; products?: { id: string; name: string }[] }) {
     const [activeTab, setActiveTab] = React.useState("list");
     const [selectedCourse, setSelectedCourse] = React.useState<any | null>(null);
+    const [createTab, setCreateTab] = React.useState("info");
 
     const form = useForm<CourseForm>({
         title: "",
@@ -65,6 +66,10 @@ export default function AdminCourses({ courses = [], products = [] as { id: stri
         modules: [],
         cover_image: null,
     });
+
+    React.useEffect(() => {
+        if (activeTab === 'new') setCreateTab('info');
+    }, [activeTab]);
 
     const addModule = () => {
         const modules = ([...(form.data.modules || [])] as ModuleDraft[]);
@@ -251,197 +256,228 @@ export default function AdminCourses({ courses = [], products = [] as { id: stri
                                     <CardDescription>Renseignez les informations de votre formation</CardDescription>
                                 </CardHeader>
                                 <CardContent className="space-y-6">
-                                    <div className="grid gap-6 md:grid-cols-2">
-                                        <div className="space-y-4">
-                                            <div className="space-y-2">
-                                                <Label htmlFor="title">Titre</Label>
-                                                <Input id="title" value={form.data.title} onChange={(e) => form.setData("title", e.target.value)} placeholder="Titre de la formation" required />
-                                            </div>
-                                            <div className="space-y-2">
-                                                <Label>Payant ?</Label>
-                                                <div className="flex items-center gap-2">
-                                                    <Checkbox id="is_paid" checked={!!form.data.is_paid} onCheckedChange={(v) => form.setData("is_paid", !!v)} />
-                                                    <Label htmlFor="is_paid" className="text-sm text-muted-foreground">Cocher si la formation est payante</Label>
-                                                </div>
-                                            </div>
-                                            {form.data.is_paid && (
-                                                <div className="space-y-2">
-                                                    <Label htmlFor="price">Prix</Label>
-                                                    <Input id="price" type="number" min="0" step="0.01" value={form.data.price}
-                                                        onChange={(e) => form.setData("price", e.target.value)} placeholder="0.00" />
-                                                </div>
-                                            )}
-                                        </div>
+                                    <Tabs value={createTab} onValueChange={setCreateTab} className="space-y-4">
+                                        <TabsList>
+                                            <TabsTrigger value="info" className="flex items-center gap-2">
+                                                <Info className="h-4 w-4" /> Infos
+                                            </TabsTrigger>
+                                            <TabsTrigger value="pricing" className="flex items-center gap-2">
+                                                <Tag className="h-4 w-4" /> Tarification
+                                            </TabsTrigger>
+                                            <TabsTrigger value="content" className="flex items-center gap-2">
+                                                <FileText className="h-4 w-4" /> Contenu
+                                            </TabsTrigger>
+                                            <TabsTrigger value="media" className="flex items-center gap-2">
+                                                <Image className="h-4 w-4" /> Médias
+                                            </TabsTrigger>
+                                            <TabsTrigger value="modules" className="flex items-center gap-2">
+                                                <BookOpen className="h-4 w-4" /> Modules
+                                            </TabsTrigger>
+                                        </TabsList>
 
-                                        <div className="space-y-4">
-                                            <div className="space-y-2">
-                                                <Label htmlFor="product_id">Produit lié (optionnel)</Label>
-                                                <Select value={form.data.product_id} onValueChange={(v) => form.setData("product_id", v)}>
-                                                    <SelectTrigger className="w-full"><SelectValue placeholder="Sélectionnez un produit" /></SelectTrigger>
-                                                    <SelectContent>
-                                                        {products?.map((p) => (
-                                                            <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
-                                                        ))}
-                                                    </SelectContent>
-                                                </Select>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="space-y-2">
-                                        <Label htmlFor="intro">Introduction (optionnel)</Label>
-                                        <textarea
-                                            id="intro"
-                                            value={form.data.intro}
-                                            onChange={(e) => form.setData("intro", e.target.value)}
-                                            placeholder="Texte d’introduction, points clés, bénéfices..."
-                                            rows={3}
-                                            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                                        />
-                                    </div>
-
-                                    <div className="space-y-2">
-                                        <Label htmlFor="description">Description</Label>
-                                        <textarea
-                                            id="description"
-                                            value={form.data.description}
-                                            onChange={(e) => form.setData("description", e.target.value)}
-                                            placeholder="Décrivez la formation"
-                                            rows={4}
-                                            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                                        />
-                                    </div>
-
-                                    <div className="grid gap-4 md:grid-cols-2">
-                                        <div className="space-y-2">
-                                            <Label htmlFor="what_you_will_learn">Ce que vous apprendrez</Label>
-                                            <textarea id="what_you_will_learn" value={form.data.what_you_will_learn} onChange={(e) => form.setData('what_you_will_learn', e.target.value)} rows={4} className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" placeholder={"Point 1\nPoint 2\nPoint 3"} />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="requirements">Prérequis</Label>
-                                            <textarea id="requirements" value={form.data.requirements} onChange={(e) => form.setData('requirements', e.target.value)} rows={4} className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" placeholder={"Compétence A\nOutil B"} />
-                                        </div>
-                                        <div className="space-y-2 md:col-span-2">
-                                            <Label htmlFor="audience">Pour qui ?</Label>
-                                            <textarea id="audience" value={form.data.audience} onChange={(e) => form.setData('audience', e.target.value)} rows={3} className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" placeholder={"Débutants, Étudiants, Professionnels..."} />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="level">Niveau</Label>
-                                            <Input id="level" value={form.data.level} onChange={(e) => form.setData('level', e.target.value)} placeholder="Débutant / Intermédiaire / Avancé" />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="tags">Tags</Label>
-                                            <Input id="tags" value={form.data.tags} onChange={(e) => form.setData('tags', e.target.value)} placeholder="ex: sécurité, windows, réseau" />
-                                        </div>
-                                    </div>
-
-                                    <div className="space-y-2">
-                                        <Label>Bannière de couverture</Label>
-                                        <Dropzone
-                                            accept="image/*"
-                                            multiple={false}
-                                            value={form.data.cover_image ? [form.data.cover_image] : []}
-                                            onFiles={(files) => form.setData('cover_image', files[0] ?? null)}
-                                            className="min-h-[100px]"
-                                        >
-                                            <div className="text-center p-4">
-                                                <p className="text-muted-foreground">Glissez-déposez une image ou cliquez pour sélectionner</p>
-                                                <p className="text-xs text-muted-foreground mt-1">Formats acceptés: .jpg, .jpeg, .png</p>
-                                            </div>
-                                        </Dropzone>
-                                    </div>
-
-                                    <div className="space-y-4">
-                                        <div className="flex items-center justify-between">
-                                            <div>
-                                                <CardTitle>Modules et Leçons</CardTitle>
-                                                <CardDescription>Organisez la formation par étapes/modules</CardDescription>
-                                            </div>
-                                            <Button type="button" variant="outline" onClick={addModule} className="gap-2">
-                                                <Plus className="h-4 w-4" /> Ajouter un module
-                                            </Button>
-                                        </div>
-
-                                        <div className="space-y-4">
-                                            {(form.data.modules || []).map((m: any, mi: number) => (
-                                                <div key={mi} className="rounded-md border p-4 space-y-4">
-                                                    <div className="flex items-start gap-4">
-                                                        <div className="flex-1 grid gap-3 md:grid-cols-2">
-                                                            <div className="space-y-1">
-                                                                <Label>Titre du module</Label>
-                                                                <Input value={m.title} onChange={(e) => updateModule(mi, { title: e.target.value })} placeholder={`Module ${mi + 1}`} />
-                                                            </div>
-                                                            <div className="space-y-1">
-                                                                <Label>Description</Label>
-                                                                <Input value={m.description || ""} onChange={(e) => updateModule(mi, { description: e.target.value })} placeholder="Description du module (optionnel)" />
-                                                            </div>
-                                                        </div>
-                                                        <Button type="button" variant="destructive" size="icon" onClick={() => removeModule(mi)}>
-                                                            <Trash2 className="h-4 w-4" />
-                                                        </Button>
+                                        <TabsContent value="info" className="space-y-6">
+                                            <div className="grid gap-6 md:grid-cols-2">
+                                                <div className="space-y-4">
+                                                    <div className="space-y-2">
+                                                        <Label htmlFor="title">Titre</Label>
+                                                        <Input id="title" value={form.data.title} onChange={(e) => form.setData("title", e.target.value)} placeholder="Titre de la formation" required />
                                                     </div>
+                                                </div>
+                                                <div className="space-y-4">
+                                                    <div className="space-y-2">
+                                                        <Label htmlFor="product_id">Produit lié (optionnel)</Label>
+                                                        <Select value={form.data.product_id} onValueChange={(v) => form.setData("product_id", v)}>
+                                                            <SelectTrigger className="w-full"><SelectValue placeholder="Sélectionnez un produit" /></SelectTrigger>
+                                                            <SelectContent>
+                                                                {products?.map((p) => (
+                                                                    <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                                                                ))}
+                                                            </SelectContent>
+                                                        </Select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </TabsContent>
 
-                                                    {/* Leçons */}
-                                                    <div className="space-y-3">
-                                                        <div className="flex items-center justify-between">
-                                                            <Label>Leçons</Label>
-                                                            <Button type="button" variant="secondary" onClick={() => addLesson(mi)} className="gap-2">
-                                                                <Plus className="h-4 w-4" /> Ajouter une leçon
+                                        <TabsContent value="pricing" className="space-y-6">
+                                            <div className="grid gap-6 md:grid-cols-2">
+                                                <div className="space-y-4">
+                                                    <div className="space-y-2">
+                                                        <Label>Payant ?</Label>
+                                                        <div className="flex items-center gap-2">
+                                                            <Checkbox id="is_paid" checked={!!form.data.is_paid} onCheckedChange={(v) => form.setData("is_paid", !!v)} />
+                                                            <Label htmlFor="is_paid" className="text-sm text-muted-foreground">Cocher si la formation est payante</Label>
+                                                        </div>
+                                                    </div>
+                                                    {form.data.is_paid && (
+                                                        <div className="space-y-2">
+                                                            <Label htmlFor="price">Prix</Label>
+                                                            <Input id="price" type="number" min="0" step="0.01" value={form.data.price}
+                                                                onChange={(e) => form.setData("price", e.target.value)} placeholder="0.00" />
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </TabsContent>
+
+                                        <TabsContent value="content" className="space-y-6">
+                                            <div className="space-y-2">
+                                                <Label htmlFor="intro">Introduction (optionnel)</Label>
+                                                <textarea
+                                                    id="intro"
+                                                    value={form.data.intro}
+                                                    onChange={(e) => form.setData("intro", e.target.value)}
+                                                    placeholder="Texte d’introduction, points clés, bénéfices..."
+                                                    rows={3}
+                                                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                                                />
+                                            </div>
+
+                                            <div className="space-y-2">
+                                                <Label htmlFor="description">Description</Label>
+                                                <textarea
+                                                    id="description"
+                                                    value={form.data.description}
+                                                    onChange={(e) => form.setData("description", e.target.value)}
+                                                    placeholder="Décrivez la formation"
+                                                    rows={4}
+                                                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                                                />
+                                            </div>
+
+                                            <div className="grid gap-4 md:grid-cols-2">
+                                                <div className="space-y-2">
+                                                    <Label htmlFor="what_you_will_learn">Ce que vous apprendrez</Label>
+                                                    <textarea id="what_you_will_learn" value={form.data.what_you_will_learn} onChange={(e) => form.setData('what_you_will_learn', e.target.value)} rows={4} className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" placeholder={"Point 1\nPoint 2\nPoint 3"} />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <Label htmlFor="requirements">Prérequis</Label>
+                                                    <textarea id="requirements" value={form.data.requirements} onChange={(e) => form.setData('requirements', e.target.value)} rows={4} className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" placeholder={"Compétence A\nOutil B"} />
+                                                </div>
+                                                <div className="space-y-2 md:col-span-2">
+                                                    <Label htmlFor="audience">Pour qui ?</Label>
+                                                    <textarea id="audience" value={form.data.audience} onChange={(e) => form.setData('audience', e.target.value)} rows={3} className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" placeholder={"Débutants, Étudiants, Professionnels..."} />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <Label htmlFor="level">Niveau</Label>
+                                                    <Input id="level" value={form.data.level} onChange={(e) => form.setData('level', e.target.value)} placeholder="Débutant / Intermédiaire / Avancé" />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <Label htmlFor="tags">Tags</Label>
+                                                    <Input id="tags" value={form.data.tags} onChange={(e) => form.setData('tags', e.target.value)} placeholder="ex: sécurité, windows, réseau" />
+                                                </div>
+                                            </div>
+                                        </TabsContent>
+
+                                        <TabsContent value="media" className="space-y-6">
+                                            <div className="space-y-2">
+                                                <Label>Bannière de couverture</Label>
+                                                <Dropzone
+                                                    accept="image/*"
+                                                    multiple={false}
+                                                    value={form.data.cover_image ? [form.data.cover_image] : []}
+                                                    onFiles={(files) => form.setData('cover_image', files[0] ?? null)}
+                                                    className="min-h-[100px]"
+                                                >
+                                                    <div className="text-center p-4">
+                                                        <p className="text-muted-foreground">Glissez-déposez une image ou cliquez pour sélectionner</p>
+                                                        <p className="text-xs text-muted-foreground mt-1">Formats acceptés: .jpg, .jpeg, .png</p>
+                                                    </div>
+                                                </Dropzone>
+                                            </div>
+                                        </TabsContent>
+
+                                        <TabsContent value="modules" className="space-y-4">
+                                            <div className="flex items-center justify-between">
+                                                <div>
+                                                    <CardTitle>Modules et Leçons</CardTitle>
+                                                    <CardDescription>Organisez la formation par étapes/modules</CardDescription>
+                                                </div>
+                                                <Button type="button" variant="outline" onClick={addModule} className="gap-2">
+                                                    <Plus className="h-4 w-4" /> Ajouter un module
+                                                </Button>
+                                            </div>
+
+                                            <div className="space-y-4">
+                                                {(form.data.modules || []).map((m: any, mi: number) => (
+                                                    <div key={mi} className="rounded-md border p-4 space-y-4">
+                                                        <div className="flex items-start gap-4">
+                                                            <div className="flex-1 grid gap-3 md:grid-cols-2">
+                                                                <div className="space-y-1">
+                                                                    <Label>Titre du module</Label>
+                                                                    <Input value={m.title} onChange={(e) => updateModule(mi, { title: e.target.value })} placeholder={`Module ${mi + 1}`} />
+                                                                </div>
+                                                                <div className="space-y-1">
+                                                                    <Label>Description</Label>
+                                                                    <Input value={m.description || ""} onChange={(e) => updateModule(mi, { description: e.target.value })} placeholder="Description du module (optionnel)" />
+                                                                </div>
+                                                            </div>
+                                                            <Button type="button" variant="destructive" size="icon" onClick={() => removeModule(mi)}>
+                                                                <Trash2 className="h-4 w-4" />
                                                             </Button>
                                                         </div>
+
                                                         <div className="space-y-3">
-                                                            {(m.lessons || []).map((les: any, li: number) => (
-                                                                <div key={li} className="rounded border p-3 space-y-3">
-                                                                    <div className="flex items-start gap-3">
-                                                                        <div className="grid gap-3 md:grid-cols-2 flex-1">
-                                                                            <div className="space-y-1">
-                                                                                <Label>Titre</Label>
-                                                                                <Input value={les.title} onChange={(e) => updateLesson(mi, li, { title: e.target.value })} placeholder="Titre de la leçon" />
-                                                                            </div>
-                                                                            <div className="space-y-1">
-                                                                                <Label>Type</Label>
-                                                                                <Select value={les.type} onValueChange={(v) => updateLesson(mi, li, { type: v as LessonDraft['type'], content_url: "", file: undefined })}>
-                                                                                    <SelectTrigger className="w-full"><SelectValue placeholder="Type de contenu" /></SelectTrigger >
-                                                                                    <SelectContent>
-                                                                                        <SelectItem value="video">Vidéo (YouTube)</SelectItem>
-                                                                                        <SelectItem value="pdf">PDF / Ebook</SelectItem>
-                                                                                    </SelectContent>
-                                                                                </Select>
-                                                                            </div>
-                                                                            {les.type === 'video' ? (
-                                                                                <div className="space-y-1 md:col-span-2">
-                                                                                    <Label>Lien YouTube</Label>
-                                                                                    <Input value={les.content_url || ""} onChange={(e) => updateLesson(mi, li, { content_url: e.target.value })} placeholder="https://www.youtube.com/watch?v=..." />
+                                                            <div className="flex items-center justify-between">
+                                                                <Label>Leçons</Label>
+                                                                <Button type="button" variant="secondary" onClick={() => addLesson(mi)} className="gap-2">
+                                                                    <Plus className="h-4 w-4" /> Ajouter une leçon
+                                                                </Button>
+                                                            </div>
+                                                            <div className="space-y-3">
+                                                                {(m.lessons || []).map((les: any, li: number) => (
+                                                                    <div key={li} className="rounded border p-3 space-y-3">
+                                                                        <div className="flex items-start gap-3">
+                                                                            <div className="grid gap-3 md:grid-cols-2 flex-1">
+                                                                                <div className="space-y-1">
+                                                                                    <Label>Titre</Label>
+                                                                                    <Input value={les.title} onChange={(e) => updateLesson(mi, li, { title: e.target.value })} placeholder="Titre de la leçon" />
                                                                                 </div>
-                                                                            ) : (
-                                                                                <div className="space-y-1 md:col-span-2">
-                                                                                    <Label>Fichier PDF</Label>
-                                                                                    <Dropzone accept="application/pdf" multiple={false} onFiles={(files) => updateLesson(mi, li, { file: files[0] })}>
-                                                                                        <span>Glissez-déposez un PDF ou cliquez pour sélectionner</span>
-                                                                                    </Dropzone>
+                                                                                <div className="space-y-1">
+                                                                                    <Label>Type</Label>
+                                                                                    <Select value={les.type} onValueChange={(v) => updateLesson(mi, li, { type: v as LessonDraft['type'], content_url: "", file: undefined })}>
+                                                                                        <SelectTrigger className="w-full"><SelectValue placeholder="Type de contenu" /></SelectTrigger >
+                                                                                        <SelectContent>
+                                                                                            <SelectItem value="video">Vidéo (YouTube)</SelectItem>
+                                                                                            <SelectItem value="pdf">PDF / Ebook</SelectItem>
+                                                                                        </SelectContent>
+                                                                                    </Select>
                                                                                 </div>
-                                                                            )}
-                                                                            <div className="space-y-1">
-                                                                                <Label>Durée (secondes, optionnel)</Label>
-                                                                                <Input type="number" min="0" value={les.duration_seconds || ""} onChange={(e) => updateLesson(mi, li, { duration_seconds: e.target.value })} />
+                                                                                {les.type === 'video' ? (
+                                                                                    <div className="space-y-1 md:col-span-2">
+                                                                                        <Label>Lien YouTube</Label>
+                                                                                        <Input value={les.content_url || ""} onChange={(e) => updateLesson(mi, li, { content_url: e.target.value })} placeholder="https://www.youtube.com/watch?v=..." />
+                                                                                    </div>
+                                                                                ) : (
+                                                                                    <div className="space-y-1 md:col-span-2">
+                                                                                        <Label>Fichier PDF</Label>
+                                                                                        <Dropzone accept="application/pdf" multiple={false} onFiles={(files) => updateLesson(mi, li, { file: files[0] })}>
+                                                                                            <span>Glissez-déposez un PDF ou cliquez pour sélectionner</span>
+                                                                                        </Dropzone>
+                                                                                    </div>
+                                                                                )}
+                                                                                <div className="space-y-1">
+                                                                                    <Label>Durée (secondes, optionnel)</Label>
+                                                                                    <Input type="number" min="0" value={les.duration_seconds || ""} onChange={(e) => updateLesson(mi, li, { duration_seconds: e.target.value })} />
+                                                                                </div>
+                                                                                <div className="flex items-center gap-2">
+                                                                                    <Checkbox id={`prev_${mi}_${li}`} checked={!!les.is_preview} onCheckedChange={(v) => updateLesson(mi, li, { is_preview: !!v })} />
+                                                                                    <Label htmlFor={`prev_${mi}_${li}`} className="text-sm">Leçon d'aperçu (gratuite)</Label>
+                                                                                </div>
                                                                             </div>
-                                                                            <div className="flex items-center gap-2">
-                                                                                <Checkbox id={`prev_${mi}_${li}`} checked={!!les.is_preview} onCheckedChange={(v) => updateLesson(mi, li, { is_preview: !!v })} />
-                                                                                <Label htmlFor={`prev_${mi}_${li}`} className="text-sm">Leçon d'aperçu (gratuite)</Label>
-                                                                            </div>
+                                                                            <Button type="button" variant="outline" size="icon" onClick={() => removeLesson(mi, li)}>
+                                                                                <Trash2 className="h-4 w-4" />
+                                                                            </Button>
                                                                         </div>
-                                                                        <Button type="button" variant="outline" size="icon" onClick={() => removeLesson(mi, li)}>
-                                                                            <Trash2 className="h-4 w-4" />
-                                                                        </Button>
                                                                     </div>
-                                                                </div>
-                                                            ))}
+                                                                ))}
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
+                                                ))}
+                                            </div>
+                                        </TabsContent>
+                                    </Tabs>
                                 </CardContent>
                                 <CardFooter className="flex justify-between border-t px-6 py-4">
                                     <Button type="button" variant="outline" onClick={() => form.reset()}>Annuler</Button>
@@ -450,7 +486,7 @@ export default function AdminCourses({ courses = [], products = [] as { id: stri
                             </Card>
                         </form>
                     </TabsContent>
-                </Tabs>
+                </Tabs >
                 <Dialog open={!!selectedCourse} onOpenChange={(open) => { if (!open) setSelectedCourse(null); }}>
                     <DialogContent>
                         <DialogHeader>
@@ -529,7 +565,7 @@ export default function AdminCourses({ courses = [], products = [] as { id: stri
                         </div>
                     </DialogContent>
                 </Dialog>
-            </div>
-        </AppLayout>
+            </div >
+        </AppLayout >
     );
 }
