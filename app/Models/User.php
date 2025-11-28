@@ -3,11 +3,13 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
+use App\Traits\UuidTrait;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
-use App\Traits\UuidTrait;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
@@ -74,4 +76,11 @@ class User extends Authenticatable
     {
         return $this->hasMany(Ticket::class);
     }
+    public static function isAdmin()
+    {
+        $user = Auth::user();
+        $isAdmin = $user && $user->role && in_array(strtolower($user->role->name), ['admin', 'administrator', 'superadmin']);
+        return $isAdmin;
+    }
+
 }
