@@ -25,8 +25,7 @@ class TicketController extends Controller
         $search = trim((string) $request->query('search', ''));
         $sort = $request->query('sort', 'recent');
 
-        $user = Auth::user();
-        $isAdmin = $user && $user->role && in_array(strtolower($user->role->name), ['admin', 'administrator', 'superadmin']);
+        $isAdmin=User::isAdmin();
         $query = $isAdmin ? Ticket::query() : Ticket::query()->where('user_id', Auth::id());
         $query->with(['user:id,name,email']);
         $query->withCount(['messages']);
@@ -229,8 +228,8 @@ class TicketController extends Controller
      */
     public function show(Ticket $ticket)
     {
-        $user = Auth::user();
-        $isAdmin = $user && $user->role && in_array(strtolower($user->role->name), ['admin', 'administrator', 'superadmin']);
+
+        $isAdmin = User::isAdmin();
         if (!$isAdmin && $ticket->user_id !== Auth::id()) {
             abort(403);
         }
@@ -263,7 +262,7 @@ class TicketController extends Controller
      */
     public function update(Request $request, Ticket $ticket)
     {
-        $user = Auth::user();
+        $user=Auth::user();
         $isAdmin = $user && $user->role && in_array(strtolower($user->role->name), ['admin', 'administrator', 'superadmin']);
         if (!$isAdmin && $ticket->user_id !== Auth::id()) {
             abort(403);
@@ -290,8 +289,8 @@ class TicketController extends Controller
      */
     public function reply(Request $request, Ticket $ticket)
     {
-        $user = Auth::user();
-        $isAdmin = $user && $user->role && in_array(strtolower($user->role->name), ['admin', 'administrator', 'superadmin']);
+
+        $isAdmin = User::isAdmin();
         if (!$isAdmin && $ticket->user_id !== Auth::id()) {
             abort(403);
         }
@@ -358,8 +357,8 @@ class TicketController extends Controller
 
     public function close(Ticket $ticket)
     {
-        $user = Auth::user();
-        $isAdmin = $user && $user->role && in_array(strtolower($user->role->name), ['admin', 'administrator', 'superadmin']);
+        
+        $isAdmin = User::isAdmin();
         if (!$isAdmin && $ticket->user_id !== Auth::id()) {
             abort(403);
         }
@@ -369,8 +368,8 @@ class TicketController extends Controller
 
     public function reopen(Ticket $ticket)
     {
-        $user = Auth::user();
-        $isAdmin = $user && $user->role && in_array(strtolower($user->role->name), ['admin', 'administrator', 'superadmin']);
+
+        $isAdmin = User::isAdmin();
         if (!$isAdmin && $ticket->user_id !== Auth::id()) {
             abort(403);
         }
