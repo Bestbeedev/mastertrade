@@ -10,10 +10,23 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { route } from "ziggy-js";
 import { formatCFA } from "@/lib/utils";
 
-export default function AdminOrders({ orders, statusCounts = {}, filters = { status: "" } }: { orders: any; statusCounts?: Record<string, number>; filters?: { status?: string } }) {
+interface Order {
+    id: string;
+    status?: string;
+    amount?: number;
+    user?: { name: string; email: string };
+    product?: { name: string; sku?: string; version?: string };
+    created_at?: string;
+}
+
+interface OrdersData {
+    data?: Order[];
+}
+
+export default function AdminOrders({ orders, statusCounts = {}, filters = { status: "" } }: { orders: OrdersData; statusCounts?: Record<string, number>; filters?: { status?: string } }) {
     const rows = Array.isArray(orders?.data) ? orders.data : [];
 
-    const statuses: Array<{ value: string; label: string; variant?: any }> = [
+    const statuses: Array<{ value: string; label: string; variant?: "default" | "destructive" | "secondary" | "outline" }> = [
         { value: "pending", label: "En attente" },
         { value: "paid", label: "Payée" },
         { value: "failed", label: "Échouée" },
@@ -21,7 +34,7 @@ export default function AdminOrders({ orders, statusCounts = {}, filters = { sta
     ];
 
     const StatusBadge = ({ s }: { s: string }) => {
-        const map: Record<string, any> = {
+        const map: Record<string, "default" | "destructive" | "secondary" | "outline"> = {
             pending: "secondary",
             paid: "default",
             failed: "destructive",
@@ -66,7 +79,7 @@ export default function AdminOrders({ orders, statusCounts = {}, filters = { sta
                                     ) : (
                                         <>
                                             Tous
-                                            <span className="ml-2">{Object.values(statusCounts || {}).reduce((a: any, b: any) => a + (b as number), 0)}</span>
+                                            <span className="ml-2">{Object.values(statusCounts || {}).reduce((a: number, b: number) => a + b, 0)}</span>
                                         </>
                                     )}
                                 </Link>
@@ -97,7 +110,7 @@ export default function AdminOrders({ orders, statusCounts = {}, filters = { sta
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {rows.map((o: any) => (
+                                    {rows.map((o: Order) => (
                                         <OrderRow key={o.id} order={o} />
                                     ))}
                                 </tbody>
@@ -110,7 +123,7 @@ export default function AdminOrders({ orders, statusCounts = {}, filters = { sta
     );
 }
 
-function OrderRow({ order }: { order: any }) {
+function OrderRow({ order }: { order: Order }) {
     const edit = useForm({
         status: order.status as string,
         amount: (typeof order.amount === "number" ? order.amount : 0) / 100,
@@ -118,7 +131,7 @@ function OrderRow({ order }: { order: any }) {
 
     const onSave = () => {
         // convert displayed amount (units) to cents for backend
-        edit.setData("amount", Math.round((Number(edit.data.amount) || 0) * 100) as any);
+        edit.setData("amount", Math.round((Number(edit.data.amount) || 0) * 100));
         edit.patch(route("admin.orders.update", order.id), {
             preserveScroll: true,
         });
@@ -142,7 +155,7 @@ function OrderRow({ order }: { order: any }) {
                         type="number"
                         min={0}
                         step="0.01"
-                        value={edit.data.amount as any}
+                        value={edit.data.amount}
                         onChange={(e) => edit.setData("amount", parseFloat(e.target.value || "0") || 0)}
                         className="w-28"
                     />

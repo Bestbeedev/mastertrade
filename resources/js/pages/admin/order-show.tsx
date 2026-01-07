@@ -105,7 +105,7 @@ export default function AdminOrderShow({ order }: { order: Order | null }) {
                                                 type="number"
                                                 min={0}
                                                 step="0.01"
-                                                value={edit.data.amount as any}
+                                                value={edit.data.amount}
                                                 onChange={(e) => edit.setData("amount", parseFloat(e.target.value || "0") || 0)}
                                                 className="w-40"
                                             />

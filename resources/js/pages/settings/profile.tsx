@@ -83,10 +83,10 @@ function ProfileForm({
     recentlySuccessful,
     errors
 }: {
-    user: any;
+    user: { name?: string; email?: string; phone?: string | null; country?: string | null; email_verified_at?: string | null };
     processing: boolean;
     recentlySuccessful: boolean;
-    errors: any;
+    errors: Record<string, string>;
 }) {
     return (
         <Card>
@@ -156,7 +156,7 @@ function ProfileForm({
                             id="country"
                             name="country"
                             type="text"
-                            defaultValue={user.country}
+                            defaultValue={user.country || ''}
                             required
                             autoComplete="country"
                             placeholder="Votre pays"
@@ -174,7 +174,7 @@ function ProfileForm({
                             id="phone"
                             name="phone"
                             type="tel"
-                            defaultValue={user.phone}
+                            defaultValue={user.phone || ''}
                             required
                             autoComplete="tel"
                             placeholder="Votre numero de telephone"
@@ -270,7 +270,7 @@ export default function Profile({
                     {/* Statut de vérification d'email */}
                     <EmailVerificationStatus
                         mustVerifyEmail={mustVerifyEmail}
-                        emailVerified={auth.user.email_verified_at}
+                        emailVerified={auth.user.email_verified_at ?? null}
                         status={status}
                     />
 

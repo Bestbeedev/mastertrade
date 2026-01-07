@@ -12,10 +12,29 @@ import { Plus, Trash2, Package, FileText, Settings, Box, Tag, Hash, Info, FileDi
 import { route } from "ziggy-js";
 import { toast } from "sonner";
 
-export default function AdminProducts({ products = [] as any[] }: { products?: any[] }) {
+interface Product {
+    id: string;
+    name: string;
+    sku?: string;
+    version?: string;
+    description?: string;
+    category?: string;
+    price_cents?: number;
+    requires_license?: boolean;
+    is_active?: boolean;
+    features?: string[];
+    changelog?: string;
+    checksum?: string;
+    size?: number;
+    download_url?: string;
+    created_at?: string;
+    updated_at?: string;
+}
+
+export default function AdminProducts({ products = [] }: { products?: Product[] }) {
     const [activeTab, setActiveTab] = React.useState("details");
-    const [selectedProduct, setSelectedProduct] = React.useState<any | null>(null);
-    const [productToDelete, setProductToDelete] = React.useState<any | null>(null);
+    const [selectedProduct, setSelectedProduct] = React.useState<Product | null>(null);
+    const [productToDelete, setProductToDelete] = React.useState<Product | null>(null);
 
     const editForm = useForm({
         id: "",
@@ -34,7 +53,7 @@ export default function AdminProducts({ products = [] as any[] }: { products?: a
         is_active: true,
     });
 
-    const openEdit = (product: any) => {
+    const openEdit = (product: Product) => {
         setSelectedProduct(product);
         editForm.setData({
             id: product.id,
@@ -148,18 +167,18 @@ export default function AdminProducts({ products = [] as any[] }: { products?: a
 
     // Edition des fonctionnalités (modal)
     const handleEditAddFeature = () => {
-        const current = (editForm.data as any).features || [];
+        const current = (editForm.data.features as string[]) || [];
         editForm.setData('features', [...current, '']);
     };
 
     const handleEditRemoveFeature = (index: number) => {
-        const cur = [...((editForm.data as any).features || [])];
+        const cur = [...((editForm.data.features as string[]) || [])];
         cur.splice(index, 1);
         editForm.setData('features', cur);
     };
 
     const handleEditFeatureChange = (index: number, value: string) => {
-        const cur = [...((editForm.data as any).features || [])];
+        const cur = [...((editForm.data.features as string[]) || [])];
         cur[index] = value;
         editForm.setData('features', cur);
     };
@@ -851,7 +870,7 @@ export default function AdminProducts({ products = [] as any[] }: { products?: a
                                         <Label htmlFor="edit_download_url">Lien de téléchargement (Google Drive)</Label>
                                         <Input
                                             id="edit_download_url"
-                                            value={editForm.data.download_url as any}
+                                            value={editForm.data.download_url || ""}
                                             onChange={(e) => editForm.setData('download_url', e.target.value)}
                                             placeholder="https://drive.google.com/file/d/FILE_ID/view"
                                         />
@@ -878,7 +897,7 @@ export default function AdminProducts({ products = [] as any[] }: { products?: a
                                             type="number"
                                             min={0}
                                             step="0.01"
-                                            value={editForm.data.price as any}
+                                            value={editForm.data.price || 0}
                                             onChange={(e) => editForm.setData('price', parseFloat(e.target.value || '0') || 0)}
                                         />
                                     </div>
@@ -910,7 +929,7 @@ export default function AdminProducts({ products = [] as any[] }: { products?: a
                                 <div className="space-y-2">
                                     <Label>Fonctionnalités</Label>
                                     <div className="space-y-2">
-                                        {(editForm.data as any).features?.map((feature: string, index: number) => (
+                                        {(editForm.data.features as string[])?.map((feature: string, index: number) => (
                                             <div key={index} className="flex gap-2">
                                                 <Input
                                                     value={feature}

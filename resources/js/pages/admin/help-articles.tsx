@@ -30,14 +30,36 @@ function categoryLabel(category: string): string {
     return found ? found.label : (category || "Général");
 }
 
-export default function AdminHelpArticles({ articles = [], filters = {} as any }: { articles?: any[]; filters?: any }) {
+interface HelpArticle {
+    id: string;
+    title?: string;
+    slug?: string;
+    category?: string;
+    summary?: string;
+    content?: string;
+    tags?: string;
+    is_published?: boolean;
+    is_popular?: boolean;
+    status?: string;
+    views?: number;
+    created_at?: string;
+    updated_at?: string;
+}
+
+interface HelpFilters {
+    q?: string;
+    category?: string;
+    status?: string;
+}
+
+export default function AdminHelpArticles({ articles = [], filters = {} }: { articles?: HelpArticle[]; filters?: HelpFilters }) {
     const [activeTab, setActiveTab] = React.useState("list");
     const [search, setSearch] = React.useState<string>(filters.q ?? "");
     const [filterCategory, setFilterCategory] = React.useState<string>(filters.category ?? "all");
     const [filterStatus, setFilterStatus] = React.useState<string>(filters.status ?? "all");
 
-    const [editing, setEditing] = React.useState<any | null>(null);
-    const [articleToDelete, setArticleToDelete] = React.useState<any | null>(null);
+    const [editing, setEditing] = React.useState<HelpArticle | null>(null);
+    const [articleToDelete, setArticleToDelete] = React.useState<HelpArticle | null>(null);
 
     const createForm = useForm({
         title: "",
@@ -72,7 +94,7 @@ export default function AdminHelpArticles({ articles = [], filters = {} as any }
         );
     };
 
-    const startEdit = (article: any) => {
+    const startEdit = (article: HelpArticle) => {
         setEditing(article);
         editForm.setData({
             title: article.title ?? "",
@@ -206,12 +228,12 @@ export default function AdminHelpArticles({ articles = [], filters = {} as any }
                                             Aucun article d'aide pour le moment. Créez votre premier contenu dans l'onglet "Nouvel article".
                                         </p>
                                     )}
-                                    {articles.map((a: any) => (
+                                    {articles.map((a: HelpArticle) => (
                                         <div key={a.id} className="flex items-start justify-between gap-4 p-3 border rounded-lg bg-card/50">
                                             <div className="space-y-1">
                                                 <div className="flex items-center gap-2">
                                                     <Badge variant="outline" className="text-xs">
-                                                        {categoryLabel(a.category)}
+                                                        {categoryLabel(a.category || "")}
                                                     </Badge>
                                                     <Badge variant={a.is_published ? "default" : "outline"} className="text-xs">
                                                         {a.is_published ? "Publié" : "Brouillon"}

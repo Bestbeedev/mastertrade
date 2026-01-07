@@ -11,6 +11,25 @@ import { Progress } from "@/components/ui/progress";
 import { router } from "@inertiajs/react";
 import { route } from "ziggy-js";
 import { useIsAdmin } from "@/hooks/use-is-admin";
+import { toast } from "sonner";
+
+interface Formation {
+    id: string;
+    title?: string;
+    description?: string;
+    progress_percent?: number;
+    completed_at?: string;
+    duration_seconds?: number;
+    category?: string;
+    price_cents?: number;
+    cover_image?: string;
+    created_at?: string;
+    what_you_will_learn?: string;
+    audience?: string;
+    tags?: string;
+    level?: string;
+    intro?: string;
+}
 
 export default function Formation() {
     const isAdmin = useIsAdmin();
@@ -24,24 +43,23 @@ export default function Formation() {
     const [activeCategory, setActiveCategory] = useState('all');
     const [searchTerm, setSearchTerm] = useState('');
 
-    const { courses: realCourses = [] } = usePage().props as any;
-    const courses = Array.isArray(realCourses) ? realCourses : [];
+    const { courses = [] } = usePage().props as { courses?: Formation[] };
 
-    const inProgressCourses = courses.filter((c: any) => {
+    const inProgressCourses = courses.filter((c: Formation) => {
         const p = c.progress_percent || 0;
         return p > 0 && p < 100;
     });
 
-    const completedCourses = courses.filter((c: any) => {
+    const completedCourses = courses.filter((c: Formation) => {
         const p = c.progress_percent || 0;
         return p >= 100 || !!c.completed_at;
     });
 
-    const startedCourses = courses.filter((c: any) => (c.progress_percent || 0) > 0 || !!c.completed_at);
-    const totalDurationSeconds = courses.reduce((s: number, c: any) => s + (c.duration_seconds || 0), 0);
+    const startedCourses = courses.filter((c: Formation) => (c.progress_percent || 0) > 0 || !!c.completed_at);
+    const totalDurationSeconds = courses.reduce((s: number, c: Formation) => s + (c.duration_seconds || 0), 0);
 
     const avg = startedCourses.length
-        ? Math.round(startedCourses.reduce((s: number, c: any) => s + (c.progress_percent || 0), 0) / startedCourses.length)
+        ? Math.round(startedCourses.reduce((s: number, c: Formation) => s + (c.progress_percent || 0), 0) / startedCourses.length)
         : 0;
 
     const categories = [

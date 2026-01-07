@@ -8,8 +8,97 @@ import React from "react";
 import { OrdersChart, RevenueChart, DownloadsChart } from "@/components/admin/charts";
 import { formatCFA } from "@/lib/utils";
 
+interface AdminStats {
+    products: number;
+    orders: number;
+    users: number;
+    licenses: number | { total: number; active: number };
+    revenue: number;
+    downloads: number;
+    tickets: number | { total: number; open: number };
+    courses: number;
+    orders_30d?: number;
+    revenue_cents_30d?: number;
+    downloads_30d?: number;
+    course_enrollments_30d?: number;
+    avg_course_progress?: number;
+    renewals_due_30d?: number;
+}
+
+interface Order {
+    id: string;
+    product?: { name: string; type?: string };
+    user?: { name: string; email: string };
+    amount?: number;
+    status?: string;
+    created_at?: string;
+}
+
+interface License {
+    id: string;
+    product?: { name: string };
+    user?: { name: string; email: string };
+    key?: string;
+    status?: string;
+    created_at?: string;
+    expiry_date?: string;
+}
+
+interface Ticket {
+    id: string;
+    subject: string;
+    user?: { name: string; email: string };
+    status?: string;
+    priority?: string;
+    created_at?: string;
+}
+
+interface TopProduct {
+    product_id: string;
+    product?: { name: string };
+    revenue?: number;
+    revenue_cents?: number;
+    orders?: number;
+    orders_count?: number;
+}
+
+interface Product {
+    id: string;
+    name: string;
+    price?: number;
+    sku?: string;
+    version?: string;
+    created_at?: string;
+}
+
+interface Course {
+    id: string;
+    title: string;
+    created_at?: string;
+}
+
+interface ChartData {
+    date: string;
+    orders?: number;
+    revenue?: number;
+    downloads?: number;
+}
+
 export default function AdminIndex() {
-    const { adminStats, recentOrders, recentTickets, recentLicenses, topProducts30, recentProducts, recentCourses, chartData } = usePage().props as any;
+    const { adminStats, recentOrders, recentTickets, recentLicenses, topProducts30, recentProducts, recentCourses, chartData } = usePage().props as { adminStats?: AdminStats; recentOrders?: Order[]; recentTickets?: Ticket[]; recentLicenses?: License[]; topProducts30?: TopProduct[]; recentProducts?: Product[]; recentCourses?: Course[]; chartData?: ChartData[] };
+
+    const getLicensesTotal = (licenses: number | { total: number; active: number }) => {
+        return typeof licenses === 'number' ? licenses : licenses.total;
+    };
+    const getLicensesActive = (licenses: number | { total: number; active: number }) => {
+        return typeof licenses === 'number' ? 0 : licenses.active;
+    };
+    const getTicketsTotal = (tickets: number | { total: number; open: number }) => {
+        return typeof tickets === 'number' ? tickets : tickets.total;
+    };
+    const getTicketsOpen = (tickets: number | { total: number; open: number }) => {
+        return typeof tickets === 'number' ? 0 : tickets.open;
+    };
 
     const stats = adminStats ?? {
         products: 0,
@@ -21,6 +110,8 @@ export default function AdminIndex() {
         tickets: { total: 0, open: 0 },
         downloads_30d: 0,
         renewals_due_30d: 0,
+        course_enrollments_30d: 0,
+        avg_course_progress: 0,
     };
 
     const cfa = (cents: number) => formatCFA(cents ?? 0);
@@ -44,7 +135,7 @@ export default function AdminIndex() {
     }: {
         title: string;
         value: string | number;
-        icon: any;
+        icon: React.ComponentType<Record<string, unknown>>;
         description?: string;
         action?: React.ReactNode;
         variant?: "default" | "secondary";
@@ -224,8 +315,8 @@ export default function AdminIndex() {
                                 />
                                 <StatCard
                                     title="Licences"
-                                    value={stats.licenses.total}
-                                    secondaryValue={`${stats.licenses.active} actives`}
+                                    value={getLicensesTotal(stats.licenses)}
+                                    secondaryValue={`${getLicensesActive(stats.licenses)} actives`}
                                     icon={Receipt}
                                     action={
                                         <Button asChild size="sm">
@@ -244,7 +335,7 @@ export default function AdminIndex() {
 
                                 <StatCard
                                     title="Commandes"
-                                    value={stats.orders_30d}
+                                    value={stats.orders_30d || 0}
                                     icon={TrendingUp}
                                     variant="secondary"
                                     description="Nouvelles commandes"
@@ -259,8 +350,8 @@ export default function AdminIndex() {
 
                                 <StatCard
                                     title="Téléchargements"
-                                    value={stats.downloads_30d}
-                                    secondaryValue={`${stats.downloads_30d} téléchargements`}
+                                    value={stats.downloads_30d || 0}
+                                    secondaryValue={`${stats.downloads_30d || 0} téléchargements`}
                                     icon={Download}
                                     action={
                                         <Button asChild size="sm" variant="outline">
@@ -307,8 +398,8 @@ export default function AdminIndex() {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <StatCard
                                     title="Tickets support"
-                                    value={stats.tickets.total}
-                                    secondaryValue={`${stats.tickets.open} ouverts`}
+                                    value={getTicketsTotal(stats.tickets)}
+                                    secondaryValue={`${getTicketsOpen(stats.tickets)} ouverts`}
                                     icon={Ticket}
 
                                     action={
@@ -337,21 +428,21 @@ export default function AdminIndex() {
                     />
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 min-w-[300px]">
                         <div className="w-full min-w-[300px] h-fit">
-                            <OrdersChart data={chartData?.map((item: any) => ({
+                            <OrdersChart data={chartData?.map((item: ChartData) => ({
                                 date: item.date,
-                                value: item.orders
+                                value: item.orders || 0
                             }))} />
                         </div>
                         <div className="w-full min-w-[300px] h-fit ">
-                            <RevenueChart data={chartData?.map((item: any) => ({
+                            <RevenueChart data={chartData?.map((item: ChartData) => ({
                                 date: item.date,
-                                value: item.revenue
+                                value: item.revenue || 0
                             }))} />
                         </div>
                         <div className="lg:col-span-2 w-full min-w-[300px] h-[350px] sm:h-[400px]">
-                            <DownloadsChart data={chartData?.map((item: any) => ({
+                            <DownloadsChart data={chartData?.map((item: ChartData) => ({
                                 date: item.date,
-                                value: item.downloads
+                                value: item.downloads || 0
                             }))} />
                         </div>
                     </div>
@@ -366,15 +457,15 @@ export default function AdminIndex() {
                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
                         <StatCard
                             title="Commandes (30j)"
-                            value={stats.orders_30d}
+                            value={stats.orders_30d ?? 0}
                             icon={Receipt}
-                            description={`${stats.licenses?.active ?? 0} licences actives`}
+                            description={`${typeof stats.licenses === 'object' ? stats.licenses.active : 0} licences actives`}
                             variant="secondary"
                             trend={{ value: 8, label: "nouvelles commandes" }}
                         />
                         <StatCard
                             title="Tickets Support"
-                            value={`${stats.tickets?.open ?? 0}/${stats.tickets?.total ?? 0}`}
+                            value={`${getTicketsOpen(stats.tickets)}/${getTicketsTotal(stats.tickets)}`}
                             icon={Ticket}
                             description="Ouverts / Total"
                             variant="secondary"
@@ -408,11 +499,11 @@ export default function AdminIndex() {
                             description="5 commandes les plus récentes"
                             emptyMessage="Aucune commande récente pour le moment"
                         >
-                            {(recentOrders ?? []).map((order: any) => (
+                            {(recentOrders ?? []).map((order: Order) => (
                                 <ListItem
                                     key={order.id}
                                     primary={order.product?.name ?? 'Produit'}
-                                    secondary={new Date(order.created_at).toLocaleDateString('fr-FR')}
+                                    secondary={order.created_at ? new Date(order.created_at).toLocaleDateString('fr-FR') : ''}
                                     value={cfa(order.amount ?? 0)}
                                     status={order.status}
                                     badge={order.product?.type}
@@ -425,7 +516,7 @@ export default function AdminIndex() {
                                 description="5 licences les plus récentes"
                                 emptyMessage="Aucune licence créée récemment"
                             >
-                                {(recentLicenses ?? []).map((license: any) => (
+                                {(recentLicenses ?? []).map((license: License) => (
                                     <ListItem
                                         key={license.id}
                                         primary={license.product?.name ?? 'Produit'}
@@ -441,13 +532,13 @@ export default function AdminIndex() {
                                 description="5 tickets les plus récents"
                                 emptyMessage="Aucun ticket support récent"
                             >
-                                {(recentTickets ?? []).map((ticket: any) => (
+                                {(recentTickets ?? []).map((ticket: Ticket) => (
                                     <ListItem
                                         key={ticket.id}
                                         primary={ticket.subject}
                                         secondary={ticket.user?.name ?? 'Utilisateur'}
                                         status={ticket.status}
-                                        date={new Date(ticket.created_at).toLocaleDateString('fr-FR')}
+                                        date={ticket.created_at ? new Date(ticket.created_at).toLocaleDateString('fr-FR') : ''}
                                         badge={ticket.priority}
                                     />
                                 ))}
@@ -468,7 +559,7 @@ export default function AdminIndex() {
                             description="Produits les plus vendus par chiffre d'affaires"
                             emptyMessage="Aucune vente de produit enregistrée"
                         >
-                            {(topProducts30 ?? []).map((product: any) => (
+                            {(topProducts30 ?? []).map((product: TopProduct) => (
                                 <ListItem
                                     key={product.product_id}
                                     primary={product.product?.name ?? 'Produit'}
@@ -485,12 +576,12 @@ export default function AdminIndex() {
                                 description="5 produits ajoutés récemment"
                                 emptyMessage="Aucun produit créé pour le moment"
                             >
-                                {(recentProducts ?? []).map((product: any) => (
+                                {(recentProducts ?? []).map((product: Product) => (
                                     <ListItem
                                         key={product.id}
                                         primary={product.name}
                                         secondary={`SKU ${product.sku} ${product.version ? `• v${product.version}` : ''}`}
-                                        date={new Date(product.created_at).toLocaleDateString('fr-FR')}
+                                        date={product.created_at ? new Date(product.created_at).toLocaleDateString('fr-FR') : ''}
                                         badge="Nouveau"
                                     />
                                 ))}
@@ -501,11 +592,11 @@ export default function AdminIndex() {
                                 description="5 formations ajoutées récemment"
                                 emptyMessage="Aucune formation créée pour le moment"
                             >
-                                {(recentCourses ?? []).map((course: any) => (
+                                {(recentCourses ?? []).map((course: Course) => (
                                     <ListItem
                                         key={course.id}
                                         primary={course.title}
-                                        date={new Date(course.created_at).toLocaleDateString('fr-FR')}
+                                        date={course.created_at ? new Date(course.created_at).toLocaleDateString('fr-FR') : ''}
                                         badge="Formation"
                                     />
                                 ))}

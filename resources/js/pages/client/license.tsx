@@ -80,7 +80,6 @@ export default function License({ licenses: initialLicenses }: { licenses?: Lice
         setTimeout(() => setCopiedKey(null), 2000);
     };
     type Status = "active" | "expired" | "suspended" | "pending";
-    type Support = "Premium" | "Standard" | "Basic";
 
     const getStatusConfig = (status: Status) => {
         const config: Record<Status, { variant: "default" | "destructive" | "secondary" | "outline"; text: string }> = {

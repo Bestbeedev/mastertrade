@@ -12,12 +12,53 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { toast } from "sonner";
 import { route } from "ziggy-js";
 
-export default function AdminLicenses({ licenses = [], products = [], users = [], filters = {} as any }: { licenses?: any[]; products?: any[]; users?: any[]; filters?: any }) {
+interface License {
+    id: string;
+    key?: string;
+    status?: string;
+    type?: string;
+    expiry_date?: string;
+    max_activations?: number;
+    user_id?: string;
+    product_id?: string;
+    last_machine?: string;
+    last_mac_address?: string;
+    last_activated_at?: string;
+    last_device_id?: string;
+    activations_count?: number;
+    devices?: Device[];
+    user?: { id: string; name: string; email: string };
+    product?: { id: string; name: string; version?: string };
+}
+
+interface Device {
+    mac_address?: string;
+    device_id?: string;
+    machine?: string;
+}
+
+interface User {
+    id: string;
+    name: string;
+    email: string;
+}
+
+interface Product {
+    id: string;
+    name: string;
+}
+
+interface LicenseFilters {
+    q?: string;
+    status?: string;
+}
+
+export default function AdminLicenses({ licenses = [], products = [], users = [], filters = {} }: { licenses?: License[]; products?: Product[]; users?: User[]; filters?: LicenseFilters }) {
     const [activeTab, setActiveTab] = React.useState("list");
     const [query, setQuery] = React.useState(filters.q ?? "");
     const [status, setStatus] = React.useState(filters.status ?? "");
-    const [editing, setEditing] = React.useState<any | null>(null);
-    const [licenseToDelete, setLicenseToDelete] = React.useState<any | null>(null);
+    const [editing, setEditing] = React.useState<License | null>(null);
+    const [licenseToDelete, setLicenseToDelete] = React.useState<License | null>(null);
     const getDaysRemaining = (dateStr?: string) => {
         if (!dateStr) return null;
         const today = new Date();
@@ -53,14 +94,14 @@ export default function AdminLicenses({ licenses = [], products = [], users = []
         type: "subscription",
         status: "active",
         expiry_date: "",
-        max_activations: 1 as number | string,
+        max_activations: 1 as number,
     });
 
     const editForm = useForm({
         status: "",
         type: "",
         expiry_date: "",
-        max_activations: "" as any,
+        max_activations: "",
         user_id: "",
         product_id: "",
         regenerate_key: false,
@@ -86,13 +127,13 @@ export default function AdminLicenses({ licenses = [], products = [], users = []
         });
     };
 
-    const startEdit = (l: any) => {
+    const startEdit = (l: License) => {
         setEditing(l);
         editForm.setData({
             status: l.status ?? "",
             type: l.type ?? "",
             expiry_date: l.expiry_date ? new Date(l.expiry_date).toISOString().slice(0, 10) : "",
-            max_activations: l.max_activations ?? "",
+            max_activations: (l.max_activations ?? 1).toString(),
             user_id: l.user_id ?? "",
             product_id: l.product_id ?? "",
             regenerate_key: false,
@@ -204,7 +245,7 @@ export default function AdminLicenses({ licenses = [], products = [], users = []
                                                     <TableCell>{l.last_machine ?? "—"}</TableCell>
                                                     <TableCell className="font-mono text-xs">
                                                         {Array.isArray(l.devices) && l.devices.length > 0
-                                                            ? l.devices.slice(0, 3).map((d: any) => (d?.mac_address || d?.device_id || "—")).filter(Boolean).join(" , ")
+                                                            ? l.devices.slice(0, 3).map((d: Device) => (d?.mac_address || d?.device_id || "—")).filter(Boolean).join(" , ")
                                                             : (l.last_mac_address ?? "—")}
                                                     </TableCell>
                                                     <TableCell>{l.last_activated_at ? new Date(l.last_activated_at).toLocaleString('fr-FR') : "—"}</TableCell>
@@ -250,7 +291,7 @@ export default function AdminLicenses({ licenses = [], products = [], users = []
                                                             <SelectValue placeholder="Sélectionner" />
                                                         </SelectTrigger>
                                                         <SelectContent>
-                                                            {users.map((u: any) => (
+                                                            {users.map((u: User) => (
                                                                 <SelectItem key={u.id} value={u.id}>{u.name} ({u.email})</SelectItem>
                                                             ))}
                                                         </SelectContent>
@@ -263,7 +304,7 @@ export default function AdminLicenses({ licenses = [], products = [], users = []
                                                             <SelectValue placeholder="Sélectionner" />
                                                         </SelectTrigger>
                                                         <SelectContent>
-                                                            {products.map((p: any) => (
+                                                            {products.map((p: Product) => (
                                                                 <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
                                                             ))}
                                                         </SelectContent>
@@ -328,14 +369,14 @@ export default function AdminLicenses({ licenses = [], products = [], users = []
                                                     <div className="space-y-2 md:col-span-2">
                                                         <Label>Appareils enregistrés (lecture seule)</Label>
                                                         <div className="text-xs space-y-1">
-                                                            {(Array.isArray((editing as any).devices) ? (editing as any).devices : []).slice(0, 3).map((d: any, idx: number) => (
+                                                            {(Array.isArray(editing?.devices) ? editing.devices : []).slice(0, 3).map((d: Device, idx: number) => (
                                                                 <div key={idx} className="flex flex-wrap gap-2">
                                                                     <span className="font-mono">{d?.mac_address || '—'}</span>
                                                                     <span className="text-muted-foreground">({d?.device_id || '—'})</span>
                                                                     <span className="text-muted-foreground">• {d?.machine || '—'}</span>
                                                                 </div>
                                                             ))}
-                                                            {(!Array.isArray((editing as any).devices) || (editing as any).devices.length === 0) ? (
+                                                            {(!Array.isArray(editing?.devices) || editing.devices.length === 0) ? (
                                                                 <div className="text-muted-foreground">—</div>
                                                             ) : null}
                                                         </div>
@@ -424,7 +465,7 @@ export default function AdminLicenses({ licenses = [], products = [], users = []
                                         </div>
                                         <div className="space-y-2">
                                             <Label htmlFor="c_max">Max activations</Label>
-                                            <Input id="c_max" type="number" min={1} value={createForm.data.max_activations} onChange={(e) => createForm.setData("max_activations", e.target.value)} />
+                                            <Input id="c_max" type="number" min={1} value={createForm.data.max_activations} onChange={(e) => createForm.setData("max_activations", Number(e.target.value) || 1)} />
                                         </div>
                                     </div>
                                     <div className="flex justify-end">

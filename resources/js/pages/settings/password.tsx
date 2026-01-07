@@ -84,7 +84,7 @@ function PasswordInput({
 }: {
     id: string;
     label: string;
-    ref: any;
+    ref: React.RefObject<HTMLInputElement | null>;
     error?: string;
     value: string;
     onChange: (value: string) => void;
@@ -137,12 +137,13 @@ function PasswordForm({
 }: {
     processing: boolean;
     recentlySuccessful: boolean;
-    errors: any;
-    formData: any;
+    errors: Record<string, string>;
+    formData: Record<string, string>;
     onFormDataChange: (field: string, value: string) => void;
 }) {
     const passwordInput = useRef<HTMLInputElement>(null);
     const currentPasswordInput = useRef<HTMLInputElement>(null);
+    const passwordConfirmationInput = useRef<HTMLInputElement>(null);
 
     return (
         <Card>
@@ -209,7 +210,7 @@ function PasswordForm({
                         <PasswordInput
                             id="password_confirmation"
                             label="Confirmer le mot de passe"
-                            ref={null}
+                            ref={passwordConfirmationInput}
                             error={errors.password_confirmation}
                             value={formData.password_confirmation}
                             onChange={(value) => onFormDataChange('password_confirmation', value)}

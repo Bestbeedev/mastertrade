@@ -12,11 +12,32 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { toast } from "sonner";
 import { route } from "ziggy-js";
 
-export default function AdminUsers({ users = [], roles = [], filters = {} as any }: { users?: any[]; roles?: any[]; filters?: any }) {
+interface User {
+    id: string;
+    name: string;
+    email: string;
+    phone?: string;
+    country?: string;
+    role_id?: string;
+    role?: { id: string; name: string };
+    created_at?: string;
+    updated_at?: string;
+}
+
+interface Role {
+    id: string;
+    name: string;
+}
+
+interface UserFilters {
+    q?: string;
+}
+
+export default function AdminUsers({ users = [], roles = [], filters = {} }: { users?: User[]; roles?: Role[]; filters?: UserFilters }) {
     const [activeTab, setActiveTab] = React.useState("list");
     const [query, setQuery] = React.useState(filters.q ?? "");
-    const [editing, setEditing] = React.useState<any | null>(null);
-    const [userToDelete, setUserToDelete] = React.useState<any | null>(null);
+    const [editing, setEditing] = React.useState<User | null>(null);
+    const [userToDelete, setUserToDelete] = React.useState<User | null>(null);
 
     const createForm = useForm({
         name: "",
@@ -56,7 +77,7 @@ export default function AdminUsers({ users = [], roles = [], filters = {} as any
         });
     };
 
-    const startEdit = (u: any) => {
+    const startEdit = (u: User) => {
         setEditing(u);
         editForm.setData({
             name: u.name ?? "",
@@ -193,7 +214,7 @@ export default function AdminUsers({ users = [], roles = [], filters = {} as any
                                                         </SelectTrigger>
                                                         <SelectContent>
 
-                                                            {roles.map((r: any) => (
+                                                            {roles.map((r: Role) => (
                                                                 <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>
                                                             ))}
                                                         </SelectContent>

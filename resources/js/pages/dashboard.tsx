@@ -116,8 +116,15 @@ export default function Page() {
     )
 }
 
+interface MyCourse {
+    course_id: string;
+    title?: string;
+    cover_image?: string;
+    progress_percent?: number;
+}
+
 export function MyCoursesSection() {
-    const { myCourses = [] } = usePage().props as any;
+    const { myCourses = [] } = usePage().props as { myCourses?: MyCourse[] };
     if (!Array.isArray(myCourses)) return null;
     return (
         <Card>
@@ -135,7 +142,7 @@ export function MyCoursesSection() {
                     {myCourses.length === 0 && (
                         <div className="text-sm text-muted-foreground">Vous n'êtes inscrit à aucune formation pour l'instant.</div>
                     )}
-                    {myCourses.map((c: any) => (
+                    {myCourses.map((c: MyCourse) => (
                         <Link key={c.course_id} href={route('courses.show', c.course_id)} className="border rounded-lg  shadow-lg p-3 hover:scale-100 transition-all duration-200 group">
                             {c.cover_image ? (
                                 <img src={`/storage/${c.cover_image}`} alt="Cover" className="h-28 w-full object-cover rounded-md mb-2" />
@@ -157,9 +164,25 @@ export function MyCoursesSection() {
         </Card>
     );
 }
+interface Software {
+    id: string;
+    name?: string;
+    version?: string;
+    description?: string;
+    status?: string;
+    updated_at?: string;
+    category?: string;
+    expiry?: string;
+    download_available?: boolean;
+    product_id?: string;
+    icon?: React.ComponentType<Record<string, unknown>>;
+    iconColor?: string;
+    bgColor?: string;
+}
+
 export function ActiveSoftwareSection() {
-    const { activeSoftware: activeSoftwareProp } = usePage().props as any;
-    const activeSoftware = (Array.isArray(activeSoftwareProp) ? activeSoftwareProp : []).map((s: any) => ({
+    const { activeSoftware: activeSoftwareProp } = usePage().props as { activeSoftware?: Software[] };
+    const activeSoftware = (Array.isArray(activeSoftwareProp) ? activeSoftwareProp : []).map((s: Software) => ({
         ...s,
         icon: IconTrendingUp,
         iconColor: "text-blue-600 dark:text-blue-400",
@@ -182,16 +205,16 @@ export function ActiveSoftwareSection() {
                     {activeSoftware.length === 0 && (
                         <div className="text-sm text-muted-foreground">Aucun logiciel actif pour le moment.</div>
                     )}
-                    {activeSoftware.map((software: any) => (
+                    {activeSoftware.map((software: Software) => (
                         <div key={software.id} className="bg-card shadow-lg hover:scale-105 border rounded-lg p-4 transition-all duration-200 group">
                             <div className="flex items-start justify-between mb-3">
                                 <div className="flex items-center gap-3">
-                                    <div className={`w-10 h-10 ${software.bgColor} rounded-lg flex items-center justify-center group-hover:scale-105 transition-transform`}>
-                                        <software.icon className={`h-5 w-5 ${software.iconColor}`} />
+                                    <div className={`w-10 h-10 ${software.bgColor} rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform`}>
+                                        <IconTrendingUp className={`h-5 w-5 ${software.iconColor || 'text-blue-600'}`} />
                                     </div>
                                     <div>
                                         <h3 className="font-semibold text-foreground">{software.name}</h3>
-                                        <p className="text-xs text-muted-foreground">{software.category}</p>
+                                        <p className="text-xs text-muted-foreground">{new Date(software.updated_at || '').toLocaleDateString('fr-FR')}</p>
                                     </div>
                                 </div>
                                 <Badge variant={
@@ -239,8 +262,18 @@ export function ActiveSoftwareSection() {
     )
 }
 
+interface Activity {
+    id?: string;
+    type?: string;
+    title?: string;
+    description?: string;
+    created_at?: string;
+    date?: string;
+    product?: string;
+}
+
 export function RecentActivitySection() {
-    const { recentActivity = [] } = usePage().props as any;
+    const { recentActivity = [] } = usePage().props as { recentActivity?: Activity[] };
     return (
         <Card>
             <CardHeader className="pb-4">
@@ -262,7 +295,7 @@ export function RecentActivitySection() {
                     <div className="p-6 text-sm text-muted-foreground">Aucune activité récente.</div>
                 ) : (
                     <div className="divide-y divide-border">
-                        {recentActivity.map((activity: any, idx: number) => (
+                        {recentActivity.map((activity: Activity, idx: number) => (
                             <div key={idx} className="p-4 flex items-center gap-3 hover:bg-muted/50 transition-colors first:rounded-t-lg last:rounded-b-lg">
                                 <div className={`w-8 h-8 bg-blue-100 dark:bg-blue-900/20 rounded-lg flex items-center justify-center flex-shrink-0`}>
                                     <IconDownload className={`h-4 w-4 text-blue-600 dark:text-blue-400`} />
@@ -275,10 +308,10 @@ export function RecentActivitySection() {
                                 </div>
                                 <div className="text-right flex-shrink-0">
                                     <p className="text-xs font-medium text-foreground">
-                                        {new Date(activity.date).toLocaleDateString('fr-FR')}
+                                        {new Date(activity.date || activity.created_at || '').toLocaleDateString('fr-FR')}
                                     </p>
                                     <p className="text-xs text-muted-foreground">
-                                        {new Date(activity.date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                                        {new Date(activity.date || activity.created_at || '').toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
                                     </p>
                                 </div>
                             </div>
@@ -290,8 +323,16 @@ export function RecentActivitySection() {
     )
 }
 
+interface RecommendedCourse {
+    id: string;
+    title?: string;
+    description?: string;
+    level?: string;
+    duration?: string;
+}
+
 export function RecommendedCoursesSection() {
-    const { recommendedCourses = [] } = usePage().props as any;
+    const { recommendedCourses = [] } = usePage().props as { recommendedCourses?: RecommendedCourse[] };
     return (
         <Card>
             <CardHeader className="pb-4">
@@ -311,7 +352,7 @@ export function RecommendedCoursesSection() {
             <CardContent>
                 {Array.isArray(recommendedCourses) && recommendedCourses.length > 0 ? (
                     <div className="space-y-4">
-                        {recommendedCourses.map((course: any) => (
+                        {recommendedCourses.map((course: RecommendedCourse) => (
                             <div key={course.id} className="flex items-center gap-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors group">
                                 <div className={`w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform`}>
                                     <IconTrendingUp className="h-6 w-6 text-white" />

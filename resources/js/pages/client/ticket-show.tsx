@@ -13,21 +13,41 @@ import Dropzone from "@/components/ui/dropzone";
 import { BreadcrumbItem } from "@/types";
 import { Separator } from "@/components/ui/separator";
 
+interface Ticket {
+    id?: string;
+    subject?: string;
+    status?: string;
+    priority?: string;
+    description?: string;
+    message?: string;
+    created_at?: string;
+    updated_at?: string;
+    user?: { id: string; name: string; email: string };
+    order?: { id: string; amount?: number; product?: { name: string } };
+    license?: { id: string; key?: string; product?: { name: string } };
+    replies?: Array<{ message: string; user?: { name: string; email: string }; created_at?: string }>;
+    messages?: Array<{ message: string; user?: { name: string; email: string }; created_at?: string }>;
+}
+
+interface Auth {
+    user?: { id: string; name: string; email: string };
+}
+
 export default function TicketShow() {
-    const { ticket } = usePage().props as any;
-    const isAdmin = !!(usePage().props as any)?.isAdmin;
-    const currentUserId = (usePage().props as any)?.auth?.user?.id;
+    const { ticket, isAdmin = false, auth } = usePage().props as { ticket?: Ticket; isAdmin?: boolean; auth?: Auth };
     const breadcrumbs: BreadcrumbItem[] = [
         { title: "Tickets", href: "/client/ticket" },
-        { title: ticket?.subject || "Ticket", href: route('supportsTickets.show', ticket?.id) },
+        { title: ticket?.subject || "Ticket", href: route('supportsTickets.show', ticket?.id || '') },
     ];
 
     type TicketStatus = "open" | "pending" | "closed";
-    const statusConfig: Record<TicketStatus, { variant: "destructive" | "default" | "secondary"; text: string; icon: any }> = {
+    const statusConfig: Record<TicketStatus, { variant: "destructive" | "default" | "secondary"; text: string; icon: React.ComponentType<Record<string, unknown>> }> = {
         open: { variant: "destructive", text: "Ouvert", icon: AlertCircle },
         pending: { variant: "default", text: "En cours", icon: Clock },
         closed: { variant: "secondary", text: "Fermé", icon: CheckCircle },
     };
+
+    const currentUserId = auth?.user?.id;
 
     const statusKey = ((ticket?.status === 'in_progress') ? 'pending' : (ticket?.status ?? 'open')) as TicketStatus;
     const StatusIcon = statusConfig[statusKey].icon;
@@ -40,7 +60,7 @@ export default function TicketShow() {
             return;
         }
         const t = toast.loading("Envoi de la réponse...");
-        replyForm.post(route('supportsTickets.reply', ticket.id), {
+        replyForm.post(route('supportsTickets.reply', ticket?.id || ''), {
             onSuccess: () => {
                 toast.success("Réponse envoyée", { id: t });
                 replyForm.reset('message');
@@ -53,14 +73,14 @@ export default function TicketShow() {
     const { post: postAction, processing } = useForm({});
     const onClose = () => {
         const t = toast.loading("Fermeture du ticket...");
-        postAction(route('supportsTickets.close', ticket.id), {
+        postAction(route('supportsTickets.close', ticket?.id || ''), {
             onSuccess: () => toast.success("Ticket fermé", { id: t }),
             onError: () => toast.error("Erreur lors de la fermeture", { id: t })
         });
     };
     const onReopen = () => {
         const t = toast.loading("Réouverture du ticket...");
-        postAction(route('supportsTickets.reopen', ticket.id), {
+        postAction(route('supportsTickets.reopen', ticket?.id || ''), {
             onSuccess: () => toast.success("Ticket rouvert", { id: t }),
             onError: () => toast.error("Erreur lors de la réouverture", { id: t })
         });

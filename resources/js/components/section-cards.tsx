@@ -38,13 +38,13 @@ interface DashboardStats {
 }
 
 interface StatConfig {
-    icon: React.ComponentType<any>;
+    icon: React.ComponentType<Record<string, unknown>>;
     bgLight: string;
     iconColor: string;
     badgeColor: string;
     textColor: string;
-    trendIcon: React.ComponentType<any>;
-    statusIcon: React.ComponentType<any>;
+    trendIcon: React.ComponentType<Record<string, unknown>>;
+    statusIcon: React.ComponentType<Record<string, unknown>>;
 }
 
 interface StatData {

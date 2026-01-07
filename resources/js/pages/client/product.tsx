@@ -7,7 +7,27 @@ import { Package, Shield, Download, ArrowLeft } from "lucide-react";
 import { route } from "ziggy-js";
 import { formatCFA } from "@/lib/utils";
 
-export default function Product({ product, canDownload = false, hasActiveLicense = false, hasPaidOrder = false }: { product?: any; canDownload?: boolean; hasActiveLicense?: boolean; hasPaidOrder?: boolean }) {
+interface Product {
+    id?: string;
+    name?: string;
+    description?: string;
+    price?: number;
+    price_cents?: number;
+    version?: string;
+    sku?: string;
+    download_url?: string;
+    cover_image?: string;
+    features?: string[];
+    requirements?: string;
+    category?: string;
+    is_paid?: boolean;
+    requires_license?: boolean;
+    size?: string;
+    tags?: string[];
+    security?: string;
+}
+
+export default function Product({ product, canDownload, hasActiveLicense, hasPaidOrder }: { product?: Product; canDownload?: boolean; hasActiveLicense?: boolean; hasPaidOrder?: boolean }) {
     if (!product) {
         return (
             <AppLayout breadcrumbs={[{ title: "Catalogue", href: route('catalogs') }, { title: "Produit", href: "" }]}>
@@ -42,10 +62,10 @@ export default function Product({ product, canDownload = false, hasActiveLicense
     const isPaid = priceCents > 0;
     const requiresLicense = !!data.requires_license;
 
-    const sizeLabel = data.size ? `${Math.round((data.size / (1024 * 1024)) * 10) / 10} Mo` : "—";
+    const sizeLabel = typeof data.size === 'number' ? `${Math.round((data.size / (1024 * 1024)) * 10) / 10} Mo` : (data.size || "—");
 
     return (
-        <AppLayout breadcrumbs={[{ title: "Catalogue", href: route('catalogs') }, { title: data.name, href: "" }]}>
+        <AppLayout breadcrumbs={[{ title: "Catalogue", href: route('catalogs') }, { title: data.name || "Produit", href: "" }]}>
             <Head title={data.name} />
 
             <div className="w-full px-4 sm:px-6 lg:px-8 py-6">

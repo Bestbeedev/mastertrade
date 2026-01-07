@@ -9,35 +9,68 @@ import { route } from "ziggy-js";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
+interface Lesson {
+    id: string;
+    title?: string;
+    type?: string;
+    content_url?: string;
+    duration_seconds?: number;
+    position?: number;
+    moduleTitle?: string;
+}
+
+interface Module {
+    id?: string;
+    title?: string;
+    description?: string;
+    position?: number;
+    lessons?: Lesson[];
+}
+
+interface Course {
+    id: string;
+    title?: string;
+    description?: string;
+    intro?: string;
+    what_you_will_learn?: string;
+    requirements?: string;
+    audience?: string;
+    level?: string;
+    tags?: string;
+    is_paid?: boolean;
+    price?: number;
+    modules?: Module[];
+    cover_image?: string;
+    created_at?: string;
+}
+
 export default function Course() {
-    const { course, is_enrolled = false, progress_percent = 0, completed_lessons = [] } = usePage().props as any;
+    const { course, is_enrolled = false, progress_percent = 0, completed_lessons = [] } = usePage().props as { course?: Course; is_enrolled?: boolean; progress_percent?: number; completed_lessons?: string[] };
 
     const modules = course?.modules || [];
     const modulesCount = modules.length;
-    const lessonsCount = useMemo(() => modules.reduce((sum: number, m: any) => sum + ((m.lessons || []).length), 0), [modules]);
+    const lessonsCount = useMemo(() => modules.reduce((sum: number, m: Module) => sum + ((m.lessons || []).length), 0), [modules]);
     const flatLessons = useMemo(() => {
-        const arr: any[] = [];
-        modules.forEach((m: any) => (m.lessons || []).forEach((l: any) => arr.push({ ...l, moduleTitle: m.title })));
+        const arr: Lesson[] = [];
+        modules.forEach((m: Module) => (m.lessons || []).forEach((l: Lesson) => arr.push({ ...l, moduleTitle: m.title || '' })));
         return arr;
     }, [modules]);
 
-    const firstUncompleted = flatLessons.find((l) => !(completed_lessons as any[])?.includes(l.id)) || flatLessons[0];
-    const [activeLesson, setActiveLesson] = useState<any>(firstUncompleted || null);
+    const firstUncompleted = flatLessons.find((l) => !(completed_lessons || []).includes(l.id)) || flatLessons[0];
+    const [activeLesson, setActiveLesson] = useState<Lesson | null>(firstUncompleted || null);
     const [secondsWatched, setSecondsWatched] = useState<number>(0);
-    const [timerOn, setTimerOn] = useState<boolean>(false);
 
     // Simple timer while viewing the lesson section (best-effort)
     useEffect(() => {
         setSecondsWatched(0);
-        setTimerOn(true);
         const iv = setInterval(() => setSecondsWatched((s) => s + 1), 1000);
-        return () => { clearInterval(iv); setTimerOn(false); };
+        return () => { clearInterval(iv); };
     }, [activeLesson?.id]);
 
     const enrollForm = useForm({});
-    const onEnroll = () => {
-        const t = toast.loading("Inscription en cours...");
-        enrollForm.post(route('courses.enroll', course.id), {
+    const handleEnroll = () => {
+        const t = toast.loading('Inscription...');
+        enrollForm.post(route('courses.enroll', course?.id || ''), {
             onSuccess: () => toast.success("Inscription effectuée", { id: t }),
             onError: () => toast.error("Impossible de s'inscrire", { id: t }),
         });
@@ -58,7 +91,7 @@ export default function Course() {
             seconds_watched: secondsWatched,
             completed: done,
         });
-        completeForm.post(route('courses.complete-lesson', course.id), {
+        completeForm.post(route('courses.complete-lesson', course?.id || ''), {
             preserveScroll: true,
             onSuccess: () => toast.success("Progression mise à jour", { id: t }),
             onError: () => toast.error("Erreur de progression", { id: t }),
@@ -84,7 +117,10 @@ export default function Course() {
     };
 
     return (
-        <AppLayout breadcrumbs={[{ title: "Formations", href: route('courses') }, { title: course?.title || 'Formation', href: '' }]}>
+        <AppLayout breadcrumbs={[
+            { title: "Formations", href: route('courses') },
+            { title: course?.title || 'Formation', href: "" }
+        ]}>
             <Head title={course?.title || 'Formation'} />
 
             <div className="w-full px-4 sm:px-6 lg:px-8 py-6">
@@ -95,7 +131,7 @@ export default function Course() {
                         </Link>
                     </Button>
                     {!is_enrolled && (
-                        <Button onClick={onEnroll}>
+                        <Button onClick={handleEnroll}>
                             S'inscrire au cours
                         </Button>
                     )}
@@ -118,7 +154,7 @@ export default function Course() {
                                     <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
                                         <div className="flex items-center gap-1">
                                             <Calendar className="h-4 w-4" />
-                                            <span>Créé le {course?.created_at ? new Date(course.created_at).toLocaleDateString('fr-FR') : '—'}</span>
+                                            <p className="text-sm text-muted-foreground">Créé le {course?.created_at ? new Date(course.created_at).toLocaleDateString('fr-FR') : ''}</p>
                                         </div>
                                         <div className="flex items-center gap-1">
                                             <Layers className="h-4 w-4" />
@@ -224,7 +260,7 @@ export default function Course() {
                                                     Inscrivez-vous à cette formation pour accéder à tous les contenus.
                                                 </p>
                                             </div>
-                                            <Button onClick={onEnroll} size="lg" className="gap-2">
+                                            <Button onClick={handleEnroll} size="lg" className="gap-2">
                                                 <PlayCircle className="h-5 w-5" />
                                                 S'inscrire maintenant
                                             </Button>
@@ -351,7 +387,7 @@ export default function Course() {
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-4 max-h-[600px] overflow-y-auto">
-                                {(modules || []).map((m: any, mi: number) => (
+                                {(modules || []).map((m: Module, mi: number) => (
                                     <div key={m.id || mi} className="space-y-3">
                                         <div className="flex items-center gap-2">
                                             <FolderOpen className="h-4 w-4 text-primary" />
@@ -363,7 +399,7 @@ export default function Course() {
                                             </span>
                                         </div>
                                         <div className="space-y-2 ml-6">
-                                            {(m.lessons || []).map((l: any, li: number) => {
+                                            {(m.lessons || []).map((l: Lesson, li: number) => {
                                                 const completed = (completed_lessons || []).includes(l.id);
                                                 const isActive = activeLesson?.id === l.id;
                                                 return (

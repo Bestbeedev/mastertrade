@@ -133,7 +133,7 @@ export default function AdminCourseEdit() {
         e.preventDefault();
         const t = toast.loading('Mise à jour de la formation...');
         // Method spoofing for PATCH
-        const untransform = form.transform((data) => ({ ...data, _method: 'patch' }));
+        form.transform((data) => ({ ...data, _method: 'patch' }));
         form.patch(route('admin.courses.update', course?.id || ''), {
             onSuccess: () => {
                 toast.success('Formation mise à jour', { id: t });
