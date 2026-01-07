@@ -8,6 +8,6 @@ export function useIsAdmin() {
   if (typeof auth?.isAdmin === 'boolean') return auth.isAdmin;
 
   const user = auth?.user || storeUser;
-  const roleName = ((user as any)?.role?.name || (user as any)?.role_name || "").toString().toLowerCase();
+  const roleName = ((user as { role?: { name?: string }; role_name?: string })?.role?.name || (user as { role?: { name?: string }; role_name?: string })?.role_name || "").toString().toLowerCase();
   return roleName === "admin" || roleName === "administrator" || roleName === "superadmin";
 }

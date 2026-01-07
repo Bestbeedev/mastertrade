@@ -15,8 +15,47 @@ import { ArrowLeft, Plus, Trash2, Info, Tag, FileText, Image, BookOpen } from "l
 import Dropzone from "@/components/ui/dropzone";
 import type { BreadcrumbItem } from "@/types";
 
+interface Course {
+    id?: string;
+    title?: string;
+    description?: string;
+    intro?: string;
+    what_you_will_learn?: string;
+    requirements?: string;
+    audience?: string;
+    level?: string;
+    tags?: string;
+    is_paid?: boolean;
+    price?: number;
+    product_id?: string;
+    modules?: Module[];
+    cover_image?: File | null;
+}
+
+interface Module {
+    title: string;
+    description?: string;
+    position?: number;
+    lessons?: Lesson[];
+}
+
+interface Lesson {
+    title: string;
+    type: string;
+    content_url?: string;
+    is_preview?: boolean;
+    duration_seconds?: number;
+    position?: number;
+    file?: File;
+}
+
+interface Product {
+    id: string;
+    name: string;
+}
+
 export default function AdminCourseEdit() {
-    const { course, products = [] } = usePage().props as any;
+    const { course, products = [] } = usePage().props as { course?: Course; products?: Product[] };
 
     const breadcrumbs: BreadcrumbItem[] = [
         { title: "Admin", href: "/admin" },
@@ -24,7 +63,7 @@ export default function AdminCourseEdit() {
         { title: course?.title || "Éditer", href: route('admin.courses.edit', course?.id) },
     ];
 
-    const form = useForm<any>({
+    const form = useForm<Course>({
         title: course?.title || "",
         description: course?.description || "",
         intro: course?.intro || "",
@@ -34,21 +73,20 @@ export default function AdminCourseEdit() {
         level: course?.level || "",
         tags: course?.tags || "",
         is_paid: !!course?.is_paid,
-        price: course?.price ?? "",
+        price: course?.price ?? 0,
         product_id: course?.product_id || "",
         cover_image: null as File | null,
-        modules: (course?.modules || []).map((m: any, mi: number) => ({
+        modules: (course?.modules || []).map((m: Module, mi: number) => ({
             title: m.title,
             description: m.description || "",
             position: m.position ?? mi,
-            lessons: (m.lessons || []).map((les: any, li: number) => ({
+            lessons: (m.lessons || []).map((les: Lesson, li: number) => ({
                 title: les.title,
                 type: les.type,
                 content_url: les.content_url,
                 is_preview: !!les.is_preview,
-                duration_seconds: les.duration_seconds ?? "",
+                duration_seconds: typeof les.duration_seconds === 'number' ? les.duration_seconds : 0,
                 position: les.position ?? li,
-                // file?: new file to replace existing PDF
             })),
         })),
     });
@@ -64,7 +102,7 @@ export default function AdminCourseEdit() {
         modules.splice(mi, 1);
         form.setData("modules", modules.map((m, i) => ({ ...m, position: i })));
     };
-    const updateModule = (mi: number, patch: any) => {
+    const updateModule = (mi: number, patch: Partial<Module>) => {
         const modules = [...(form.data.modules || [])];
         modules[mi] = { ...modules[mi], ...patch };
         form.setData("modules", modules);
@@ -72,7 +110,7 @@ export default function AdminCourseEdit() {
     const addLesson = (mi: number) => {
         const modules = [...(form.data.modules || [])];
         const lessons = [...(modules[mi]?.lessons || [])];
-        lessons.push({ title: "", type: "video", content_url: "", is_preview: false, duration_seconds: "", position: lessons.length });
+        lessons.push({ title: "", type: "video", content_url: "", is_preview: false, duration_seconds: 0, position: lessons.length });
         modules[mi] = { ...modules[mi], lessons };
         form.setData("modules", modules);
     };
@@ -83,7 +121,7 @@ export default function AdminCourseEdit() {
         modules[mi] = { ...modules[mi], lessons: lessons.map((l, idx) => ({ ...l, position: idx })) };
         form.setData("modules", modules);
     };
-    const updateLesson = (mi: number, li: number, patch: any) => {
+    const updateLesson = (mi: number, li: number, patch: Partial<Lesson>) => {
         const modules = [...(form.data.modules || [])];
         const lessons = [...(modules[mi]?.lessons || [])];
         lessons[li] = { ...lessons[li], ...patch };
@@ -96,7 +134,7 @@ export default function AdminCourseEdit() {
         const t = toast.loading('Mise à jour de la formation...');
         // Method spoofing for PATCH
         const untransform = form.transform((data) => ({ ...data, _method: 'patch' }));
-        form.post(route('admin.courses.update', course.id), {
+        form.patch(route('admin.courses.update', course?.id || ''), {
             onSuccess: () => {
                 toast.success('Formation mise à jour', { id: t });
             },
@@ -111,7 +149,7 @@ export default function AdminCourseEdit() {
 
     const onDelete = () => {
         const t = toast.loading('Suppression en cours...');
-        destroy(route('admin.courses.destroy', course.id), {
+        destroy(route('admin.courses.destroy', course?.id || ''), {
             onSuccess: () => {
                 toast.success('Formation supprimée', { id: t });
             },
@@ -200,7 +238,7 @@ export default function AdminCourseEdit() {
                                                 <Select value={form.data.product_id} onValueChange={(v) => form.setData('product_id', v)}>
                                                     <SelectTrigger className="w-full"><SelectValue placeholder="Sélectionnez un produit" /></SelectTrigger>
                                                     <SelectContent>
-                                                        {products?.map((p: any) => (
+                                                        {products?.map((p: Product) => (
                                                             <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
                                                         ))}
                                                     </SelectContent>
@@ -223,7 +261,7 @@ export default function AdminCourseEdit() {
                                             {form.data.is_paid && (
                                                 <div className="space-y-2">
                                                     <Label htmlFor="price">Prix</Label>
-                                                    <Input id="price" type="number" min="0" step="0.01" value={form.data.price} onChange={(e) => form.setData('price', e.target.value)} />
+                                                    <Input id="price" type="number" min="0" step="0.01" value={form.data.price} onChange={(e) => form.setData('price', Number(e.target.value) || 0)} />
                                                 </div>
                                             )}
                                         </div>
@@ -246,7 +284,7 @@ export default function AdminCourseEdit() {
                                         </div>
                                         <div className="space-y-2">
                                             <Label htmlFor="requirements">Prérequis</Label>
-                                            <textarea id="requirements" value={form.data.requirements} onChange={(e) => form.setData('requirements', e.target.value)} rows={4} className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" placeholder={"Compétence A\nOutil B"} />
+                                            <textarea id="requirements" value={form.data.requirements} onChange={(e) => form.setData('requirements', e.target.value)} rows={3} placeholder="Prérequis pour suivre cette formation" className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" />
                                         </div>
                                         <div className="space-y-2 md:col-span-2">
                                             <Label htmlFor="audience">Pour qui ?</Label>
@@ -290,7 +328,7 @@ export default function AdminCourseEdit() {
                                         <Button type="button" variant="outline" onClick={addModule} className="gap-2"><Plus className="h-4 w-4" /> Ajouter un module</Button>
                                     </div>
                                     <div className="space-y-4">
-                                        {(form.data.modules || []).map((m: any, mi: number) => (
+                                        {(form.data.modules || []).map((m: Module, mi: number) => (
                                             <div key={mi} className="rounded-md border p-4 space-y-4">
                                                 <div className="flex items-start gap-4">
                                                     <div className="flex-1 grid gap-3 md:grid-cols-2">
@@ -311,7 +349,7 @@ export default function AdminCourseEdit() {
                                                         <Button type="button" variant="secondary" onClick={() => addLesson(mi)} className="gap-2"><Plus className="h-4 w-4" /> Ajouter une leçon</Button>
                                                     </div>
                                                     <div className="space-y-3">
-                                                        {(m.lessons || []).map((les: any, li: number) => (
+                                                        {(m.lessons || []).map((les: Lesson, li: number) => (
                                                             <div key={li} className="rounded border p-3 space-y-3">
                                                                 <div className="flex items-start gap-3">
                                                                     <div className="grid gap-3 md:grid-cols-2 flex-1">
@@ -347,7 +385,7 @@ export default function AdminCourseEdit() {
                                                                         )}
                                                                         <div className="space-y-1">
                                                                             <Label>Durée (secondes, optionnel)</Label>
-                                                                            <Input type="number" min="0" value={les.duration_seconds || ''} onChange={(e) => updateLesson(mi, li, { duration_seconds: e.target.value })} />
+                                                                            <Input id="duration_seconds" type="number" value={les.duration_seconds || ''} onChange={(e) => updateLesson(mi, li, { duration_seconds: Number(e.target.value) || undefined })} placeholder="Durée en secondes" min="0" />
                                                                         </div>
                                                                         <div className="flex items-center gap-2">
                                                                             <Checkbox id={`prev_${mi}_${li}`} checked={!!les.is_preview} onCheckedChange={(v) => updateLesson(mi, li, { is_preview: !!v })} />

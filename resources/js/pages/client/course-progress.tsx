@@ -6,8 +6,19 @@ import { Button } from "@/components/ui/button";
 import { route } from "ziggy-js";
 import { BreadcrumbItem } from "@/types";
 
+interface CourseProgress {
+    course_id: string;
+    title: string;
+    cover_image?: string;
+    percent?: number;
+    completed?: number;
+    total?: number;
+    last_accessed?: string;
+    status?: 'completed' | 'in_progress' | 'not_started';
+}
+
 export default function CourseProgress() {
-    const { progress = [] } = usePage().props as any;
+    const { progress = [] } = usePage().props as { progress?: CourseProgress[] };
 
     const breadcrumbs: BreadcrumbItem[] = [
         { title: "Formations", href: route('courses') },
@@ -24,7 +35,7 @@ export default function CourseProgress() {
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {progress.map((p: any) => (
+                    {progress.map((p: CourseProgress) => (
                         <Card key={p.course_id}>
                             <CardHeader className="flex flex-row items-start gap-4">
                                 {p.cover_image ? (

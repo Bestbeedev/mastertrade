@@ -8,6 +8,16 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
+interface DownloadHistory {
+    id: string;
+    product_name: string;
+    product_version?: string;
+    downloaded_at: string;
+    file_size?: string;
+    status?: 'completed' | 'failed' | 'pending';
+    product?: { name?: string; version?: string };
+    ip?: string;
+}
 
 export default function Download() {
     const breadcrumbs: BreadcrumbItem[] = [
@@ -18,7 +28,7 @@ export default function Download() {
     ];
 
     const [searchTerm, setSearchTerm] = useState('');
-    const { history = [] } = usePage().props as any;
+    const { history = [] } = usePage().props as { history?: DownloadHistory[] };
 
 
     return (
@@ -61,7 +71,7 @@ export default function Download() {
                         <CardContent>
                             {Array.isArray(history) && history.length > 0 ? (
                                 <div className="divide-y">
-                                    {history.map((h: any) => (
+                                    {history.map((h: DownloadHistory) => (
                                         <div key={h.id} className="py-3 flex items-center justify-between">
                                             <div className="flex items-center gap-3">
                                                 <Package className="h-4 w-4 text-muted-foreground" />

@@ -12,7 +12,7 @@ const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
 interface InertiaRootProps {
     App: React.ComponentType<any>;
-    props: any;
+    props: Record<string, unknown>;
 }
 
 function InertiaRoot({ App, props }: InertiaRootProps) {

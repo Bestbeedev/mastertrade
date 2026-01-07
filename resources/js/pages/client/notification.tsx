@@ -1,5 +1,14 @@
 import AppLayout from '@/layouts/app-layout'
-import { BreadcrumbItem } from '@/types';
+import { BreadcrumbItem } from "@/types";
+
+interface Notification {
+    id: string;
+    type?: string;
+    data?: Record<string, unknown>;
+    created_at?: string;
+    read_at?: string;
+}
+
 import React, { useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -32,9 +41,9 @@ export default function Notification() {
         },
     ];
     const { notifications: serverNotifications = [] } = usePage().props as any;
-    const notifications = (serverNotifications as any[]).map((n) => {
+    const notifications = (serverNotifications as Notification[]).map((n) => {
         const type = n.type || 'info';
-        const visuals: Record<string, { icon: any; iconColor: string; bgColor: string }> = {
+        const visuals: Record<string, { icon: React.ComponentType<any>; iconColor: string; bgColor: string }> = {
             license: { icon: IconLicense, iconColor: 'text-blue-600 dark:text-blue-400', bgColor: 'bg-blue-100 dark:bg-blue-900/30' },
             download: { icon: IconDownload, iconColor: 'text-green-600 dark:text-green-400', bgColor: 'bg-green-100 dark:bg-green-900/30' },
             course: { icon: IconSchool, iconColor: 'text-purple-600 dark:text-purple-400', bgColor: 'bg-purple-100 dark:bg-purple-900/30' },
@@ -45,8 +54,8 @@ export default function Notification() {
         return {
             id: n.id,
             type,
-            title: n.data?.title || (type === 'download' ? 'Téléchargement' : type === 'license' ? 'Informations de licence' : 'Notification'),
-            description: n.data?.message || n.data?.description || '',
+            title: String(n.data?.title || (type === 'download' ? 'Téléchargement' : type === 'license' ? 'Informations de licence' : 'Notification')),
+            description: String(n.data?.message || n.data?.description || ''),
             time: n.created_at ? new Date(n.created_at).toLocaleString('fr-FR') : '',
             read: !!n.read_at,
             important: !!n.data?.important,
@@ -59,15 +68,21 @@ export default function Notification() {
     const [filter, setFilter] = useState('all');
     const [emailNotifications, setEmailNotifications] = useState(true);
     const [pushNotifications, setPushNotifications] = useState(true);
-    const [notificationToDelete, setNotificationToDelete] = useState<any | null>(null);
+    const [notificationToDelete, setNotificationToDelete] = useState<Notification | null>(null);
     const [confirmClearOpen, setConfirmClearOpen] = useState(false);
 
-    const markAsRead = (id: number) => {
-        router.post(route('notifications.read', id), {}, { preserveScroll: true });
+    const markAsRead = (notification: Notification) => {
+        router.post(route('notifications.read', notification.id), {}, { preserveScroll: true });
     };
 
-    const deleteNotification = (id: number) => {
-        router.delete(route('notifications.destroy', id), { preserveScroll: true });
+    const deleteNotification = (notification: Notification) => {
+        router.delete(route('notifications.delete', notification.id), {
+            onSuccess: () => {
+                // toast.success('Notification supprimée');
+                setNotificationToDelete(null);
+            },
+            preserveScroll: true,
+        });
     };
 
     const markAllAsRead = () => {
@@ -178,7 +193,7 @@ export default function Notification() {
                                         type="button"
                                         onClick={() => {
                                             if (notificationToDelete) {
-                                                deleteNotification(notificationToDelete.id);
+                                                deleteNotification(notificationToDelete);
                                                 setNotificationToDelete(null);
                                             }
                                         }}
@@ -323,7 +338,7 @@ export default function Notification() {
                                                                         variant="ghost"
                                                                         size="sm"
                                                                         className="h-8 w-8 p-0"
-                                                                        onClick={() => markAsRead(notification.id)}
+                                                                        onClick={() => markAsRead(notification)}
                                                                     >
                                                                         <IconCheck className="h-4 w-4" />
                                                                     </Button>

@@ -49,11 +49,11 @@ export default function AllCoursesPage() {
     const enrollForm = useForm({});
 
     const handleEnroll = (course: AllCourseItem, simulatePayment: boolean) => {
-        const actionLabel = simulatePayment ? "Paiement simulé en cours..." : "Inscription en cours...";
+        const actionLabel = simulatePayment ? "Paiement simul   en cours..." : "Inscription en cours...";
         const t = toast.loading(actionLabel);
         enrollForm.post(route("courses.enroll", course.id), {
             onSuccess: () => {
-                toast.success("Inscription effectuée", { id: t });
+                toast.success("Inscription effectu  e", { id: t });
                 router.visit(route("courses.show", course.id));
             },
             onError: () => {
@@ -85,10 +85,10 @@ export default function AllCoursesPage() {
     });
 
     const typeLabel = (type?: string | null) => {
-        if (type === "video") return "Vidéo";
+        if (type === "video") return "Vid  o";
         if (type === "pdf") return "PDF";
         if (type === "mixte") return "Mixte";
-        return "Non défini";
+        return "Non d  fini";
     };
 
     const priceLabel = (course: AllCourseItem) => {
@@ -106,7 +106,7 @@ export default function AllCoursesPage() {
             <Head title="Toutes les formations" />
 
             <div className="w-full px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-                {/* En-tête */}
+                {/* En-t  te */}
                 <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 border-b pb-4">
                     <div className="space-y-2">
                         <div className="flex items-center gap-2">
@@ -119,7 +119,7 @@ export default function AllCoursesPage() {
                         <div>
                             <h1 className="text-3xl font-bold tracking-tight">Toutes les formations</h1>
                             <p className="text-muted-foreground mt-1">
-                                Découvrez l'ensemble des formations disponibles et rejoignez celles qui vous intéressent.
+                                D  couvrez l'ensemble des formations disponibles et rejoignez celles qui vous int  ressent.
                             </p>
                         </div>
                     </div>
@@ -152,24 +152,24 @@ export default function AllCoursesPage() {
                         </Button>
                         <Button
                             size="sm"
-                            variant={levelFilter === "Débutant" ? "default" : "outline"}
-                            onClick={() => setLevelFilter("Débutant")}
+                            variant={levelFilter === "D  butant" ? "default" : "outline"}
+                            onClick={() => setLevelFilter("D  butant")}
                         >
-                            Débutant
+                            D  butant
                         </Button>
                         <Button
                             size="sm"
-                            variant={levelFilter === "Intermédiaire" ? "default" : "outline"}
-                            onClick={() => setLevelFilter("Intermédiaire")}
+                            variant={levelFilter === "Interm  diaire" ? "default" : "outline"}
+                            onClick={() => setLevelFilter("Interm  diaire")}
                         >
-                            Intermédiaire
+                            Interm  diaire
                         </Button>
                         <Button
                             size="sm"
-                            variant={levelFilter === "Avancé" ? "default" : "outline"}
-                            onClick={() => setLevelFilter("Avancé")}
+                            variant={levelFilter === "Avanc  " ? "default" : "outline"}
+                            onClick={() => setLevelFilter("Avanc  ")}
                         >
-                            Avancé
+                            Avanc  
                         </Button>
                     </div>
                     <div className="flex flex-wrap gap-2 items-center">
@@ -185,7 +185,7 @@ export default function AllCoursesPage() {
                             variant={typeFilter === "video" ? "default" : "outline"}
                             onClick={() => setTypeFilter("video")}
                         >
-                            Vidéo
+                            Vid  o
                         </Button>
                         <Button
                             size="sm"
@@ -231,7 +231,7 @@ export default function AllCoursesPage() {
                     <Card>
                         <CardHeader className="pb-2 flex flex-row items-center justify-between">
                             <CardTitle className="text-sm font-medium flex items-center gap-2">
-                                <Clock className="h-4 w-4" /> Temps total estimé
+                                <Clock className="h-4 w-4" /> Temps total estim  
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
@@ -240,7 +240,7 @@ export default function AllCoursesPage() {
                                     ? `~${Math.round(
                                         courses.reduce((s, c) => s + (c.duration_seconds || 0), 0) / 3600
                                     )}h`
-                                    : "—"}
+                                    : "   "}
                             </div>
                         </CardContent>
                     </Card>
@@ -284,10 +284,10 @@ export default function AllCoursesPage() {
                                     <div className="flex flex-wrap items-center justify-between text-xs text-muted-foreground gap-2">
                                         <span className="flex items-center gap-1">
                                             <Clock className="h-3 w-3" />
-                                            {course.duration_seconds ? `${Math.round(course.duration_seconds / 60)} min` : "Durée inconnue"}
+                                            {course.duration_seconds ? `${Math.round(course.duration_seconds / 60)} min` : "Dur  e inconnue"}
                                         </span>
                                         <span className="flex items-center gap-1">
-                                            <BookOpen className="h-3 w-3" /> {lessonsCount} leçon{lessonsCount > 1 ? "s" : ""}
+                                            <BookOpen className="h-3 w-3" /> {lessonsCount} le  on{lessonsCount > 1 ? "s" : ""}
                                         </span>
                                         <Badge variant="destructive" className="flex items-center gap-1">
                                             {course.primary_type === "video" && <Video className="h-3 w-3" />}
@@ -336,7 +336,7 @@ export default function AllCoursesPage() {
                                         asChild
                                     >
                                         <Link href={route("courses.show", course.id)}>
-                                            Détail du cours
+                                            D  tail du cours
                                         </Link>
                                     </Button>
                                 </CardContent>
@@ -347,22 +347,22 @@ export default function AllCoursesPage() {
                     {filteredCourses.length === 0 && (
                         <Card className="col-span-full">
                             <CardContent className="py-8 text-center text-sm text-muted-foreground">
-                                Aucune formation ne correspond à vos critères de recherche.
+                                Aucune formation ne correspond    vos crit  res de recherche.
                             </CardContent>
                         </Card>
                     )}
                 </div>
             </div>
 
-            {/* Paiement simulé pour les formations payantes */}
+            {/* Paiement simul   pour les formations payantes */}
             <Dialog open={!!courseToJoin} onOpenChange={(open) => { if (!open) setCourseToJoin(null); }}>
                 <DialogContent className="max-w-4xl lg:max-w-6xl xl:max-w-7xl max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
-                        <DialogTitle>Paiement simulé</DialogTitle>
+                        <DialogTitle>Paiement simul  </DialogTitle>
                         <DialogDescription>
-                            Vous êtes sur le point de rejoindre la formation
-                            {courseToJoin ? ` "${courseToJoin.title}"` : ""}. Aucun paiement réel ne sera effectué : il s'agit
-                            uniquement d'une simulation, vous serez inscrit immédiatement.
+                            Vous   tes sur le point de rejoindre la formation
+                            {courseToJoin ? ` "${courseToJoin.title}"` : ""}. Aucun paiement r  el ne sera effectu    : il s'agit
+                            uniquement d'une simulation, vous serez inscrit imm  diatement.
                         </DialogDescription>
                     </DialogHeader>
                     <div className="flex justify-end gap-2 mt-4">

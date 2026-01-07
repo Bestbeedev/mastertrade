@@ -46,9 +46,27 @@ type CourseForm = {
     cover_image: File | null;
 };
 
-export default function AdminCourses({ courses = [], products = [] as { id: string; name: string }[] }: { courses?: any[]; products?: { id: string; name: string }[] }) {
+interface CourseItem {
+    id: string;
+    title: string;
+    description?: string;
+    cover_image?: string;
+    is_paid?: boolean;
+    price?: number;
+    level?: string;
+    tags?: string;
+    status?: string;
+    created_at?: string;
+    product?: { id: string; name: string };
+    modules_count?: number;
+    lessons_count?: number;
+    enrollments_count?: number;
+    duration_seconds?: number;
+}
+
+export default function AdminCourses({ courses = [], products = [] }: { courses?: CourseItem[]; products?: { id: string; name: string }[] }) {
     const [activeTab, setActiveTab] = React.useState("list");
-    const [selectedCourse, setSelectedCourse] = React.useState<any | null>(null);
+    const [selectedCourse, setSelectedCourse] = React.useState<CourseItem | null>(null);
     const [createTab, setCreateTab] = React.useState("info");
 
     const form = useForm<CourseForm>({
@@ -123,7 +141,7 @@ export default function AdminCourses({ courses = [], products = [] as { id: stri
     };
 
     const { delete: destroy, processing: deleting } = useForm({});
-    const [courseToDelete, setCourseToDelete] = React.useState<any | null>(null);
+    const [courseToDelete, setCourseToDelete] = React.useState<CourseItem | null>(null);
 
     const handleDelete = () => {
         if (!courseToDelete) return;
@@ -171,7 +189,7 @@ export default function AdminCourses({ courses = [], products = [] as { id: stri
                             <CardContent className="space-y-3">
                                 {courses?.length ? (
                                     <div className="divide-y rounded-md border">
-                                        {courses.map((c: any) => (
+                                        {courses.map((c: CourseItem) => (
                                             <div key={c.id} className="flex flex-col gap-3 p-3 sm:flex-row sm:items-center sm:justify-between">
                                                 <div className="flex items-start gap-4 flex-1 sm:items-center">
                                                     {c.cover_image ? (
@@ -399,7 +417,7 @@ export default function AdminCourses({ courses = [], products = [] as { id: stri
                                             </div>
 
                                             <div className="space-y-4">
-                                                {(form.data.modules || []).map((m: any, mi: number) => (
+                                                {(form.data.modules || []).map((m: ModuleDraft, mi: number) => (
                                                     <div key={mi} className="rounded-md border p-4 space-y-4">
                                                         <div className="flex items-start gap-4">
                                                             <div className="flex-1 grid gap-3 md:grid-cols-2">
@@ -425,7 +443,7 @@ export default function AdminCourses({ courses = [], products = [] as { id: stri
                                                                 </Button>
                                                             </div>
                                                             <div className="space-y-3">
-                                                                {(m.lessons || []).map((les: any, li: number) => (
+                                                                {(m.lessons || []).map((les: LessonDraft, li: number) => (
                                                                     <div key={li} className="rounded border p-3 space-y-3">
                                                                         <div className="flex items-start gap-3">
                                                                             <div className="grid gap-3 md:grid-cols-2 flex-1">

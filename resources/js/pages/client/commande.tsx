@@ -11,6 +11,15 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatCFA } from "@/lib/utils";
 
+interface Order {
+    id: string;
+    status: string;
+    amount?: number;
+    created_at?: string;
+    product?: { name?: string; download_url?: string } | string;
+    licenseKey?: string;
+    product_id?: string;
+}
 
 export default function Commande() {
     const breadcrumbs: BreadcrumbItem[] = [
@@ -22,7 +31,7 @@ export default function Commande() {
 
     const [statusFilter, setStatusFilter] = useState('all');
     const [searchTerm, setSearchTerm] = useState('');
-    const { orders: realOrders = [] } = usePage().props as any;
+    const { orders: realOrders = [] } = usePage().props as { orders?: Order[] };
 
     const formatCurrency = (amountCents: number) => formatCFA(amountCents ?? 0);
 
@@ -36,9 +45,9 @@ export default function Commande() {
     } as const;
 
     const totalOrders = realOrders.length;
-    const pendingCount = realOrders.filter((o: any) => o.status === 'pending').length;
-    const deliveredCount = realOrders.filter((o: any) => o.status === 'completed').length;
-    const totalSpent = realOrders.reduce((s: number, o: any) => s + (o.amount || 0), 0);
+    const pendingCount = realOrders.filter((o: Order) => o.status === 'pending').length;
+    const deliveredCount = realOrders.filter((o: Order) => o.status === 'completed').length;
+    const totalSpent = realOrders.reduce((s: number, o: Order) => s + (o.amount || 0), 0);
     const stats = [
         { title: "Commandes totales", value: String(totalOrders), description: "", icon: Package, trend: "neutral" },
         { title: "En attente", value: String(pendingCount), description: "", icon: Calendar, trend: "neutral" },
@@ -137,8 +146,8 @@ export default function Commande() {
                     </CardHeader>
                     <CardContent className="p-0">
                         <div className="divide-y">
-                            {realOrders.map((order: any) => {
-                                const productName = order.product?.name ?? order.product;
+                            {realOrders.map((order: Order) => {
+                                const productName = typeof order.product === 'string' ? order.product : order.product?.name || '';
                                 const date = order.created_at ? new Date(order.created_at).toLocaleDateString('fr-FR') : '';
                                 const amount = typeof order.amount === 'number' ? formatCurrency(order.amount) : String(order.amount ?? '');
                                 const status = order.status as OrderStatus;
@@ -185,7 +194,7 @@ export default function Commande() {
                                                         </Link>
                                                     </Button>
 
-                                                    {status === 'completed' && order.product?.download_url && (
+                                                    {status === 'completed' && typeof order.product === 'object' && order.product?.download_url && (
                                                         <Button asChild variant="default" size="sm">
                                                             <a href={route('downloads.start', order.product_id)}>
                                                                 <Download className="h-4 w-4 mr-2" />

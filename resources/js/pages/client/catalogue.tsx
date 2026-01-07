@@ -44,8 +44,6 @@ export default function Catalogue({ products = [] as { id: string; name: string;
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
     const [searchTerm, setSearchTerm] = useState('');
     const [activeCategory, setActiveCategory] = useState('all');
-    const [priceRange, setPriceRange] = useState('all');
-    const [selectedRatings, setSelectedRatings] = useState<number[]>([]);
 
     const slugify = (s: string) => (s || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
     const categoryLabel = (cat?: string) => {
@@ -91,14 +89,6 @@ export default function Catalogue({ products = [] as { id: string; name: string;
     const filteredItems = items
         .filter((i) => (activeCategory === 'all' ? true : slugify(i.category) === activeCategory))
         .filter((i) => (!searchTerm ? true : i.name.toLowerCase().includes(searchTerm.toLowerCase()) || i.description.toLowerCase().includes(searchTerm.toLowerCase())));
-
-    const toggleRating = (rating: number) => {
-        setSelectedRatings(prev =>
-            prev.includes(rating)
-                ? prev.filter(r => r !== rating)
-                : [...prev, rating]
-        );
-    };
 
     const RatingStars = ({ rating, size = "sm" }: { rating: number; size?: "sm" | "md" }) => (
         <div className="flex items-center gap-1">
@@ -233,7 +223,7 @@ export default function Catalogue({ products = [] as { id: string; name: string;
                                     <DollarSign className="h-5 w-5" />
                                     Prix
                                 </h3>
-                                <Tabs value={priceRange} onValueChange={setPriceRange} className="w-full">
+                                <Tabs value="all" className="w-full">
                                     <TabsList className="grid w-full grid-cols-2">
                                         <TabsTrigger value="all">Tous</TabsTrigger>
                                         <TabsTrigger value="paid">Payants</TabsTrigger>
@@ -267,8 +257,8 @@ export default function Catalogue({ products = [] as { id: string; name: string;
                                             className="flex items-center gap-3 p-2 rounded-lg hover:bg-accent cursor-pointer"
                                         >
                                             <Checkbox
-                                                checked={selectedRatings.includes(rating)}
-                                                onCheckedChange={() => toggleRating(rating)}
+                                                checked={false}
+                                                readOnly
                                             />
                                             <div className="flex items-center gap-2 flex-1">
                                                 <RatingStars rating={rating} />

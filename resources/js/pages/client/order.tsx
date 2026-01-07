@@ -9,9 +9,28 @@ import { route } from "ziggy-js";
 import { toast } from "sonner";
 import { formatCFA } from "@/lib/utils";
 
+interface OrderItem {
+    id: string;
+    status: string;
+    amount?: number;
+    items?: OrderItem[];
+    customer?: { name?: string; email?: string; company?: string };
+    product?: { name?: string; id?: string; download_url?: string };
+    name?: string;
+    quantity: number;
+    created_at?: string;
+    total?: number;
+    price?: number;
+    payment?: { method?: string; status?: string; transaction?: { id?: string; status?: string } };
+    shipping?: { address?: string; method?: string; cost?: number; status?: string };
+    licenseKey?: string;
+    download_url?: string;
+    product_id?: string;
+}
+
 // Cette page utilise uniquement la commande réelle fournie par le serveur.
 
-export default function OrderPage({ order }: { order?: any }) {
+export default function OrderPage({ order }: { order?: OrderItem | null }) {
     const currentOrder = order ? {
         ...order,
         amount: order.amount || 0,
@@ -32,13 +51,8 @@ export default function OrderPage({ order }: { order?: any }) {
         paid: "default"
     } as const;
 
-    const handleDownload = (order: any) => {
-        toast.success("Téléchargement en cours...");
-        // Logique de téléchargement ici
-        console.log("Téléchargement de la commande", order.id);
-    };
 
-    const renderOrderDetails = (order: any) => (
+    const renderOrderDetails = (order: OrderItem) => (
         <div className="space-y-8">
             {/* En-tête de la commande */}
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 p-6 bg-muted/20 rounded-lg">
@@ -80,7 +94,7 @@ export default function OrderPage({ order }: { order?: any }) {
                     <CardContent>
                         <div className="space-y-4">
                             {Array.isArray(order.items) && order.items.length > 0 ? (
-                                order.items.map((item: any) => (
+                                order.items.map((item: OrderItem) => (
                                     <div key={item.id} className="flex items-start justify-between border-b pb-4">
                                         <div className="flex gap-4">
                                             <div className="p-2 bg-muted rounded-md">
@@ -88,14 +102,14 @@ export default function OrderPage({ order }: { order?: any }) {
                                             </div>
                                             <div>
                                                 <h4 className="font-medium">{item.name || order.product?.name || 'Article'}</h4>
-                                                {item.quantity && <p className="text-sm text-muted-foreground">Quantité: {item.quantity}</p>}
+                                                {item.quantity || 0 > 0 && <p className="text-sm text-muted-foreground">Quantité: {item.quantity || 0}</p>}
                                             </div>
                                         </div>
                                         <div className="text-right">
-                                            {typeof item.total === 'number' && <p className="font-medium">{formatCurrency(item.total)}</p>}
-                                            {item.quantity > 1 && typeof item.price === 'number' && (
+                                            {typeof item.total === 'number' && <p className="font-medium">{formatCurrency(item.total || 0)}</p>}
+                                            {(item.quantity || 0) > 1 && typeof item.price === 'number' && (
                                                 <p className="text-sm text-muted-foreground">
-                                                    {formatCurrency(item.price)} l'unité
+                                                    {formatCurrency(item.price || 0)} l'unité
                                                 </p>
                                             )}
                                         </div>
@@ -107,7 +121,7 @@ export default function OrderPage({ order }: { order?: any }) {
 
                             <div className="flex justify-between pt-4">
                                 <span className="font-medium">Total</span>
-                                <span className="text-lg font-bold">{formatCurrency(order.amount)}</span>
+                                <span className="text-lg font-bold">{formatCurrency(order.amount || 0)}</span>
                             </div>
                         </div>
                     </CardContent>
@@ -148,7 +162,7 @@ export default function OrderPage({ order }: { order?: any }) {
                             {order.payment?.transaction && (
                                 <div className="flex justify-between">
                                     <span className="text-muted-foreground">Transaction</span>
-                                    <span className="font-mono text-xs">{order.payment.transaction}</span>
+                                    <span className="font-mono text-xs">{order.payment.transaction.id}</span>
                                 </div>
                             )}
                         </CardContent>
@@ -181,8 +195,10 @@ export default function OrderPage({ order }: { order?: any }) {
                                             variant="ghost"
                                             size="sm"
                                             onClick={() => {
-                                                navigator.clipboard.writeText(order.licenseKey);
-                                                toast.success('Clé de licence copiée !');
+                                                if (order.licenseKey) {
+                                                    navigator.clipboard.writeText(order.licenseKey);
+                                                    toast.success('Clé de licence copiée !');
+                                                }
                                             }}
                                         >
                                             <FileText className="h-4 w-4" />

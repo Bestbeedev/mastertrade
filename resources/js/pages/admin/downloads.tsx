@@ -6,14 +6,27 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import React, { useMemo, useState } from "react";
 
+interface DownloadLog {
+    id: string;
+    user?: { name?: string; email?: string };
+    product?: { name?: string; version?: string };
+    ip_address?: string;
+    user_agent?: string;
+    downloaded_at?: string;
+    file_size?: number;
+    status?: string;
+    file_version?: string;
+    timestamp?: string;
+}
+
 export default function AdminDownloads() {
-    const { logs = [] } = usePage().props as any;
+    const { logs = [] } = usePage().props as { logs?: DownloadLog[] };
     const [q, setQ] = useState("");
 
     const filtered = useMemo(() => {
         const query = q.trim().toLowerCase();
         if (!query) return logs;
-        return (logs as any[]).filter((l) => {
+        return logs.filter((l: DownloadLog) => {
             const user = `${l.user?.name ?? ""} ${l.user?.email ?? ""}`.toLowerCase();
             const product = `${l.product?.name ?? ""} ${l.product?.version ?? ""}`.toLowerCase();
             const ip = (l.ip_address ?? "").toLowerCase();
@@ -51,7 +64,7 @@ export default function AdminDownloads() {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {filtered.map((l: any) => (
+                                    {filtered.map((l: DownloadLog) => (
                                         <TableRow key={l.id}>
                                             <TableCell>
                                                 <div className="font-medium">{l.user?.name ?? "—"}</div>

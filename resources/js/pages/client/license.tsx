@@ -93,16 +93,6 @@ export default function License({ licenses: initialLicenses }: { licenses?: Lice
         return config[status];
     };
 
-    const getSupportConfig = (support: Support) => {
-        const config: Record<Support, { variant: "default" | "outline" | "secondary"; class: string }> = {
-            Premium: { variant: "default", class: "bg-gradient-to-r from-yellow-500 to-orange-500" },
-            Standard: { variant: "outline", class: "" },
-            Basic: { variant: "secondary", class: "" }
-        };
-
-        return config[support];
-    };
-
     const [openPreview, setOpenPreview] = useState(false);
     const [previewLicense, setPreviewLicense] = useState<LicenseItem | null>(null);
 
@@ -212,7 +202,6 @@ export default function License({ licenses: initialLicenses }: { licenses?: Lice
                         const statusConfig = getStatusConfig(license.status as Status);
                         const usagePercentage = (license.usedSeats / license.seats) * 100;
 
-                        const daysLeft = license.expires ? getDaysRemaining(license.expires) : null;
                         return (
                             <Card key={license.id} className="hover:shadow-lg transition-all">
                                 <CardContent className="p-6">
