@@ -74,7 +74,7 @@ class TicketController extends Controller
         ]);
     }
 
-      public function admin(Request $request)
+        public function admin(Request $request)
     {
         $status = $request->query('status', 'all');
         $search = trim((string) $request->query('search', ''));
