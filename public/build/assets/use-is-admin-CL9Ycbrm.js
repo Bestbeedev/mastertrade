@@ -1,0 +1,1 @@
+import{u as a}from"./app-CrawgoCe.js";import{l as u}from"./auth-BgAybA0k.js";function p(){const s=a(),t=u(n=>n.user),e=s.props?.auth;if(typeof e?.isAdmin=="boolean")return e.isAdmin;const r=e?.user||t,o=(r?.role?.name||r?.role_name||"").toString().toLowerCase();return o==="admin"||o==="administrator"||o==="superadmin"}export{p as u};
