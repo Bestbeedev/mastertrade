@@ -16,10 +16,10 @@ export function NavMain({
     items: {
         title: string
         url: string
-        icon?: ComponentType<any>
+        icon?: ComponentType<Record<string, unknown>>
     }[]
 }) {
-    const { url } = usePage() as any
+    const { url } = usePage() as { url: string }
     const currentPath = (typeof url === 'string' ? url : window.location.pathname) as string
     const isActive = (href: string) => {
         if (!href) return false

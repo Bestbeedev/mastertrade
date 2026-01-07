@@ -139,7 +139,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 // Routes pour les tickets de support
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('supportsTickets', [TicketController::class, 'index'])->name('supportsTickets');
-    Route::get('client/ticket', [TicketController::class, 'index'])->name('supportsTickets');
+    Route::get('client/ticket', [TicketController::class, 'indexClient'])->name('supportsTickets.client');
     Route::get('supportsTickets/create', [TicketController::class, 'create'])->name('supportsTickets.create');
     Route::post('supportsTickets', [TicketController::class, 'store'])->name('supportsTickets.store');
     Route::get('supportsTickets/{ticket}', [TicketController::class, 'show'])->name('supportsTickets.show');

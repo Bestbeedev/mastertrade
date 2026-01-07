@@ -10,13 +10,18 @@ import { useSplashScreen } from './hooks/use-splash';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
-function InertiaRoot({ App, props }: any) {
-    const { visible, hide } = useSplashScreen();
+interface InertiaRootProps {
+    App: React.ComponentType<any>;
+    props: any;
+}
+
+function InertiaRoot({ App, props }: InertiaRootProps) {
+    const { visible } = useSplashScreen();
     return (
         <>
             <App {...props} />
             <Toaster richColors theme='light' position="top-right" />
-            <SplashScreen visible={visible} onHide={hide} />
+            <SplashScreen visible={visible} />
         </>
     );
 }

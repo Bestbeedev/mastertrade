@@ -2,7 +2,7 @@ import axios from "axios";
 import { toast } from "sonner";
 
 const api = axios.create({
-  baseURL: (import.meta as any).env?.VITE_API_BASE_URL || "/",
+  baseURL: (import.meta.env as { VITE_API_BASE_URL?: string })?.VITE_API_BASE_URL || "/",
   headers: {
     "X-Requested-With": "XMLHttpRequest",
     Accept: "application/json",

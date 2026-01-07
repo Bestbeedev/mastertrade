@@ -16,7 +16,7 @@ export default function LicenseActivate({ product, license, completed, device_id
 
     const [copied, setCopied] = useState(false);
     const copyKey = async () => {
-        try { await navigator.clipboard.writeText(license?.key || ""); setCopied(true); setTimeout(() => setCopied(false), 1500); } catch { }
+        try { await navigator.clipboard.writeText(license?.key || ""); setCopied(true); setTimeout(() => setCopied(false), 1500); } catch { /* clipboard not supported */ }
     };
 
     // Helpers: jours restants avant expiration

@@ -72,7 +72,7 @@ export default function TicketShow() {
             <div className="w-full px-4 sm:px-6 lg:px-8 py-6 space-y-6">
                 <div className="flex items-center justify-between">
                     <Button asChild variant="ghost">
-                        <Link href={route('supportsTickets')} className="flex items-center gap-2">
+                        <Link href={route('supportsTickets.client')} className="flex items-center gap-2">
                             <ArrowLeft className="h-4 w-4" /> Retour
                         </Link>
                     </Button>

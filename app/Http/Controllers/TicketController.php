@@ -74,6 +74,61 @@ class TicketController extends Controller
         ]);
     }
 
+     public function indexClient(Request $request)
+    {
+        $status = $request->query('status', 'all');
+        $search = trim((string) $request->query('search', ''));
+        $sort = $request->query('sort', 'recent');
+
+        $isAdmin=User::isAdmin();
+        $query = $isAdmin ? Ticket::query() : Ticket::query()->where('user_id', Auth::id());
+        $query->with(['user:id,name,email']);
+        $query->withCount(['messages']);
+
+
+        if (in_array($status, ['open', 'pending', 'closed'])) {
+            $query->where('status', $status);
+        }
+
+        if ($search !== '') {
+            $query->where(function ($q) use ($search) {
+                $q->where('subject', 'like', "%{$search}%")
+                    ->orWhere('message', 'like', "%{$search}%")
+                    ->orWhere('id', 'like', "%{$search}%");
+            });
+        }
+
+        if ($sort === 'old') {
+            $query->orderBy('created_at', 'asc');
+        } elseif ($sort === 'priority') {
+            // high > medium > low
+            $query->orderByRaw("CASE priority WHEN 'high' THEN 1 WHEN 'medium' THEN 2 ELSE 3 END");
+        } else {
+            $query->orderBy('created_at', 'desc');
+        }
+
+        $tickets = $query->paginate(10, ['id', 'user_id', 'subject', 'message', 'status', 'order_id', 'license_id', 'priority', 'category', 'created_at', 'updated_at'])->withQueryString();
+
+        $base = $isAdmin ? Ticket::query() : Ticket::where('user_id', Auth::id());
+        $counts = [
+            'all' => (clone $base)->count(),
+            'open' => (clone $base)->where('status', 'open')->count(),
+            'pending' => (clone $base)->where('status', 'pending')->count(),
+            'closed' => (clone $base)->where('status', 'closed')->count(),
+        ];
+
+        return Inertia::render('client/ticket', [
+            'tickets' => $tickets,
+            'ticketsCounts' => $counts,
+            'filters' => [
+                'status' => $status,
+                'search' => $search,
+                'sort' => $sort,
+            ],
+            'isAdmin' => (bool) $isAdmin,
+        ]);
+    }
+
     /**
      * Show the form for creating a new resource.
      */
