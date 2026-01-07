@@ -27,7 +27,7 @@ export interface User {
 export interface Role {
     id: UUID;
     name: string;
-    permissions?: Record<string, any>[]; // array ou objet JSON
+    permissions?: Record<string, unknown>[]; // array ou objet JSON
     created_at: string;
     updated_at: string;
     users?: User[];
@@ -135,7 +135,7 @@ export interface Notification {
     id: UUID;
     user_id: UUID;
     type: string;
-    data: Record<string, any>;
+    data: Record<string, unknown>;
     read_at?: string | null;
     created_at: string;
     user?: User;
@@ -164,7 +164,7 @@ export interface AuditLog {
     action: string;
     target_type: string;
     target_id: UUID;
-    details?: Record<string, any>;
+    details?: Record<string, unknown>;
     created_at: string;
     admin?: User;
 }

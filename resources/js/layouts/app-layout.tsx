@@ -11,7 +11,7 @@ interface AppLayoutProps {
 }
 
 export default ({ children, breadcrumbs, ...props }: AppLayoutProps) => {
-    const { flash } = usePage().props as any;
+    const { flash } = usePage().props as { flash?: { success?: string; error?: string; warning?: string; info?: string } };
     const lastShown = useRef<string>('');
 
     useEffect(() => {

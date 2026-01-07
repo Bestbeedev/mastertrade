@@ -23,45 +23,76 @@ import {
 } from "@/components/ui/card"
 import { usePage } from "@inertiajs/react"
 
+interface DashboardStats {
+    activeLicenses?: number;
+    licenseStatus?: {
+        active?: number;
+        expired?: number;
+    };
+    totalDownloads?: number;
+    activeCourses?: number;
+    courseProgressAvg?: number;
+    pendingRenewals?: number;
+    supportTickets?: number;
+    totalOrders?: number;
+}
+
+interface StatConfig {
+    icon: React.ComponentType<any>;
+    bgLight: string;
+    iconColor: string;
+    badgeColor: string;
+    textColor: string;
+    trendIcon: React.ComponentType<any>;
+    statusIcon: React.ComponentType<any>;
+}
+
+interface StatData {
+    total: number;
+    trend: 'up' | 'down' | 'stable';
+    change: string;
+    description: string;
+}
+
 export function SectionCards() {
-    const { dashboardStats } = usePage().props as any;
+    const { dashboardStats } = usePage().props as { dashboardStats?: DashboardStats };
     const source = dashboardStats ?? {};
 
     // Calcul des métriques dérivées
     const stats = {
         licenses: {
             total: source.activeLicenses ?? 0,
-            trend: source.activeLicenses > 2 ? 'up' : 'stable',
+            trend: (source.activeLicenses ?? 0) > 2 ? 'up' as const : 'stable' as const,
             change: '+1 ce mois-ci',
             description: `${source.licenseStatus?.active ?? 0} actives, ${source.licenseStatus?.expired ?? 0} expirées`
         },
         downloads: {
             total: source.totalDownloads ?? 0,
-            trend: source.totalDownloads > 20 ? 'up' : 'stable',
+            trend: (source.totalDownloads ?? 0) > 20 ? 'up' as const : 'stable' as const,
             change: '+3 ce mois-ci',
             description: ''
         },
         courses: {
             total: source.activeCourses ?? 0,
-            trend: source.activeCourses > 0 ? 'up' : 'stable',
-            change: source.activeCourses > 0 ? '1 en cours' : 'Aucune',
-            description: source.activeCourses > 0 ? `${source.courseProgressAvg ?? 0}% de complétion moyenne` : '—'
+            trend: (source.activeCourses ?? 0) > 0 ? 'up' as const : 'stable' as const,
+            change: (source.activeCourses ?? 0) > 0 ? '1 en cours' : 'Aucune',
+            description: (source.activeCourses ?? 0) > 0 ? `${source.courseProgressAvg ?? 0}% de complétion moyenne` : '—'
         },
         renewals: {
             total: source.pendingRenewals ?? 0,
-            trend: source.pendingRenewals > 0 ? 'down' : 'stable',
-            change: source.pendingRenewals > 0 ? 'À traiter' : 'À jour',
-            description: source.pendingRenewals > 0 ? 'Expire dans 15 jours' : '—'
+            trend: (source.pendingRenewals ?? 0) > 0 ? 'down' as const : 'stable' as const,
+            change: (source.pendingRenewals ?? 0) > 0 ? 'À traiter' : 'À jour',
+            description: (source.pendingRenewals ?? 0) > 0 ? 'Expire dans 15 jours' : '—'
         },
         support: {
             total: source.supportTickets ?? 0,
-            trend: source.supportTickets > 0 ? 'down' : 'stable',
-            change: source.supportTickets > 0 ? '1 en attente' : '0 en attente',
-            description: source.supportTickets > 0 ? 'Dernier réponse: 2h' : '—'
+            trend: (source.supportTickets ?? 0) > 0 ? 'down' as const : 'stable' as const,
+            change: (source.supportTickets ?? 0) > 0 ? 'Nouveaux' : 'Aucun',
+            description: (source.supportTickets ?? 0) > 0 ? 'Réponse requise' : '—'
         },
         orders: {
             total: source.totalOrders ?? 0,
-            trend: 'up',
+            trend: 'up' as const,
             change: '+2 cette année',
             description: 'Dernière commande: 10 Jan'
         }
@@ -124,7 +155,7 @@ export function SectionCards() {
         }
     }
 
-    const StatCard = ({ type, title, stat, config }: any) => {
+    const StatCard = ({ title, stat, config }: { title: string; stat: StatData; config: StatConfig }) => {
         const IconComponent = config.icon;
         const StatusIcon = config.statusIcon;
         const trendIcon = stat.trend === 'up' ?
@@ -170,42 +201,36 @@ export function SectionCards() {
     return (
         <div className="grid grid-cols-1 gap-6 px-4 lg:px-10 @xl/main:grid-cols-2 @5xl/main:grid-cols-3">
             <StatCard
-                type="licenses"
                 title="Licences Actives"
                 stat={stats.licenses}
                 config={cardConfigs.licenses}
             />
 
             <StatCard
-                type="downloads"
                 title="Téléchargements"
                 stat={stats.downloads}
                 config={cardConfigs.downloads}
             />
 
             <StatCard
-                type="courses"
                 title="Formations en Cours"
                 stat={stats.courses}
                 config={cardConfigs.courses}
             />
 
             <StatCard
-                type="renewals"
                 title="Renouvellements"
                 stat={stats.renewals}
                 config={cardConfigs.renewals}
             />
 
             <StatCard
-                type="support"
                 title="Tickets Support"
                 stat={stats.support}
                 config={cardConfigs.support}
             />
 
             <StatCard
-                type="orders"
                 title="Total Commandes"
                 stat={stats.orders}
                 config={cardConfigs.orders}

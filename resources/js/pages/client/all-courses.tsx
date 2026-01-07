@@ -38,7 +38,7 @@ export default function AllCoursesPage() {
         { title: "Toutes les formations", href: route("all-courses") },
     ];
 
-    const { courses: serverCourses = [] } = usePage().props as any;
+    const { courses: serverCourses = [] } = usePage().props as { courses?: AllCourseItem[] };
     const courses: AllCourseItem[] = Array.isArray(serverCourses) ? serverCourses : [];
 
     const [searchTerm, setSearchTerm] = useState("");

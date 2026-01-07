@@ -110,7 +110,7 @@ const data = {
 // Composant pour le header du sidebar avec comportement responsive
 function SidebarHeaderContent() {
     const { state } = useSidebar();
-    const isAdmin = !!(usePage().props as any)?.auth?.isAdmin;
+    const isAdmin = !!(usePage().props as { auth?: { isAdmin?: boolean } })?.auth?.isAdmin;
 
     if (state === "collapsed") {
         return (
@@ -155,7 +155,7 @@ export function AppSidebar({ user, ...props }: { user: User; } & React.Component
         email: user.email,
         avatar: "/avatars/user.jpg",
     };
-    const isAdmin = !!(usePage().props as any)?.auth?.isAdmin;
+    const isAdmin = !!(usePage().props as { auth?: { isAdmin?: boolean } })?.auth?.isAdmin;
 
     // état du nombre de notifications non lues
     const [unread, setUnread] = React.useState<number>(0);

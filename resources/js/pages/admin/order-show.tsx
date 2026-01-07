@@ -10,7 +10,21 @@ import { route } from "ziggy-js";
 import { formatCFA } from "@/lib/utils";
 import { ArrowLeft, FileText, UserRound, Package } from "lucide-react";
 
-export default function AdminOrderShow({ order }: { order: any }) {
+interface Order {
+    id: string;
+    status: string;
+    amount: number;
+    created_at: string;
+    user?: { name: string; email: string };
+    product?: { name: string; sku: string; version: string; download_url?: string };
+}
+
+export default function AdminOrderShow({ order }: { order: Order | null }) {
+    const edit = useForm({
+        status: order?.status || "",
+        amount: (typeof order?.amount === "number" ? order.amount : 0) / 100,
+    });
+
     if (!order) {
         return (
             <AppLayout breadcrumbs={[{ title: "Admin", href: route("admin") }, { title: "Commandes", href: route("admin.orders") }, { title: "Commande", href: "" }]}>
@@ -32,24 +46,19 @@ export default function AdminOrderShow({ order }: { order: any }) {
         );
     }
 
-    const edit = useForm({
-        status: order.status as string,
-        amount: (typeof order.amount === "number" ? order.amount : 0) / 100,
-    });
-
     const save = () => {
-        edit.setData("amount", Math.round((Number(edit.data.amount) || 0) * 100) as any);
+        edit.setData("amount", Math.round((Number(edit.data.amount) || 0) * 100) as number);
         edit.patch(route("admin.orders.update", order.id), { preserveScroll: true });
     };
 
     const StatusBadge = ({ s }: { s: string }) => {
-        const map: Record<string, any> = {
+        const map: Record<string, "secondary" | "default" | "destructive" | "outline"> = {
             pending: "secondary",
             paid: "default",
             failed: "destructive",
             refunded: "outline",
         };
-        const label = ({ pending: "En attente", paid: "Payée", failed: "Échouée", refunded: "Remboursée" } as any)[s] || s;
+        const label = ({ pending: "En attente", paid: "Payée", failed: "Échouée", refunded: "Remboursée" } as Record<string, string>)[s] || s;
         return <Badge variant={map[s] || "outline"}>{label}</Badge>;
     };
 
