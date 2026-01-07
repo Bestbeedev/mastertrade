@@ -27,8 +27,29 @@ function categoryIcon(category: string) {
     return HelpCircle;
 }
 
+interface HelpArticle {
+    id?: string;
+    title?: string;
+    content?: string;
+    category?: string;
+    tags?: string;
+    slug?: string;
+    created_at?: string;
+    updated_at?: string;
+    views?: number;
+    summary?: string;
+}
+
+interface RelatedArticle {
+    id: string;
+    slug: string;
+    title?: string;
+    category?: string;
+    summary?: string;
+}
+
 export default function HelpArticlePage() {
-    const { article, related = [] } = usePage().props as any;
+    const { article, related = [] } = usePage().props as { article?: HelpArticle; related?: RelatedArticle[] };
     const CatIcon = categoryIcon(article?.category || '');
 
     const breadcrumbs: BreadcrumbItem[] = [
@@ -64,22 +85,22 @@ export default function HelpArticlePage() {
                             <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
                                 <span className="inline-flex items-center gap-2">
                                     <CatIcon className="h-5 w-5 text-primary" />
-                                    {categoryLabel(article.category)}
+                                    {categoryLabel(article?.category || '')}
                                 </span>
-                                {typeof article.views === 'number' && (
+                                {article && typeof article.views === 'number' && (
                                     <span className="inline-flex items-center gap-1">
                                         <Eye className="h-3 w-3" />
-                                        {article.views} vues
+                                        {article.views || 0} vues
                                     </span>
                                 )}
                             </div>
                             <div className="space-y-2">
                                 <CardTitle className="text-2xl sm:text-3xl leading-tight">
-                                    {article.title}
+                                    {article?.title}
                                 </CardTitle>
-                                {article.summary && (
+                                {article?.summary && (
                                     <CardDescription className="text-base">
-                                        {article.summary}
+                                        {article?.summary || ''}
                                     </CardDescription>
                                 )}
                                 {tags.length > 0 && (
@@ -96,7 +117,7 @@ export default function HelpArticlePage() {
                         <CardContent>
                             <div className="prose prose-sm sm:prose-base max-w-none dark:prose-invert">
                                 {/* Le contenu est stocké comme texte long. On l'affiche en gardant les retours à la ligne. */}
-                                {String(article.content || '')
+                                {String(article?.content || '')
                                     .split(/\n{2,}/)
                                     .map((block: string, idx: number) => (
                                         <p key={idx}>{block}</p>
@@ -116,12 +137,12 @@ export default function HelpArticlePage() {
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-2">
-                            {(related as any[]).length === 0 && (
+                            {related.length === 0 && (
                                 <p className="text-sm text-muted-foreground">
                                     Aucun article lié n'est disponible pour le moment.
                                 </p>
                             )}
-                            {(related as any[]).map((rel) => (
+                            {related.map((rel: RelatedArticle) => (
                                 <Link
                                     key={rel.id}
                                     href={route('helps.article', rel.slug)}
@@ -130,7 +151,7 @@ export default function HelpArticlePage() {
                                     <div className="flex-1">
                                         <div className="flex items-center gap-2 mb-1">
                                             <Badge variant="outline" className="text-[11px]">
-                                                {categoryLabel(rel.category)}
+                                                {categoryLabel(rel.category || '')}
                                             </Badge>
                                         </div>
                                         <div className="text-sm font-medium group-hover:text-primary line-clamp-2">

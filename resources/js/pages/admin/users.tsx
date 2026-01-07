@@ -297,8 +297,8 @@ export default function AdminUsers({ users = [], roles = [], filters = {} }: { u
                                                     <SelectValue placeholder="Sélectionner" />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    {roles.map((r: any) => (
-                                                        <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>
+                                                    {roles.map((r: { id?: string; name?: string }) => (
+                                                        <SelectItem key={r.id || ''} value={r.id || ''}>{r.name || ''}</SelectItem>
                                                     ))}
                                                 </SelectContent>
                                             </Select>

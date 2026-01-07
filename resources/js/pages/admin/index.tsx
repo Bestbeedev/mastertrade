@@ -2,7 +2,7 @@ import AppLayout from "@/layouts/app-layout";
 import { Head, Link, usePage } from "@inertiajs/react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { BarChart3, GraduationCap, Package, Users, Ticket, Receipt, Download, Clock, AlertCircle, TrendingUp, DollarSign, BarChart2, HelpCircle } from "lucide-react";
+import {  GraduationCap, Package, Users, Ticket, Receipt, Download, Clock, AlertCircle, TrendingUp, DollarSign, BarChart2, HelpCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import React from "react";
 import { OrdersChart, RevenueChart, DownloadsChart } from "@/components/admin/charts";

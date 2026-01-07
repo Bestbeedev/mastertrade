@@ -1,13 +1,10 @@
 import { AppSidebar } from "@/components/app-sidebar"
-import { ChartAreaInteractive } from "@/components/chart-area-interactive"
-import { DataTable } from "@/components/data-table"
 import { SectionCards } from "@/components/section-cards"
 import { SiteHeader } from "@/components/site-header"
 import { Badge } from "@/components/ui/badge"
 import { Link } from "@inertiajs/react"
 import { route } from "ziggy-js"
 import {
-    IconBell,
     IconDownload,
     IconFileDescription,
     IconHeadset,
@@ -16,8 +13,6 @@ import {
     IconPhone,
     IconSchool,
     IconTrendingUp,
-    IconBuilding,
-    IconUsers,
     IconClock,
     IconChevronRight,
 } from "@tabler/icons-react"
@@ -44,7 +39,7 @@ export default function Page() {
         }
     }, [user_data, login])
 
-    const { user, isAuthenticated, logout } = useAuthStore()
+    const { user, isAuthenticated } = useAuthStore()
     const isAdmin = useIsAdmin()
 
     if (!isAuthenticated) {

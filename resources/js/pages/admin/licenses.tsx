@@ -414,8 +414,8 @@ export default function AdminLicenses({ licenses = [], products = [], users = []
                                                     <SelectValue placeholder="Sélectionner" />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    {users.map((u: any) => (
-                                                        <SelectItem key={u.id} value={u.id}>{u.name} ({u.email})</SelectItem>
+                                                    {users.map((u: { id?: string; name?: string; email?: string }) => (
+                                                        <SelectItem key={u.id || ''} value={u.id || ''}>{u.name || ''} ({u.email || ''})</SelectItem>
                                                     ))}
                                                 </SelectContent>
                                             </Select>
@@ -427,8 +427,8 @@ export default function AdminLicenses({ licenses = [], products = [], users = []
                                                     <SelectValue placeholder="Sélectionner" />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    {products.map((p: any) => (
-                                                        <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                                                    {products.map((p: { id?: string; name?: string }) => (
+                                                        <SelectItem key={p.id || ''} value={p.id || ''}>{p.name || ''}</SelectItem>
                                                     ))}
                                                 </SelectContent>
                                             </Select>

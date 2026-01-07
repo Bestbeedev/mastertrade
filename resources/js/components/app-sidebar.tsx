@@ -2,17 +2,13 @@ import * as React from "react"
 import {
 
     IconPackage,
-    IconLicense,
     IconShoppingCart,
     IconDownload,
     IconSchool,
     IconBell,
     IconHeadset,
-    IconSettings,
     IconHelp,
     IconUser,
-    IconProps,
-    IconDatabaseCog,
     IconLibrary,
     IconFileCertificate,
     IconShieldCog,
@@ -38,8 +34,8 @@ import {
 } from "@/components/ui/sidebar"
 import { usePage } from "@inertiajs/react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { DollarSignIcon, LayoutDashboard, SquareChevronUpIcon } from "lucide-react";
-import { Separator } from "./ui/separator";
+import { DollarSignIcon, LayoutDashboard } from "lucide-react";
+
 
 const data = {
     user: {

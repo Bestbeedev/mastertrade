@@ -11,8 +11,13 @@ import { toast } from "sonner";
 import { BreadcrumbItem } from "@/types";
 import Dropzone from "@/components/ui/dropzone";
 
+interface TicketCreateProps {
+    orders?: Array<{ id: string; product?: { name?: string } }>;
+    licenses?: Array<{ id: string; product?: { name?: string } }>;
+}
+
 export default function TicketCreate() {
-    const { orders = [], licenses = [] } = usePage().props as any;
+    const { orders = [], licenses = [] } = usePage().props as TicketCreateProps;
 
     const breadcrumbs: BreadcrumbItem[] = [
         { title: "Tickets", href: "/client/ticket" },
@@ -86,7 +91,7 @@ export default function TicketCreate() {
                                                 <SelectValue placeholder="Sélectionner une commande" />
                                             </SelectTrigger>
                                             <SelectContent className="w-full">
-                                                {orders.map((o: any) => (
+                                                {orders.map((o: { id: string; product?: { name?: string } }) => (
                                                     <SelectItem key={o.id} value={o.id}>
                                                         {o.id} • {o.product?.name ?? "Produit"}
                                                     </SelectItem>
@@ -102,7 +107,7 @@ export default function TicketCreate() {
                                                 <SelectValue placeholder="Sélectionner une licence" />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                {licenses.map((l: any) => (
+                                                {licenses.map((l: { id: string; product?: { name?: string } }) => (
                                                     <SelectItem key={l.id} value={l.id}>
                                                         {l.id} • {l.product?.name ?? "Produit"}
                                                     </SelectItem>

@@ -1,12 +1,11 @@
 import AppLayout from "@/layouts/app-layout";
 import { BreadcrumbItem } from "@/types";
-import { Head, Link, usePage } from "@inertiajs/react";
-import { Search, Calendar, FileText, Package, AlertCircle } from "lucide-react";
+import { Head, usePage } from "@inertiajs/react";
+import { Search, FileText, Package, AlertCircle } from "lucide-react";
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 interface DownloadHistory {
     id: string;

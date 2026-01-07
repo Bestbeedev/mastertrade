@@ -8,8 +8,19 @@ import { BreadcrumbItem } from '@/types';
 import { useMemo, useState } from 'react';
 import { Search, BookOpen, ChevronRight } from 'lucide-react';
 
+interface HelpArticle {
+    id?: string;
+    title?: string;
+    summary?: string;
+    content?: string;
+    tags?: string;
+    category?: string;
+    slug?: string;
+    views?: number;
+}
+
 export default function HelpDocumentation() {
-    const { articles = [] } = usePage().props as any;
+    const { articles = [] } = usePage().props as { articles?: HelpArticle[] };
     const [query, setQuery] = useState('');
 
     const breadcrumbs: BreadcrumbItem[] = [
@@ -19,8 +30,8 @@ export default function HelpDocumentation() {
 
     const filtered = useMemo(() => {
         const q = query.trim().toLowerCase();
-        if (!q) return articles as any[];
-        return (articles as any[]).filter((a) => {
+        if (!q) return articles as HelpArticle[];
+        return (articles as HelpArticle[]).filter((a: HelpArticle) => {
             const hay = [a.title, a.summary, a.content, a.tags]
                 .map((v) => (v ?? '').toString().toLowerCase())
                 .join(' ');
@@ -28,7 +39,7 @@ export default function HelpDocumentation() {
         });
     }, [articles, query]);
 
-    const getPreview = (article: any): string => {
+    const getPreview = (article: HelpArticle): string => {
         const base = ((article.summary || article.content || '') as string).toString().trim();
         if (!base) return '';
         return base.length > 260 ? base.slice(0, 260) + '…' : base;
@@ -68,12 +79,12 @@ export default function HelpDocumentation() {
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="divide-y">
-                        {(filtered as any[]).length === 0 && (
+                        {filtered.length === 0 && (
                             <div className="py-8 text-center text-sm text-muted-foreground">
                                 Aucun article de documentation ne correspond à votre recherche.
                             </div>
                         )}
-                        {(filtered as any[]).map((article) => (
+                        {filtered.map((article: HelpArticle) => (
                             <Link
                                 key={article.id}
                                 href={route('helps.article', article.slug)}

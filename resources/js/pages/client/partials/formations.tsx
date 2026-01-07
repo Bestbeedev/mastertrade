@@ -4,7 +4,6 @@ import { BreadcrumbItem } from "@/types";
 import { Head, Link } from "@inertiajs/react";
 import {
     Search,
-    Filter,
     Grid,
     List,
     Star,
@@ -18,7 +17,6 @@ import {
     ShoppingCart,
     Smartphone,
     Target,
-    Video,
     Download,
     CheckCircle,
     Zap,
@@ -30,7 +28,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";

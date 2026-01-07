@@ -1,6 +1,6 @@
 import AppLayout from "@/layouts/app-layout";
 import React from "react";
-import { Head, useForm, Link } from "@inertiajs/react";
+import { Head, useForm } from "@inertiajs/react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Plus, Trash2, Package, FileText, Settings, Box, Tag, Hash, Info, FileDigit, FileArchive, FileCode, FileCheck2, List } from "lucide-react";
+import { Plus, Trash2, Package, FileText, Settings, Tag, Hash, Info, FileCode, FileCheck2, List } from "lucide-react";
 import { route } from "ziggy-js";
 import { toast } from "sonner";
 

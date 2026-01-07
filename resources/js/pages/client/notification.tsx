@@ -10,7 +10,7 @@ interface Notification {
 }
 
 import React, { useState } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
@@ -28,9 +28,7 @@ import {
     IconSchool,
     IconAlertTriangle,
     IconInfoCircle,
-    IconMail,
-    IconFilter,
-    IconDotsVertical
+    IconFilter
 } from '@tabler/icons-react'
 
 export default function Notification() {
@@ -40,10 +38,10 @@ export default function Notification() {
             href: '/client/notification',
         },
     ];
-    const { notifications: serverNotifications = [] } = usePage().props as any;
+    const { notifications: serverNotifications = [] } = usePage().props as { notifications?: Notification[] };
     const notifications = (serverNotifications as Notification[]).map((n) => {
         const type = n.type || 'info';
-        const visuals: Record<string, { icon: React.ComponentType<any>; iconColor: string; bgColor: string }> = {
+        const visuals: Record<string, { icon: React.ComponentType<Record<string, unknown>>; iconColor: string; bgColor: string }> = {
             license: { icon: IconLicense, iconColor: 'text-blue-600 dark:text-blue-400', bgColor: 'bg-blue-100 dark:bg-blue-900/30' },
             download: { icon: IconDownload, iconColor: 'text-green-600 dark:text-green-400', bgColor: 'bg-green-100 dark:bg-green-900/30' },
             course: { icon: IconSchool, iconColor: 'text-purple-600 dark:text-purple-400', bgColor: 'bg-purple-100 dark:bg-purple-900/30' },

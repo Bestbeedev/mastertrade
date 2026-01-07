@@ -11,7 +11,6 @@ import { Progress } from "@/components/ui/progress";
 import { router } from "@inertiajs/react";
 import { route } from "ziggy-js";
 import { useIsAdmin } from "@/hooks/use-is-admin";
-import { toast } from "sonner";
 
 interface Formation {
     id: string;
@@ -29,6 +28,7 @@ interface Formation {
     tags?: string;
     level?: string;
     intro?: string;
+    lessons_count?: number;
 }
 
 export default function Formation() {
@@ -95,10 +95,10 @@ export default function Formation() {
         }
     ];
 
-    const filteredCourses = courses.filter((c: any) => {
+    const filteredCourses = courses.filter((c: Formation) => {
         const search = searchTerm.toLowerCase();
         const matchesSearch =
-            c.title.toLowerCase().includes(search) ||
+            (c.title || '').toLowerCase().includes(search) ||
             (c.description || '').toLowerCase().includes(search);
 
         const p = c.progress_percent || 0;
@@ -112,7 +112,7 @@ export default function Formation() {
     });
 
     const recentCompleted = [...completedCourses]
-        .sort((a: any, b: any) => {
+        .sort((a: Formation, b: Formation) => {
             const aDate = a.completed_at ? new Date(a.completed_at).getTime() : 0;
             const bDate = b.completed_at ? new Date(b.completed_at).getTime() : 0;
             return bDate - aDate;
@@ -209,7 +209,7 @@ export default function Formation() {
                 {/* Liste des cours */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {filteredCourses
-                        .map((course: any) => {
+                        .map((course: Formation) => {
                             const firstBullet = String(course.what_you_will_learn || '').split('\n').filter(Boolean)[0] || '';
                             const audienceShort = (course.audience || '').length > 80 ? (course.audience || '').slice(0, 77) + '…' : (course.audience || '');
                             const tags = String(course.tags || '').split(',').map((t: string) => t.trim()).filter(Boolean).slice(0, 3);
@@ -311,7 +311,7 @@ export default function Formation() {
                         </Card>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            {recentCompleted.map((course: any) => (
+                            {recentCompleted.map((course: Formation) => (
                                 <Card key={course.id} className="border-green-200 bg-green-50/80 dark:bg-green-900/20">
                                     <CardContent className="p-4 flex items-center justify-between gap-3">
                                         <div className="flex items-center gap-3">

@@ -4,7 +4,7 @@ import { Head, Link } from "@inertiajs/react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, Package, ArrowLeft, Download, Receipt, FileText } from "lucide-react";
+import { Package, ArrowLeft, Download, Receipt, FileText } from "lucide-react";
 import { route } from "ziggy-js";
 import { toast } from "sonner";
 import { formatCFA } from "@/lib/utils";
@@ -102,7 +102,7 @@ export default function OrderPage({ order }: { order?: OrderItem | null }) {
                                             </div>
                                             <div>
                                                 <h4 className="font-medium">{item.name || order.product?.name || 'Article'}</h4>
-                                                {item.quantity || 0 > 0 && <p className="text-sm text-muted-foreground">Quantité: {item.quantity || 0}</p>}
+                                                {(item.quantity || 0) > 0 && <p className="text-sm text-muted-foreground">Quantité: {item.quantity || 0}</p>}
                                             </div>
                                         </div>
                                         <div className="text-right">

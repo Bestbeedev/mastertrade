@@ -2,7 +2,7 @@ import AppLayout from "@/layouts/app-layout";
 import { BreadcrumbItem } from "@/types";
 import { Head, Link, usePage } from "@inertiajs/react";
 import { route } from "ziggy-js";
-import { Search, Download, Eye, Calendar, Package, ArrowUpDown,ListOrderedIcon ,DollarSign} from "lucide-react";
+import { Search, Download, Eye, Calendar, Package, ArrowUpDown,DollarSign} from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

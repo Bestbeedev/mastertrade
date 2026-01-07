@@ -9,7 +9,7 @@ import { useMemo, useState } from 'react';
 import { Search, HelpCircle, ChevronRight } from 'lucide-react';
 
 export default function HelpFaq() {
-    const { articles = [] } = usePage().props as any;
+    const { articles = [] } = usePage().props as { articles?: HelpArticle[] };
     const [query, setQuery] = useState('');
 
     const breadcrumbs: BreadcrumbItem[] = [
@@ -17,10 +17,21 @@ export default function HelpFaq() {
         { title: 'FAQ', href: route('helps.faq') },
     ];
 
-    const filtered = useMemo(() => {
+interface HelpArticle {
+    id?: string;
+    title?: string;
+    summary?: string;
+    content?: string;
+    tags?: string;
+    category?: string;
+    slug?: string;
+    views?: number;
+}
+
+const filtered = useMemo(() => {
         const q = query.trim().toLowerCase();
-        if (!q) return articles as any[];
-        return (articles as any[]).filter((a) => {
+        if (!q) return articles as HelpArticle[];
+        return (articles as HelpArticle[]).filter((a: HelpArticle) => {
             const hay = [a.title, a.summary, a.content, a.tags]
                 .map((v) => (v ?? '').toString().toLowerCase())
                 .join(' ');
@@ -28,7 +39,7 @@ export default function HelpFaq() {
         });
     }, [articles, query]);
 
-    const getPreview = (article: any): string => {
+    const getPreview = (article: HelpArticle): string => {
         const base = ((article.summary || article.content || '') as string).toString().trim();
         if (!base) return '';
         return base.length > 220 ? base.slice(0, 220) + '…' : base;
@@ -68,12 +79,12 @@ export default function HelpFaq() {
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="divide-y">
-                        {(filtered as any[]).length === 0 && (
+                        {filtered.length === 0 && (
                             <div className="py-8 text-center text-sm text-muted-foreground">
                                 Aucune question ne correspond à votre recherche pour le moment.
                             </div>
                         )}
-                        {(filtered as any[]).map((article) => (
+                        {filtered.map((article: HelpArticle) => (
                             <Link
                                 key={article.id}
                                 href={route('helps.article', article.slug)}

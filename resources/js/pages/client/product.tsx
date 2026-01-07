@@ -6,28 +6,10 @@ import { Badge } from "@/components/ui/badge";
 import { Package, Shield, Download, ArrowLeft } from "lucide-react";
 import { route } from "ziggy-js";
 import { formatCFA } from "@/lib/utils";
+import {  type Product } from "@/types/model";
 
-interface Product {
-    id?: string;
-    name?: string;
-    description?: string;
-    price?: number;
-    price_cents?: number;
-    version?: string;
-    sku?: string;
-    download_url?: string;
-    cover_image?: string;
-    features?: string[];
-    requirements?: string;
-    category?: string;
-    is_paid?: boolean;
-    requires_license?: boolean;
-    size?: string;
-    tags?: string[];
-    security?: string;
-}
+export default function Product({ product, canDownload }: { product?: Product; canDownload?: boolean }) {
 
-export default function Product({ product, canDownload, hasActiveLicense, hasPaidOrder }: { product?: Product; canDownload?: boolean; hasActiveLicense?: boolean; hasPaidOrder?: boolean }) {
     if (!product) {
         return (
             <AppLayout breadcrumbs={[{ title: "Catalogue", href: route('catalogs') }, { title: "Produit", href: "" }]}>

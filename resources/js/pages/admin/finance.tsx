@@ -1,6 +1,6 @@
 import AppLayout from "@/layouts/app-layout";
 import React from "react";
-import { Head, Link } from "@inertiajs/react";
+import { Head } from "@inertiajs/react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { route } from "ziggy-js";

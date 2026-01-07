@@ -45,9 +45,12 @@ export interface Product {
     description: string;
     category: string;
     features?: string[] | null;
+    tags?: string[] | null;
+    security?: string[] | null;
     price_cents?: number;
     requires_license?: boolean;
     is_active?: boolean;
+    download_url?: string | null;
     created_at: string;
     updated_at: string;
     licenses?: License[];
@@ -149,7 +152,14 @@ export interface Ticket {
     order_id?: UUID | null;
     subject: string;
     message: string;
-    status: 'open' | 'closed' | 'pending';
+    description?: string | null;
+    status: 'open' | 'closed' | 'pending' | 'in_progress';
+    priority?: 'high' | 'medium' | 'low';
+    category?: string | null;
+    date?: string | null;
+    lastUpdate?: string | null;
+    messages_count?: number;
+    messages?: number;
     created_at: string;
     updated_at: string;
     user?: User;

@@ -3,12 +3,13 @@ import { BreadcrumbItem } from '@/types';
 import { Head, Link, usePage, router } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import { Plus, Search, Filter, MessageCircle, Clock, CheckCircle, AlertCircle, ChevronRight, HelpCircle, Phone, Mail } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import type { Ticket } from '@/types/model';
 
 export default function Ticket() {
     const breadcrumbs: BreadcrumbItem[] = [
@@ -18,27 +19,42 @@ export default function Ticket() {
         },
     ];
 
-    const pageProps = usePage().props as any;
-    const initialStatus = pageProps.filters?.status ?? 'all';
-    const initialSearch = pageProps.filters?.search ?? '';
-    const initialSort = pageProps.filters?.sort ?? 'recent';
+    const pageProps = usePage().props as unknown as {
+        tickets?: Ticket[];
+        filters?: Record<string, string | number | boolean>;
+        auth?: { user?: { role?: { name?: string } } };
+        errors?: Record<string, string>;
+        deferred?: Record<string, string[] | undefined>;
+    };
+    
+    const isAdmin = pageProps.auth?.user?.role?.name === 'admin';
+    const initialStatus = String(pageProps.filters?.status ?? 'all');
+    const initialSearch = String(pageProps.filters?.search ?? '');
+    const initialSort = String(pageProps.filters?.sort ?? 'recent');
     const [activeFilter, setActiveFilter] = useState<string>(initialStatus);
     const [searchTerm, setSearchTerm] = useState<string>(initialSearch);
+    const [filters] = useState<Record<string, string | number | boolean>>(pageProps.filters || {});
     const [sortBy, setSortBy] = useState<string>(initialSort);
-
-    const { tickets: ticketsProp = [], ticketsCounts = null } = usePage().props as any;
-    const isAdmin = !!(usePage().props as any)?.isAdmin;
-    const paginated = Array.isArray(ticketsProp) ? null : (ticketsProp ?? null);
-    const tickets = Array.isArray(ticketsProp) ? ticketsProp : (ticketsProp?.data ?? []);
+    const { tickets = [] } = pageProps;
+    const paginated = Array.isArray(tickets) ? null : (tickets && typeof tickets === 'object' && 'data' in tickets ? tickets as { total?: number; data?: Ticket[]; links?: Array<{ label?: string; url?: string; active?: boolean }> } : null);
+    const ticketsProp = Array.isArray(tickets) ? tickets : (tickets && typeof tickets === 'object' && 'data' in tickets ? (tickets as { total?: number; data?: Ticket[]; links?: Array<{ label?: string; url?: string; active?: boolean }> }).data ?? [] : []);
+    const ticketsCounts = paginated?.total || ticketsProp.length;
 
     const normalizeStatus = (s: string) => s === 'in_progress' ? 'pending' : (s === 'resolved' ? 'closed' : (['open', 'pending', 'closed'].includes(s) ? s : 'open'));
 
-    const computedCounts = ticketsCounts ?? tickets.reduce((acc: any, t: any) => {
-        const st = normalizeStatus((t.status ?? 'open') as string);
-        acc.all += 1; acc[st] += 1; return acc;
-    }, { all: 0, open: 0, pending: 0, closed: 0 });
+    const computedCounts = useMemo(() => {
+        const counts = { all: 0, open: 0, pending: 0, closed: 0 };
+        ticketsProp.forEach((ticket: Ticket) => {
+            const status = ticket.status || 'open';
+            counts.all++;
+            if (status === 'open') counts.open++;
+            else if (status === 'in_progress') counts.pending++;
+            else if (status === 'closed') counts.closed++;
+        });
+        return counts;
+    }, [ticketsProp]);
 
-    const filters = [
+    const filtersList = [
         { id: 'all', label: 'Tous les tickets', count: computedCounts.all },
         { id: 'open', label: 'Ouverts', count: computedCounts.open },
         { id: 'pending', label: 'En cours', count: computedCounts.pending },
@@ -46,8 +62,8 @@ export default function Ticket() {
     ];
 
     // Helper pour déclencher navigation serveur
-    const goWithServer = (params: Record<string, any>) => {
-        router.get(route('supportsTickets'), { status: activeFilter, search: searchTerm, sort: sortBy, ...params }, {
+    const goWithServer = (params: Record<string, string | number | boolean>) => {
+        router.get(route('supportsTickets'), { status: activeFilter, search: searchTerm, sort: filters.sort, ...params }, {
             preserveState: true,
             replace: true,
             preserveScroll: true,
@@ -56,12 +72,12 @@ export default function Ticket() {
 
     // Filtrage côté client (par statut et recherche)
     const term = searchTerm.trim().toLowerCase();
-    const filteredTickets = tickets.filter((ticket: any) => {
+    const filteredTickets = ticketsProp.filter((ticket: Ticket) => {
         const rawStatus = (ticket.status ?? 'open') as string;
         const statusKey = normalizeStatus(rawStatus);
         const matchesFilter = activeFilter === 'all' || statusKey === activeFilter;
         const hay = [ticket.subject, ticket.description, ticket.message, ticket.id]
-            .map((v: any) => (v ?? '').toString().toLowerCase())
+            .map((v: string | null | undefined) => (v ?? '').toString().toLowerCase())
             .join(' ');
         const matchesSearch = term === '' || hay.includes(term);
         return matchesFilter && matchesSearch;
@@ -70,7 +86,7 @@ export default function Ticket() {
     type TicketStatus = "open" | "pending" | "closed";
     type TicketPriority = "high" | "medium" | "low";
 
-    const statusConfig: Record<TicketStatus, { variant: "destructive" | "default" | "secondary"; text: string; icon: any }> = {
+    const statusConfig: Record<TicketStatus, { variant: "destructive" | "default" | "secondary"; text: string; icon: React.ComponentType<Record<string, unknown>> }> = {
         open: { variant: "destructive", text: "Ouvert", icon: AlertCircle },
         pending: { variant: "default", text: "En cours", icon: Clock },
         closed: { variant: "secondary", text: "Fermé", icon: CheckCircle }
@@ -167,7 +183,7 @@ export default function Ticket() {
                             </CardHeader>
                             <CardContent className="p-0">
                                 <div className="space-y-1 p-2">
-                                    {filters.map(filter => (
+                                    {filtersList.map(filter => (
                                         <button
                                             key={filter.id}
                                             onClick={() => {
@@ -320,7 +336,7 @@ export default function Ticket() {
                                     <div>
                                         <CardTitle>
                                             {activeFilter === 'all' ? 'Tous les tickets' :
-                                                filters.find(f => f.id === activeFilter)?.label}
+                                                filtersList.find(f => f.id === activeFilter)?.label}
                                             <span className="text-muted-foreground ml-2 font-normal">
                                                 ({filteredTickets.length})
                                             </span>
@@ -454,7 +470,7 @@ export default function Ticket() {
                         {/* Pagination */}
                         {paginated?.links && paginated.links.length > 3 && (
                             <div className="flex items-center justify-center gap-1">
-                                {paginated.links.map((ln: any, idx: number) => (
+                                {paginated.links?.map((ln: { label?: string; url?: string; active?: boolean }, idx: number) => (
                                     <button
                                         key={idx}
                                         disabled={!ln.url}
@@ -462,7 +478,7 @@ export default function Ticket() {
                                             if (ln.url) router.get(ln.url, {}, { preserveState: true, preserveScroll: true });
                                         }}
                                         className={`px-3 py-2 rounded border text-sm min-w-[40px] ${ln.active ? 'bg-primary text-primary-foreground border-primary' : 'hover:bg-accent border-border'} ${!ln.url ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                        dangerouslySetInnerHTML={{ __html: ln.label }}
+                                        dangerouslySetInnerHTML={{ __html: ln.label || '' }}
                                     />
                                 ))}
                             </div>

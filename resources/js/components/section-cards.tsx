@@ -169,7 +169,7 @@ export function SectionCards() {
                 'Statut stable';
 
         return (
-            <Card className={`@container/card ${config.bgLight} hover:shadow-xl transition-all duration-300 hover:scale-[1.02]`}>
+            <Card className={`@container/card hover:shadow-xl transition-all duration-300 hover:scale-[1.02]`}>
                 <CardHeader className="pb-3">
                     <CardDescription className="flex items-center gap-2">
                         <IconComponent className={`h-5 w-5 ${config.iconColor}`} />

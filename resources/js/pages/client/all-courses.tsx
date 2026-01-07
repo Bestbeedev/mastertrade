@@ -53,7 +53,7 @@ export default function AllCoursesPage() {
         const t = toast.loading(actionLabel);
         enrollForm.post(route("courses.enroll", course.id), {
             onSuccess: () => {
-                toast.success("Inscription effectu  e", { id: t });
+                toast.success("Inscription effectuée", { id: t });
                 router.visit(route("courses.show", course.id));
             },
             onError: () => {
@@ -88,7 +88,7 @@ export default function AllCoursesPage() {
         if (type === "video") return "Vid  o";
         if (type === "pdf") return "PDF";
         if (type === "mixte") return "Mixte";
-        return "Non d  fini";
+        return "Non defini";
     };
 
     const priceLabel = (course: AllCourseItem) => {
@@ -152,24 +152,24 @@ export default function AllCoursesPage() {
                         </Button>
                         <Button
                             size="sm"
-                            variant={levelFilter === "D  butant" ? "default" : "outline"}
-                            onClick={() => setLevelFilter("D  butant")}
+                            variant={levelFilter === "Débutant" ? "default" : "outline"}
+                            onClick={() => setLevelFilter("Débutant")}
                         >
-                            D  butant
+                            Débutant
                         </Button>
                         <Button
                             size="sm"
-                            variant={levelFilter === "Interm  diaire" ? "default" : "outline"}
-                            onClick={() => setLevelFilter("Interm  diaire")}
+                            variant={levelFilter === "Intermédiaire" ? "default" : "outline"}
+                            onClick={() => setLevelFilter("Intermédiaire")}
                         >
-                            Interm  diaire
+                            Intermédiaire
                         </Button>
                         <Button
                             size="sm"
-                            variant={levelFilter === "Avanc  " ? "default" : "outline"}
-                            onClick={() => setLevelFilter("Avanc  ")}
+                            variant={levelFilter === "Avancé" ? "default" : "outline"}
+                            onClick={() => setLevelFilter("Avancé")}
                         >
-                            Avanc  
+                            Avancé  
                         </Button>
                     </div>
                     <div className="flex flex-wrap gap-2 items-center">
@@ -185,7 +185,7 @@ export default function AllCoursesPage() {
                             variant={typeFilter === "video" ? "default" : "outline"}
                             onClick={() => setTypeFilter("video")}
                         >
-                            Vid  o
+                            Video
                         </Button>
                         <Button
                             size="sm"
@@ -347,7 +347,7 @@ export default function AllCoursesPage() {
                     {filteredCourses.length === 0 && (
                         <Card className="col-span-full">
                             <CardContent className="py-8 text-center text-sm text-muted-foreground">
-                                Aucune formation ne correspond    vos crit  res de recherche.
+                                Aucune formation ne correspond à vos critères de recherche.
                             </CardContent>
                         </Card>
                     )}
@@ -360,8 +360,8 @@ export default function AllCoursesPage() {
                     <DialogHeader>
                         <DialogTitle>Paiement simul  </DialogTitle>
                         <DialogDescription>
-                            Vous   tes sur le point de rejoindre la formation
-                            {courseToJoin ? ` "${courseToJoin.title}"` : ""}. Aucun paiement r  el ne sera effectu    : il s'agit
+                            Vous êtes sur le point de rejoindre la formation
+                            {courseToJoin ? ` "${courseToJoin.title}"` : ""}. Aucun paiement réel ne sera effectué : il s'agit
                             uniquement d'une simulation, vous serez inscrit imm  diatement.
                         </DialogDescription>
                     </DialogHeader>

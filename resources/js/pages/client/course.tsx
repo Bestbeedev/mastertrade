@@ -48,7 +48,7 @@ export default function Course() {
     const { course, is_enrolled = false, progress_percent = 0, completed_lessons = [] } = usePage().props as { course?: Course; is_enrolled?: boolean; progress_percent?: number; completed_lessons?: string[] };
 
     const modules = course?.modules || [];
-    const modulesCount = modules.length;
+    const modulesCount = useMemo(() => course?.modules?.length || 0, [course?.modules]);
     const lessonsCount = useMemo(() => modules.reduce((sum: number, m: Module) => sum + ((m.lessons || []).length), 0), [modules]);
     const flatLessons = useMemo(() => {
         const arr: Lesson[] = [];

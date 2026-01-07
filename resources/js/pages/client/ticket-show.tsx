@@ -4,7 +4,6 @@ import { Head, useForm, usePage, Link } from "@inertiajs/react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { route } from "ziggy-js";
 import { toast } from "sonner";
@@ -22,19 +21,19 @@ interface Ticket {
     message?: string;
     created_at?: string;
     updated_at?: string;
-    user?: { id: string; name: string; email: string };
-    order?: { id: string; amount?: number; product?: { name: string } };
-    license?: { id: string; key?: string; product?: { name: string } };
-    replies?: Array<{ message: string; user?: { name: string; email: string }; created_at?: string }>;
-    messages?: Array<{ message: string; user?: { name: string; email: string }; created_at?: string }>;
+    user?: any;
+    order?: any;
+    license?: any;
+    replies?: any;
+    messages?: any;
 }
 
 interface Auth {
-    user?: { id: string; name: string; email: string };
+    user?: any;
 }
 
 export default function TicketShow() {
-    const { ticket, isAdmin = false, auth } = usePage().props as { ticket?: Ticket; isAdmin?: boolean; auth?: Auth };
+    const { ticket, auth } = usePage().props as { ticket?: Ticket; auth?: Auth };
     const breadcrumbs: BreadcrumbItem[] = [
         { title: "Tickets", href: "/client/ticket" },
         { title: ticket?.subject || "Ticket", href: route('supportsTickets.show', ticket?.id || '') },
@@ -141,7 +140,7 @@ export default function TicketShow() {
                                 {Array.isArray(ticket?.messages) && ticket.messages.length > 0 ? (
                                     ticket.messages
                                         .slice()
-                                        .sort((a: any, b: any) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
+                                        .sort((a: any, b: any) => new Date(a.created_at || '').getTime() - new Date(b.created_at || '').getTime())
                                         .map((msg: any) => {
                                             const roleName = (msg?.user?.role?.name || '').toLowerCase();
                                             const isAdminMsg = roleName.includes('admin');
@@ -200,7 +199,7 @@ export default function TicketShow() {
                                                         {/* Pièces jointes */}
                                                         {Array.isArray(msg.attachments) && msg.attachments.length > 0 && (
                                                             <div className="mt-3 flex flex-col gap-2">
-                                                                {msg.attachments.map((att: any) => {
+                                                                {msg.attachments?.map((att: any) => {
                                                                     const isImage = typeof att.mime_type === 'string' && att.mime_type.startsWith('image/');
                                                                     return (
                                                                         <div key={att.id} className="group">

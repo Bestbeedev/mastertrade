@@ -11,9 +11,9 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 import { route } from "ziggy-js";
-import { Download, ShieldCheck, CreditCard, BookOpen, BarChart3, Settings, Users, Star, Check, ArrowRight, Play, Zap, Lock, Globe, Cpu, Building, TrendingUp, Package, ArrowLeft, GraduationCap, ChevronLeft, ChevronRight, Bell, Menu, X, MessageCircle, AlertTriangle } from "lucide-react";
-import { Button } from '@/components/ui/button'
+import { Users, Building, TrendingUp, Package, X, MessageCircle, Cpu, Menu, Star, ArrowRight, AlertTriangle, BarChart3, Bell, BookOpen, Check, ChevronLeft, ChevronRight, CreditCard, Download, Play, ShieldCheck, Zap } from "lucide-react";
 import { toast } from "sonner";
+import { Button } from "@headlessui/react";
 interface software {
     name: string;
     icon: React.ReactNode;
@@ -31,61 +31,63 @@ interface software {
     downloadAvailable?: boolean;
 }
 
+interface WelcomePageProps {
+    auth?: { user?: { id?: string; name?: string; email?: string } };
+    products?: Array<{
+        id?: string;
+        name?: string;
+        description?: string;
+        category?: string;
+        version?: string;
+        sku?: string;
+        features?: string[];
+        price_cents?: number;
+        requires_license?: boolean;
+        is_active?: boolean;
+        size?: number;
+        updated_at?: string;
+        created_at?: string;
+        changelog?: string | string[];
+    }>;
+    [key: string]: unknown;
+}
+
 export default function Welcome() {
     const [currentSlide, setCurrentSlide] = useState(0);
     const [visibleCards, setVisibleCards] = useState(3);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-    const page = usePage<any>();
+    const page = usePage<WelcomePageProps>();
     const [selectedSoftware, setSelectedSoftware] = useState<software | null>(null);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const user = page.props?.auth?.user || null;
 
-    const products = (page.props?.products || []) as any[];
+    const products = (page.props?.products || []) as Array<{
+        id?: string;
+        name?: string;
+        description?: string;
+        category?: string;
+        version?: string;
+        sku?: string;
+        features?: string[];
+        price_cents?: number;
+        requires_license?: boolean;
+        is_active?: boolean;
+        size?: number;
+        updated_at?: string;
+        created_at?: string;
+        changelog?: string | string[];
+    }>;
 
-    const softwareData: software[] = products.map((p) => {
-        const featuresArray = Array.isArray(p.features) ? (p.features as string[]).filter((s) => typeof s === 'string' && s.trim().length > 0) : [];
-        const changelogLines = p.changelog ? String(p.changelog).split(/\r?\n/).filter((line: string) => line.trim().length > 0) : [];
-
-        const sizeLabel = typeof p.size === 'number' && p.size > 0
-            ? `${Math.max(1, Math.round(p.size / (1024 * 1024)))} MB`
-            : 'N/A';
-
-        const lastUpdate = p.updated_at
-            ? new Date(p.updated_at).toLocaleDateString('fr-FR')
-            : (p.created_at ? new Date(p.created_at).toLocaleDateString('fr-FR') : '');
-
-        let iconNode: React.ReactNode = <Package className="w-8 h-8 text-white" />;
-        if (p.name === 'Ecosoft') {
-            iconNode = <GraduationCap className="w-8 h-8 text-white" />;
-        } else if (p.name === 'MasterTrade') {
-            iconNode = <TrendingUp className="w-8 h-8 text-white" />;
-        } else if (p.name === 'MasterStock') {
-            iconNode = <Package className="w-8 h-8 text-white" />;
-        } else if (p.name === 'MasterAdogbe') {
-            iconNode = <Users className="w-8 h-8 text-white" />;
-        } else if (p.name === 'MasterImmo') {
-            iconNode = <Building className="w-8 h-8 text-white" />;
-        }
-
-        return {
-            name: p.name,
-            icon: iconNode,
-            category: p.category || 'Logiciel',
-            description: p.description || '',
-            features: featuresArray.length > 0
-                ? featuresArray.slice(0, 4)
-                : (changelogLines.length > 0 ? changelogLines.slice(0, 4) : [(p.description as string) || '']),
-            version: p.version ? `v${p.version}` : 'v1.0.0',
-            size: sizeLabel,
-            rating: 4.8,
-            reviews: 120,
-            requirements: 'Windows 10/11, 4GB RAM, 2GB espace libre',
-            lastUpdate,
-            changelog: changelogLines,
-            productId: p.id,
-            downloadAvailable: !!p.download_url,
+    // Icon mapping for different software products
+    const getSoftwareIcon = (softwareName: string) => {
+        const iconMap: Record<string, React.ReactNode> = {
+            "MasterAdogbe": <Package className="w-6 h-6" />,
+            "MasterImmo": <Building className="w-6 h-6" />,
+            "MasterStock": <BarChart3 className="w-6 h-6" />,
+            "Ecosoft": <Cpu className="w-6 h-6" />,
         };
-    });
+        return iconMap[softwareName] || <Package className="w-6 h-6" />;
+    };
 
     const gradientsMap: Record<string, string> = {
         MasterAdogbe: "from-green-500 to-emerald-600",
@@ -143,7 +145,7 @@ export default function Welcome() {
         return () => window.removeEventListener('resize', updateVisibleCards);
     }, []);
 
-    const totalSlides = Math.ceil(softwareData.length / visibleCards);
+    const totalSlides = Math.ceil(products.length / visibleCards);
 
     const nextSlide = () => {
         setCurrentSlide((prev) => (prev + 1) % totalSlides);
@@ -157,10 +159,45 @@ export default function Welcome() {
         setCurrentSlide(index);
     };
 
+    // Transform product data to software interface
+    const transformProductToSoftware = (product: {
+        id?: string;
+        name?: string;
+        description?: string;
+        category?: string;
+        version?: string;
+        sku?: string;
+        features?: string[];
+        price_cents?: number;
+        requires_license?: boolean;
+        is_active?: boolean;
+        size?: number;
+        updated_at?: string;
+        created_at?: string;
+        changelog?: string | string[];
+    }): software => {
+        return {
+            name: product.name || 'Unknown',
+            icon: getSoftwareIcon(product.name || ''),
+            category: product.category || 'Software',
+            description: product.description || '',
+            features: product.features || [],
+            version: product.version || '1.0.0',
+            size: product.size ? `${product.size} MB` : 'Unknown',
+            rating: 4.5, // Default rating
+            reviews: 100, // Default reviews
+            requirements: 'Windows 10 or higher', // Default requirements
+            lastUpdate: product.updated_at || new Date().toISOString(),
+            changelog: Array.isArray(product.changelog) ? product.changelog : (product.changelog ? [product.changelog] : []),
+            productId: product.id,
+            downloadAvailable: product.is_active !== false
+        };
+    };
+
     // Obtenir les cartes visibles pour le slide actuel
     const getVisibleSoftware = () => {
         const startIndex = currentSlide * visibleCards;
-        return softwareData.slice(startIndex, startIndex + visibleCards);
+        return products.slice(startIndex, startIndex + visibleCards).map(transformProductToSoftware);
     };
 
     const [currentTestimonialSlide, setCurrentTestimonialSlide] = useState(0);
@@ -555,8 +592,8 @@ export default function Welcome() {
                                             }`}
                                     >
                                         {getVisibleSoftware().map((soft, i) => {
-                                            const gradient = getGradient(soft.name);
-                                            const categoryStyle = getCategoryColor(soft.name);
+                                            const gradient = getGradient(soft.name || 'Unknown');
+                                            const categoryStyle = getCategoryColor(soft.name || 'Unknown');
                                             return (
                                                 <motion.div
                                                     key={`${soft.name}-${currentSlide}-${i}`}
@@ -580,7 +617,7 @@ export default function Welcome() {
                                                                     </h4>
                                                                 </div>
                                                                 <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform border border-white/30">
-                                                                    <div className="text-white">{soft.icon}</div>
+                                                                    <div className="text-white">{getSoftwareIcon(soft.name || '')}</div>
                                                                 </div>
                                                             </div>
                                                             <div className="flex items-center gap-4 text-white/80 text-sm">
@@ -595,12 +632,12 @@ export default function Welcome() {
                                                     <div className="p-6">
                                                         <p className="text-gray-600 mb-6 leading-relaxed">{soft.description}</p>
                                                         <div className="space-y-3 mb-6">
-                                                            {soft.features.map((feature, j) => (
+                                                            {soft.features?.map((feature: string, j: number) => (
                                                                 <div key={j} className="flex items-center gap-3 text-gray-700">
                                                                     <Check className="w-5 h-5 text-green-500 flex-shrink-0" />
                                                                     <span className="text-sm">{feature}</span>
                                                                 </div>
-                                                            ))}
+                                                            )) || <span className="text-gray-500 text-sm">No features available</span>}
                                                         </div>
                                                         <div className="flex gap-3">
                                                             <button onClick={() => handleDownload(soft)} className="flex-1 py-3 bg-neutral-800 text-white rounded-xl font-semibold hover:shadow-lg transition-all group-hover:scale-105 text-center">Télécharger</button>
@@ -643,7 +680,7 @@ export default function Welcome() {
                                                             Caractéristiques principales
                                                         </h3>
                                                         <div className="grid gap-3">
-                                                            {selectedSoftware.features.map((feature, index) => (
+                                                            {selectedSoftware.features.map((feature: string, index) => (
                                                                 <div key={index} className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg min-w-0 border border-gray-200 dark:border-gray-700">
                                                                     <Check className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
                                                                     <span className="text-gray-700 dark:text-gray-300 break-words flex-1">
@@ -735,13 +772,12 @@ export default function Welcome() {
                                                 <Button
                                                     onClick={() => handleDownload(selectedSoftware)}
                                                     className="flex-1 min-w-[200px] h-12 text-lg bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white"
-                                                    size="lg"
                                                 >
                                                     <Download className="w-5 h-5 mr-2" />
                                                     Télécharger {selectedSoftware.name}
                                                 </Button>
                                                 <Button
-                                                    variant="outline"
+                                                    
                                                     onClick={() => setIsDialogOpen(false)}
                                                     className="h-12 flex-shrink-0 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
                                                 >
@@ -922,7 +958,7 @@ export default function Welcome() {
 
                                         {/* Features list */}
                                         <div className="relative z-10 space-y-3">
-                                            {f.features.map((feature, j) => (
+                                            {f.features.map((feature: string, j) => (
                                                 <motion.div
                                                     key={j}
                                                     initial={{ opacity: 0, x: -10 }}

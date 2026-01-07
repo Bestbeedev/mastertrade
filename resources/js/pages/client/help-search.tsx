@@ -5,8 +5,20 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import type { BreadcrumbItem } from '@/types';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Search, HelpCircle, ChevronRight } from 'lucide-react';
+
+interface HelpArticle {
+    id: string;
+    title?: string;
+    slug?: string;
+    summary?: string;
+    content?: string;
+    tags?: string[];
+    category?: string;
+    views?: number;
+    status?: string;
+}
 
 function categoryLabel(category: string): string {
     if (category === 'faq') return 'FAQ';
@@ -16,7 +28,7 @@ function categoryLabel(category: string): string {
 }
 
 export default function HelpSearchPage() {
-    const { results = [], q = '' } = usePage().props as any;
+    const { results = [], q = '' } = usePage().props as { results?: HelpArticle[]; q?: string };
     const [query, setQuery] = useState<string>((q ?? '').toString());
 
     const breadcrumbs: BreadcrumbItem[] = [
@@ -33,7 +45,17 @@ export default function HelpSearchPage() {
         });
     };
 
-    const effectiveResults: any[] = Array.isArray(results) ? results : [];
+    const effectiveResults: HelpArticle[] = useMemo(() => {
+        const q = query.trim().toLowerCase();
+        if (!q) return results as HelpArticle[];
+        return (results as HelpArticle[]).filter((a: HelpArticle) => {
+            const hay = [a.title, a.summary, a.content, a.tags]
+                .map((v) => (v ?? '').toString().toLowerCase())
+                .join(' ');
+            return hay.includes(q);
+        });
+    }, [results, query]);
+
     const hasQuery = (q ?? '').toString().trim() !== '';
 
     return (
@@ -80,17 +102,17 @@ export default function HelpSearchPage() {
                                 Essayez d'autres mots-clés ou vérifiez l'orthographe.
                             </div>
                         )}
-                        {effectiveResults.map((article: any) => (
+                        {effectiveResults.map((article: HelpArticle) => (
                             <Link
                                 key={article.id}
-                                href={route('helps.article', article.slug)}
+                                href={route('helps.article', article.slug || '')}
                                 className="block py-4 px-1 hover:bg-accent/40 rounded-md transition-colors group"
                             >
                                 <div className="flex items-start justify-between gap-4">
                                     <div className="flex-1">
                                         <div className="flex items-center gap-2 mb-1">
                                             <Badge variant="outline" className="text-xs">
-                                                {categoryLabel(article.category)}
+                                                {categoryLabel(article.category || '')}
                                             </Badge>
                                             {typeof article.views === 'number' && article.views > 0 && (
                                                 <span className="text-[11px] text-muted-foreground">{article.views} vues</span>

@@ -5,7 +5,7 @@ import {
     IconNotification,
     IconUserCircle,
 } from "@tabler/icons-react"
-import { usePage, router } from "@inertiajs/react";
+import {router } from "@inertiajs/react";
 import {
     Avatar,
     AvatarFallback,

@@ -1,6 +1,5 @@
 import type { ComponentType } from "react"
 
-import { Button } from "@/components/ui/button"
 import { Link, usePage } from "@inertiajs/react"
 import {
     SidebarGroup,

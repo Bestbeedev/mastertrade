@@ -9,6 +9,17 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { route } from 'ziggy-js';
 
+interface HelpArticle {
+    id?: string;
+    title?: string;
+    summary?: string;
+    content?: string;
+    tags?: string;
+    category?: string;
+    slug?: string;
+    views?: number;
+}
+
 export default function Help() {
     const breadcrumbs: BreadcrumbItem[] = [
         {
@@ -19,7 +30,7 @@ export default function Help() {
 
     const [searchQuery, setSearchQuery] = useState('');
 
-    const { popularArticles: serverPopular = [] } = usePage().props as any;
+    const { popularArticles: serverPopular = [] } = usePage().props as { popularArticles?: HelpArticle[] };
     const popularArticles = Array.isArray(serverPopular) ? serverPopular : [];
 
     const helpCategories = [
@@ -156,10 +167,10 @@ export default function Help() {
                                 </div>
                             ) : (
                                 <div className="divide-y">
-                                    {popularArticles.map((article: any) => (
+                                    {popularArticles.map((article: HelpArticle) => (
                                         <Link
                                             key={article.id}
-                                            href={route('helps.article', article.slug)}
+                                            href={route('helps.article', article.slug || '')}
                                             className="block p-6 hover:bg-accent/50 transition-colors group"
                                         >
                                             <div className="flex justify-between items-start">
@@ -168,7 +179,7 @@ export default function Help() {
                                                         {article.title}
                                                     </h3>
                                                     <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                                                        <Badge variant="outline">{categoryLabel(article.category)}</Badge>
+                                                        <Badge variant="outline">{categoryLabel(article.category || '')}</Badge>
                                                         {typeof article.views === 'number' && (
                                                             <span>{article.views} vues</span>
                                                         )}
