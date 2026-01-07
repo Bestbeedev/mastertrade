@@ -74,13 +74,14 @@ class TicketController extends Controller
         ]);
     }
 
-     public function indexClient(Request $request)
+      public function admin(Request $request)
     {
         $status = $request->query('status', 'all');
         $search = trim((string) $request->query('search', ''));
         $sort = $request->query('sort', 'recent');
 
-        $isAdmin=User::isAdmin();
+        $user = Auth::user();
+        $isAdmin = $user && $user->role && in_array(strtolower($user->role->name), ['admin', 'administrator', 'superadmin']);
         $query = $isAdmin ? Ticket::query() : Ticket::query()->where('user_id', Auth::id());
         $query->with(['user:id,name,email']);
         $query->withCount(['messages']);
